@@ -104,7 +104,7 @@
     <li>每个话轮由一方领出单张、对子、连续论证或闭环叙事。回应只需同牌型且等级更高，频道可以不同；闭环能压普通牌型。</li>
     <li>连续两人过牌，当前置顶叙事赢得1个定调标记；只要后来有人出牌，之前过牌者就能重新加入。</li>
     <li>同一叙事先获得2个标记便定义当前问题。通常需要2至3个话轮；若三家各得1个，则进入第4个决胜话轮。</li>
-    <li>话轮赢家领出下一话轮。事实定调增加1可信度；立场定调改变明星压力；传播定调增加1互联网记忆。闭环只争夺标记。</li>
+    <li>话轮赢家领出下一话轮。单张和对子执行一次频道效果：事实+1可信度、传播+1记忆、立场压力-1或+2；连续论证的事实或传播结算2点，但立场压力不翻倍；闭环同时增加1可信度和1记忆。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>只有扩大讨论规模的组合会升温：连续论证使热度+1，闭环叙事使热度+2；普通传播牌可以争记忆，但不会自动升温。热度首次达到7后，当前话轮结束再随机揭示1张路人牌，只影响下一话轮收益。</li>
     <li>三方各有两项公开诉求，分别结算完整胜利、局部胜利或未达成；三个问题全部定调后事件结束。</li>
@@ -231,6 +231,7 @@
       return`<span class="pattern-badge" style="--pattern-color:${color}"><span class="pattern-channel">${channel}</span><span class="pattern-rank">${rank}</span><span class="pattern-type">${PATTERN_NAMES[pattern.type]}</span></span>`;
     }
     function patternHeat(pattern){return pattern.type==="loop"?2:pattern.type==="run"?1:0;}
+    function channelRewardAmount(patternType){return patternType==="run"?2:1;}
     function changeHeat(amount,actor){
       if(!amount)return;
       const oldHeat=state.heat;state.heat=clamp(state.heat+amount,0,10);
@@ -273,9 +274,13 @@
       state.currentRole=nextRole(role);render();queueAutomaticTurn();
     }
     function resolveChannelOutcome(completed){
+      if(completed.patternType==="loop"){
+        state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
+        return`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1；明星压力不变。`;
+      }
       if(completed.channel==="fact"){
-        state.claims[completed.owner].credibility+=1;
-        return`事实定调：“${currentClaim(completed.owner)}”可信度+1。`;
+        const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].credibility+=amount;
+        return`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}${amount===2?"（连续论证奖励）":""}。`;
       }
       if(completed.channel==="stance"){
         const before=state.pressure,delta=completed.owner==="star"?-1:2;
@@ -284,10 +289,10 @@
         return`立场定调：明星压力${actual>=0?"+":""}${actual}，当前为${state.pressure}/10。`;
       }
       if(completed.channel==="spread"){
-        state.claims[completed.owner].memory+=1;
-        return`传播定调：“${currentClaim(completed.owner)}”互联网记忆+1。`;
+        const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].memory+=amount;
+        return`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}${amount===2?"（连续论证奖励）":""}。`;
       }
-      return"闭环叙事夺得定调标记，但不额外增加可信度、记忆或压力。";
+      return"本话轮没有产生频道收益。";
     }
     function revealBystanderReaction(actor){
       const reaction=shuffle(BYSTANDER_REACTIONS)[0];
@@ -328,7 +333,7 @@
       if(!state.topPlay||!state.claimOwner)return;
       clearAITimer();
       const issue=currentIssue(),controller=state.topPlay.role,owner=state.claimOwner,channel=state.topPlay.pattern.channel;
-      const completed={issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,pattern:patternLabel(state.topPlay.pattern)};
+      const completed={issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,patternType:state.topPlay.pattern.type,pattern:patternLabel(state.topPlay.pattern)};
       completed.channelOutcome=resolveChannelOutcome(completed);
       const memoryLockCandidate=state.heat>=9&&!state.permanentMemory?uniqueMemoryLeader():null;
       completed.reactionOutcome=resolveBystanderReaction(completed);
@@ -557,10 +562,11 @@
     function previewSettlement(pattern,owner){
       if(!pattern)return"";
       const heat=patternHeat(pattern),heatText=heat?` 本次出牌还会使热度+${heat}。`:"";
-      if(pattern.type==="loop")return`若守到结算：获得1个定调标记；闭环不触发频道收益。${heatText}`;
-      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+1。${heatText}`;
+      if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1；明星压力不变。${heatText}`;
+      const amount=channelRewardAmount(pattern.type),bonus=amount===2?"（连续论证奖励）":"";
+      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${heatText}`;
       if(pattern.channel==="stance")return`若守到结算：明星压力${owner==="star"?"-1":"+2"}。${heatText}`;
-      return`若守到结算：“${currentClaim(owner)}”互联网记忆+1。${heatText}`;
+      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${heatText}`;
     }
     function renderConsole(){
       const box=el("actionConsole"),prompt=el("prompt"),sub=el("subprompt"),summary=el("selectionSummary"),controls=el("controlRow"),actions=el("actionButtons");
