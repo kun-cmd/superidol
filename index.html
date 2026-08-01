@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
   <style>
     :root {
@@ -18,6 +19,7 @@
     .status-strip{padding:10px 18px;display:grid;grid-template-columns:1fr 1.35fr 1.2fr 1fr;gap:14px;background:var(--paper);border-bottom:1px solid var(--line)}
     .status-block{min-width:0}.status-label{margin-bottom:4px;color:var(--muted);font-size:10px;font-weight:800}.status-value{overflow:hidden;font-size:13px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
     .meter{height:7px;overflow:hidden;background:#e6e9ed;border-radius:2px}.meter>span{display:block;height:100%;width:0;background:var(--heat)}
+    .played-tracker{background:#fff;border-bottom:1px solid var(--line)}.played-tracker summary{min-height:42px;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer}.played-tracker summary::-webkit-details-marker{display:none}.played-heading{display:flex;align-items:baseline;gap:10px}.played-heading strong{font-size:12px}.played-heading span{color:var(--muted);font-size:10px}.played-caret{width:25px;height:25px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);border-radius:4px;font-size:15px;font-weight:900;transition:transform 150ms ease}.played-tracker[open] .played-caret{transform:rotate(180deg)}.played-track{padding:0 18px 12px;display:grid;grid-auto-flow:column;grid-auto-columns:112px;gap:7px;overflow-x:auto}.played-card{min-height:82px;padding:8px;background:#f8f9fa;border:1px solid var(--line);border-top:4px solid var(--channel-color);border-radius:4px}.played-card.used{background:#fff}.played-card-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.played-card-channel{color:var(--channel-color);font-size:9px;font-weight:900}.played-card-level{width:23px;height:23px;display:grid;place-items:center;color:#fff;background:var(--channel-color);border-radius:3px;font-size:11px;font-weight:900}.played-card-name{margin-top:8px;font-size:11px;font-weight:900}.played-card-count{margin-top:5px;color:var(--muted);font-size:9px}.played-card-count strong{color:var(--ink);font-size:11px}
     .workspace{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,2.05fr) minmax(285px,.95fr);grid-template-areas:"play sidebar" "hand hand"}
     .playfield{grid-area:play;min-width:0;padding:18px;background:#fafafa;border-right:1px solid var(--line)}.sidebar{grid-area:sidebar;min-width:0;padding:14px;background:var(--soft)}
     .event-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.eyebrow{color:var(--anti);font-size:11px;font-weight:900}h1{margin:5px 0 7px;font-size:25px;line-height:1.25}.event-copy{max-width:780px;margin:0;color:var(--muted);font-size:13px;line-height:1.65}.event-badge{flex:0 0 auto;padding:7px 9px;background:#fff4d7;border:1px solid #dfbd67;border-radius:4px;font-size:11px;font-weight:900}
@@ -25,7 +27,7 @@
     .issue-focus{margin:10px 0;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#fff;background:#252c35;border-left:5px solid var(--heat)}.issue-copy{min-width:0}.issue-copy small{display:block;color:#c4cbd4;font-size:9px;font-weight:900}.issue-copy strong{display:block;margin-top:3px;font-size:16px}.issue-copy span{display:block;margin-top:4px;color:#d7dce2;font-size:10px;line-height:1.45}
     .marker-summary{flex:0 0 auto;display:flex;gap:12px}.marker-item{min-width:58px}.marker-item span{display:block;color:#c4cbd4;font-size:9px}.marker-item strong{display:block;margin-top:3px;font-size:13px}
     .claim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.claim{min-height:185px;padding:13px;background:#fff;border:1px solid var(--line);border-top:5px solid var(--claim-color);border-radius:6px}.claim.current{outline:3px solid rgba(226,147,37,.28)}.claim-head{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px;font-weight:800}.claim h2{min-height:44px;margin:9px 0 8px;font-size:16px;line-height:1.35}.claim-marker{margin-bottom:10px;color:var(--claim-color);font-size:11px;font-weight:900}.axis{margin-top:9px}.axis-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:11px}.axis-head span{color:var(--muted)}.axis .meter{height:8px}.axis.cred .meter>span{background:var(--fact)}.axis.memory .meter>span{background:var(--spread)}
-    .thread-strip{margin-top:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#252c35;color:#fff;border-radius:6px}.thread-main{min-width:0}.thread-main small{display:block;margin-bottom:3px;color:#bfc6cf;font-size:10px}.thread-main strong{display:block;overflow:hidden;font-size:13px;text-overflow:ellipsis;white-space:nowrap}.thread-passes{flex:0 0 auto;color:#ffd58e;font-size:11px;font-weight:900}
+    .thread-strip{--thread-color:var(--heat);margin-top:12px;padding:14px 15px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#202730;color:#fff;border-left:7px solid var(--thread-color);border-radius:6px;box-shadow:0 3px 0 rgba(16,20,26,.16)}.thread-main{min-width:0}.thread-main small{display:block;margin-bottom:4px;color:#bfc6cf;font-size:9px;font-weight:900}.thread-main>strong{display:block;font-size:21px;line-height:1.35}.thread-meta{margin-top:8px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}.thread-actor{color:#cbd2db;font-size:10px;font-weight:800}.pattern-badge{display:inline-flex;align-items:stretch;border:1px solid #697380;border-radius:4px;overflow:hidden;font-size:10px;font-weight:900}.pattern-badge span{padding:4px 7px}.pattern-channel{color:#fff;background:var(--pattern-color)}.pattern-rank{color:#513b08;background:#ffe6a6}.pattern-type{color:#1e2833;background:#eef1f4}.thread-passes{flex:0 0 auto;padding:8px 10px;color:#ffd58e;background:#303945;border:1px solid #4f5966;border-radius:4px;font-size:11px;font-weight:900}
     .action-notice{margin-top:8px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--notice-color);border-radius:4px}.action-notice small{display:block;margin-bottom:3px;color:var(--muted);font-size:9px;font-weight:900}.action-notice strong{display:block;font-size:12px;line-height:1.55}
     .action-console{margin-top:10px;padding:13px;background:#fff;border:1px solid var(--line);border-left:5px solid #7b8491;border-radius:6px}.action-console.active{border-left-color:var(--heat)}.prompt{font-size:14px;font-weight:900;line-height:1.45}.subprompt{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.55}.selection-summary{margin-top:9px;padding:8px 9px;background:#f4f6f8;border:1px solid #dde1e6;border-radius:4px;font-size:11px;line-height:1.5}
     .control-row{margin-top:9px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px}.voice-control{display:grid;gap:5px}.voice-control>span{color:var(--muted);font-size:10px;font-weight:900}.segmented{display:flex;border:1px solid #aeb5bf;border-radius:4px;overflow:hidden}.segmented button{min-height:34px;padding:6px 10px;background:#fff;border:0;cursor:pointer}.segmented button+button{border-left:1px solid #aeb5bf}.segmented button.selected{color:#fff;background:var(--fan)}.voice-lock{padding:8px 9px;color:#0e5d4d;background:#e8f4f0;border-left:4px solid var(--fan);font-size:10px;font-weight:900}
@@ -39,7 +41,7 @@
     .card{position:relative;min-height:190px;padding:11px;text-align:left;background:#fafbfc;border:2px solid var(--line);border-top:6px solid var(--channel-color);border-radius:6px;cursor:pointer;transition:border-color 140ms ease,background 140ms ease,transform 140ms ease}.card:hover:not(:disabled){transform:translateY(-3px);border-color:var(--channel-color)}.card.selected{background:#fff6dc;border-color:var(--heat);box-shadow:0 0 0 3px rgba(226,147,37,.18)}.card-top{display:flex;justify-content:space-between;gap:7px}.card-channel{font-size:10px;font-weight:900;color:var(--channel-color)}.card-level{width:27px;height:27px;display:grid;place-items:center;flex:0 0 auto;color:#fff;background:var(--channel-color);border-radius:3px;font-weight:900}.card h3{margin:10px 0 5px;font-size:14px;line-height:1.3}.card p{margin:0;color:var(--muted);font-size:10px;line-height:1.55}.card-foot{position:absolute;left:11px;right:11px;bottom:9px;display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:9px;font-weight:800}
     dialog{width:min(740px,calc(100vw - 28px));padding:0;background:#fff;border:1px solid #aeb5bf;border-radius:8px;box-shadow:0 24px 70px rgba(20,25,34,.32)}dialog::backdrop{background:rgba(20,24,31,.68)}.dialog-body{padding:22px}.dialog-body h2{margin:0 0 8px;font-size:22px}.dialog-body>p{color:var(--muted);font-size:13px;line-height:1.6}.role-picks{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.role-pick{min-height:150px;padding:13px;text-align:left;background:#f8f9fa;border:2px solid var(--line);border-top:6px solid var(--role-color);border-radius:6px;cursor:pointer}.role-pick:hover{transform:translateY(-2px);border-color:var(--role-color)}.role-pick strong{display:block;margin-bottom:7px}.role-pick span{color:var(--muted);font-size:11px;line-height:1.55}.rules-list{margin:13px 0;padding-left:21px;color:#424a55;font-size:12px;line-height:1.72}.dialog-actions{margin-top:17px;display:flex;justify-content:flex-end;gap:8px}.result-grid{margin:15px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.result-card{padding:11px;background:var(--soft);border:1px solid var(--line);border-top:5px solid var(--role-color);border-radius:6px}.result-card span{display:block;color:var(--muted);font-size:10px}.result-card strong{display:block;margin:5px 0;font-size:17px}.result-card p{margin:0;color:var(--muted);font-size:10px;line-height:1.5}.outcome{padding:10px;background:#f5f7f9;border-left:4px solid #697585;font-size:12px;line-height:1.65}.narrative-list{margin:10px 0 0;padding-left:20px;font-size:11px;line-height:1.65}
     @media(max-width:940px){.workspace{grid-template-columns:1fr;grid-template-areas:"play" "hand" "sidebar"}.playfield{border-right:0}.sidebar{border-top:1px solid var(--line)}}
-    @media(max-width:680px){.topbar,.status-strip,.playfield,.sidebar,.hand-zone{padding-left:11px;padding-right:11px}.brand span{display:none}.status-strip{grid-template-columns:1fr 1fr}.claim-grid,.seat-row,.role-picks,.result-grid{grid-template-columns:1fr}.event-head,.issue-focus{flex-direction:column}.marker-summary{width:100%;justify-content:space-between}.thread-strip{align-items:flex-start;flex-direction:column}.thread-main strong{white-space:normal}.hand{grid-auto-columns:minmax(160px,78vw)}}
+    @media(max-width:680px){.topbar,.status-strip,.playfield,.sidebar,.hand-zone{padding-left:11px;padding-right:11px}.played-tracker summary{padding-left:11px;padding-right:11px}.played-track{padding-left:11px;padding-right:11px}.brand span{display:none}.status-strip{grid-template-columns:1fr 1fr}.claim-grid,.seat-row,.role-picks,.result-grid{grid-template-columns:1fr}.event-head,.issue-focus{flex-direction:column}.marker-summary{width:100%;justify-content:space-between}.thread-strip{align-items:flex-start;flex-direction:column}.thread-main>strong{font-size:19px}.thread-passes{align-self:stretch;text-align:center}.hand{grid-auto-columns:minmax(160px,78vw)}}
   </style>
 </head>
 <body>
@@ -54,6 +56,10 @@
       <div class="status-block"><div class="status-label">当前进度</div><div class="status-value" id="roundStatus">问题1 · 话轮1</div></div>
       <div class="status-block"><div class="status-label">当前行动者</div><div class="status-value" id="turnStatus">等待开始</div></div>
     </section>
+    <details class="played-tracker" id="playedTracker">
+      <summary><div class="played-heading"><strong>公共已出牌</strong><span id="playedSummary">本事件已打出 0 张</span></div><span class="played-caret" aria-hidden="true">⌄</span></summary>
+      <div class="played-track" id="playedTrack"></div>
+    </details>
     <div class="workspace">
       <main class="playfield">
         <div class="event-head">
@@ -66,7 +72,7 @@
           <div class="marker-summary" id="markerSummary"></div>
         </section>
         <section class="claim-grid" id="claimGrid"></section>
-        <section class="thread-strip"><div class="thread-main"><small>当前置顶</small><strong id="threadTop">尚未领出主张</strong></div><div class="thread-passes" id="passStatus">等待主动方</div></section>
+        <section class="thread-strip" id="threadStrip"><div class="thread-main"><small>当前置顶主张</small><strong id="threadTop">尚未领出主张</strong><div class="thread-meta" id="threadMeta"></div></div><div class="thread-passes" id="passStatus">等待主动方</div></section>
         <section class="action-notice" id="actionNotice" style="--notice-color:#7b8491"><small>刚刚发生</small><strong id="actionNoticeText">选择阵营后，行动结果会逐步显示在这里。</strong></section>
         <section class="action-console" id="actionConsole">
           <div class="prompt" id="prompt">选择阵营后开始。</div>
@@ -219,6 +225,11 @@
       if(pattern.type==="run")return`${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
       return`${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
     }
+    function patternBadgeHtml(pattern){
+      const loop=pattern.type==="loop",channel=loop?"三频道":CHANNELS[pattern.channel].name,color=loop?"var(--heat)":CHANNELS[pattern.channel].color;
+      const rank=pattern.type==="run"?`${pattern.low}-${pattern.level}级`:`${pattern.level}级`;
+      return`<span class="pattern-badge" style="--pattern-color:${color}"><span class="pattern-channel">${channel}</span><span class="pattern-rank">${rank}</span><span class="pattern-type">${PATTERN_NAMES[pattern.type]}</span></span>`;
+    }
     function patternHeat(pattern){return pattern.type==="loop"?2:pattern.type==="run"?1:0;}
     function changeHeat(amount,actor){
       if(!amount)return;
@@ -231,15 +242,15 @@
       if(role!=="fan")return role;
       return fanVoice==="star"?"star":"fan";
     }
-    function applySuccessfulPlay(role,cards,pattern,fanVoice=null){
+    function applySuccessfulPlay(role,cards,pattern,fanVoice=null,decisionNote=""){
       const roleState=state.roles[role],spent=cards.map(card=>card.id),beforeHeat=state.heat;
       roleState.hand=roleState.hand.filter(card=>!spent.includes(card.id));roleState.discard.push(...cards);
       if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound=fanVoice||state.fanVoiceChoice;
       const activeVoice=role==="fan"?state.fanVoiceThisRound:null,owner=narrativeOwner(role,activeVoice);
       changeHeat(patternHeat(pattern),role);
       state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),fanVoice:activeVoice};state.passes=0;state.leadSkips=0;state.selectedIds=[];
-      const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",heatText=state.heat>beforeHeat?`，热度+${state.heat-beforeHeat}`:"";
-      addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。影响：手牌-${cards.length}${heatText}。`,role);
+      const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",heatText=state.heat>beforeHeat?`，热度+${state.heat-beforeHeat}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
+      addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌-${cards.length}${heatText}。`,role);
       state.currentRole=nextRole(role);render();queueAutomaticTurn();
     }
     function publishSelection(){
@@ -370,13 +381,51 @@
       if(role==="star"&&owner==="fan"&&state.issueMarkers.anti>=1)return true;
       return role===owner;
     }
-    function chooseFanVoice(){
-      const counts=seatCounts();
-      if(state.pressure>=8)return"star";
-      if(state.issueMarkers.anti>=1)return Math.random()<.75?"star":"fan";
-      if(counts.fan===0&&state.issueIndex>=1)return Math.random()<.65?"fan":"star";
-      if(state.issueMarkers.star>=1&&counts.fan===0)return Math.random()<.45?"fan":"star";
-      return Math.random()<.55?"star":"fan";
+    function fanVoiceStrategyScore(voice,choice){
+      const counts=seatCounts(),supportSeats=counts.star+counts.fan,needsOwn=counts.fan===0,openIssues=ISSUES.length-state.seats.length,markers=state.issueMarkers;
+      let score=0;
+      if(voice==="fan"){
+        if(needsOwn)score+=openIssues===1?6:openIssues===2?3:1.4;
+        if(markers.fan===1)score+=4;
+        if(counts.fan>=1)score-=1.2;
+        if(markers.star===1&&supportSeats<2)score-=1.1;
+      }else{
+        if(supportSeats<2)score+=1.2;
+        if(markers.star===1)score+=3.2;
+        if(counts.fan>=1)score+=1.4;
+        if(needsOwn&&openIssues===1)score-=4.5;
+      }
+      if(markers.anti===1){
+        if(voice==="fan"&&markers.fan===1)score+=1.7;
+        if(voice==="star"&&markers.star===1)score+=1.7;
+      }
+      if(choice.pattern.channel==="stance"){
+        if(voice==="star")score+=state.pressure>=8?5:state.pressure>=6?2.6:.5;
+        else score+=state.pressure>=8?-8:state.pressure>=6?-3.5:-.2;
+      }else if(voice==="fan"&&needsOwn)score+=1.4;
+      if(state.topPlay&&state.claimOwner==="star"&&voice==="fan"&&needsOwn)score+=state.issueIndex===2?3:1.1;
+      if(state.topPlay&&state.claimOwner==="fan"&&voice==="fan")score+=1.3;
+      return score;
+    }
+    function fanPlanReason(voice,choice){
+      const counts=seatCounts(),openIssues=ISSUES.length-state.seats.length;
+      if(voice==="fan"){
+        if(state.issueMarkers.fan===1)return"粉圈已有一个定调标记，继续争取自己的议题";
+        if(counts.fan===0&&openIssues===1)return"只剩最后一个议题，必须争取粉圈自己的定义";
+        if(counts.fan===0&&choice.pattern.channel!=="stance")return"用非立场牌争取粉圈定义，不额外增加明星压力";
+        return"当前局面更需要建立粉圈自己的叙事";
+      }
+      if(choice.pattern.channel==="stance"&&state.pressure>=6)return"明星压力偏高，优先忠实转述并争取减压";
+      if(state.issueMarkers.star===1)return"本人主张已有一个标记，协助完成支持阵营定调";
+      if(state.issueMarkers.anti===1)return"先阻止质疑叙事完成定调";
+      return"先帮助本人主张建立支持阵营优势";
+    }
+    function chooseFanPlan(){
+      const voices=state.fanVoiceThisRound?[state.fanVoiceThisRound]:["star","fan"];
+      return voices.map(voice=>{
+        const choice=aiChoosePlay("fan",voice);if(!choice)return null;
+        return{voice,choice,score:choice.score+fanVoiceStrategyScore(voice,choice),reason:fanPlanReason(voice,choice)};
+      }).filter(Boolean).sort((a,b)=>b.score-a.score)[0]||null;
     }
     function aiChoosePlay(role,fanVoice=null){
       const hand=state.roles[role].hand,threatOwner=state.claimOwner,threat=state.topPlay&&state.issueMarkers[threatOwner]>=1;
@@ -400,20 +449,27 @@
         return{...option,response,score};
       }).filter(Boolean).sort((a,b)=>b.score-a.score)[0]||null;
     }
-    function shouldAIPass(role,choice){
+    function shouldAIPass(role,choice,fanVoice=null){
       if(!state.topPlay)return false;
       const owner=state.claimOwner,helpful=claimHelpful(role,owner),threat=state.issueMarkers[owner]>=1,highCost=choice.pattern.level>=4||choice.pattern.type==="loop";
       let chance=helpful ? .72 : threat ? (state.passes===1 ? .06 : .28) : (highCost ? .58 : .3);
-      if(role==="fan"&&owner==="star"&&seatCounts().fan===0&&state.issueIndex>=1)chance=.42;
+      if(role==="fan"){
+        const counts=seatCounts(),needsOwn=counts.fan===0,supportSeats=counts.star+counts.fan;
+        if(owner==="fan")chance=state.passes===1?.94:.84;
+        else if(owner==="star"&&fanVoice==="fan"&&needsOwn)chance=state.issueIndex>=1?.12:.3;
+        else if(owner==="star"&&state.issueMarkers.star===1&&supportSeats<2)chance=.88;
+        else if(owner==="anti"&&threat)chance=.05;
+        if(fanVoice==="fan"&&state.issueMarkers.fan===1)chance=.04;
+      }
       return Math.random()<chance;
     }
     function aiTurn(role){
       if(state.phase!=="action"||state.currentRole!==role)return;
       if(!state.roles[role].hand.length){passTurn(role,true);return;}
-      const fanVoice=role==="fan"?(state.fanVoiceThisRound||chooseFanVoice()):null,choice=aiChoosePlay(role,fanVoice);
+      const fanPlan=role==="fan"?chooseFanPlan():null,fanVoice=fanPlan?.voice||null,choice=role==="fan"?fanPlan?.choice:aiChoosePlay(role);
       if(!choice){passTurn(role,true);return;}
-      if(shouldAIPass(role,choice)){passTurn(role,false);return;}
-      applySuccessfulPlay(role,choice.cards,choice.pattern,fanVoice);
+      if(shouldAIPass(role,choice,fanVoice)){passTurn(role,false);return;}
+      applySuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,fanPlan?.reason||"");
     }
     function queueAutomaticTurn(){
       clearAITimer();if(!state||state.phase!=="action")return;
@@ -447,12 +503,25 @@
       const max=Math.max(...ROLE_ORDER.map(role=>state.claims[role][metric]));if(max===0)return"尚未形成";
       return highestRoles(metric).map(role=>ROLES[role].short).join("、");
     }
+    function playedCardCounts(){
+      const counts={};Object.keys(CHANNELS).forEach(channel=>{for(let level=1;level<=5;level++)counts[`${channel}-${level}`]=0;});
+      if(state)ROLE_ORDER.forEach(role=>state.roles[role].discard.forEach(card=>{counts[`${card.channel}-${card.level}`]+=1;}));
+      return counts;
+    }
+    function renderPlayedCards(){
+      const counts=playedCardCounts(),total=Object.values(counts).reduce((sum,count)=>sum+count,0);
+      el("playedSummary").textContent=`本事件已打出 ${total} 张`;
+      el("playedTrack").innerHTML=Object.keys(CHANNELS).flatMap(channel=>[1,2,3,4,5].map(level=>{
+        const count=counts[`${channel}-${level}`],max=DECK_COPIES[level];
+        return`<div class="played-card ${count?"used":""}" style="--channel-color:${CHANNELS[channel].color}"><div class="played-card-head"><span class="played-card-channel">${CHANNELS[channel].name}频道</span><span class="played-card-level">${level}</span></div><div class="played-card-name">${CHANNELS[channel].name}${level}级</div><div class="played-card-count">已出 <strong>${count} / ${max}</strong></div></div>`;
+      })).join("");
+    }
     function render(){
       if(!state)return;
       el("seatStatus").textContent=`${state.seats.length} / 3`;el("heatStatus").textContent=`${state.heat} / 10 · ${heatStage()}`;el("heatMeter").style.width=`${state.heat*10}%`;
       el("roundStatus").textContent=state.phase==="ended"?"事件结束":`问题${state.issueIndex+1} · ${state.roundInIssue===4?"决胜话轮":`话轮${state.roundInIssue}`}`;
       el("turnStatus").textContent=state.phase==="ended"?"事件结束":state.phase==="round_break"?"话轮结算":`${ROLES[state.currentRole].short}${state.currentRole===state.userRole?"（你）":""}`;
-      renderSeats();renderIssue();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderLogs();renderHand();
+      renderPlayedCards();renderSeats();renderIssue();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderLogs();renderHand();
     }
     function renderSeats(){
       el("seatRow").innerHTML=ISSUES.map((issue,index)=>{
@@ -474,9 +543,11 @@
       }).join("");
     }
     function renderThread(){
-      if(!state.topPlay){el("threadTop").textContent=`${ROLES[state.currentRole].short}拥有领出权，尚未建立本话轮主张`;el("passStatus").textContent="主动方领出";return;}
+      const strip=el("threadStrip"),meta=el("threadMeta");
+      if(!state.topPlay){strip.style.setProperty("--thread-color","var(--heat)");el("threadTop").textContent=`${ROLES[state.currentRole].short}尚未领出主张`;meta.innerHTML=`<span class="thread-actor">等待一张合法牌型建立本话轮叙事</span>`;el("passStatus").textContent="主动方领出";return;}
       const voice=state.topPlay.role==="fan"?` · ${fanVoiceLabel(state.topPlay.fanVoice)}`:"";
-      el("threadTop").textContent=`${ROLES[state.topPlay.role].short}${voice}置顶 ${patternLabel(state.topPlay.pattern)} · “${currentClaim(state.claimOwner)}”`;el("passStatus").textContent=`连续过牌 ${state.passes} / 2`;
+      const pattern=state.topPlay.pattern,color=pattern.type==="loop"?"var(--heat)":CHANNELS[pattern.channel].color;
+      strip.style.setProperty("--thread-color",color);el("threadTop").textContent=`“${currentClaim(state.claimOwner)}”`;meta.innerHTML=`<span class="thread-actor">${ROLES[state.topPlay.role].short}${voice}当前置顶</span>${patternBadgeHtml(pattern)}`;el("passStatus").textContent=`连续过牌 ${state.passes} / 2`;
     }
     function renderActionNotice(){
       const latest=state.logs[0],notice=el("actionNotice");
@@ -545,6 +616,7 @@
       clearAITimer();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
     }
     function setup(){
+      renderPlayedCards();
       el("rolePicks").innerHTML=ROLE_ORDER.map(role=>`<button class="role-pick" style="--role-color:${ROLES[role].color}" data-role="${role}"><strong>${ROLES[role].name}</strong><span>${ROLES[role].goal}</span></button>`).join("");
       el("rolePicks").querySelectorAll("[data-role]").forEach(button=>button.onclick=()=>startGame(button.dataset.role));
       el("rulesButton").onclick=()=>el("rulesDialog").showModal();el("closeRules").onclick=()=>el("rulesDialog").close();el("restartButton").onclick=restart;el("roundDialog").oncancel=event=>event.preventDefault();el("startDialog").showModal();
