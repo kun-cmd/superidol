@@ -119,15 +119,10 @@
       if(cards.length===3&&channels.size===1&&sorted[1].level===sorted[0].level+1&&sorted[2].level===sorted[1].level+1)return{type:"run",channel:sorted[0].channel,level:sorted[2].level,low:sorted[0].level,size:3};
       return null;
     }
-    function hasStructuredPattern(hand){return combinations(hand,2).some(c=>detectPattern(c)?.type==="pair")||combinations(hand,3).some(c=>["run","loop"].includes(detectPattern(c)?.type));}
     function personalizeCards(cards,role){return cards.map(card=>({...card,id:`${role}-${card.id}`,role,name:CARD_NAMES[role][card.channel][card.level-1]}));}
     function dealHands(){
-      let fallback=null;
-      for(let attempt=0;attempt<1000;attempt++){
-        const deck=shuffle(makeDeck()),hands=Object.fromEntries(ROLE_ORDER.map((role,index)=>[role,personalizeCards(deck.slice(index*7,index*7+7),role)])),deal={hands,undealt:deck.slice(ROLE_ORDER.length*7)};
-        fallback=deal;if(ROLE_ORDER.every(role=>hasStructuredPattern(hands[role])))return deal;
-      }
-      return fallback;
+      const deck=shuffle(makeDeck()),hands=Object.fromEntries(ROLE_ORDER.map((role,index)=>[role,personalizeCards(deck.slice(index*7,index*7+7),role)]));
+      return{hands,undealt:deck.slice(ROLE_ORDER.length*7)};
     }
     function initialState(userRole){
       const deal=dealHands();
