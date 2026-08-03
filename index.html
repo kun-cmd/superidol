@@ -96,7 +96,7 @@
           <div class="stat"><span>记忆领先</span><strong id="memoryStat">尚未形成</strong></div>
         </div></section>
         <section class="state-section" id="starPressurePanel"><h3>明星压力规则</h3><div class="pressure-guide"><strong id="pressureForecast">粉圈解释每话轮首次公开：压力立即+1。</strong><ul><li>粉丝选择“粉圈解释”后，本话轮第一次成功出牌立即使压力+1；即使之后被反压也不撤销。</li><li>本人主张或粉丝“转述本人”的立场牌定调：压力-1。</li><li>质疑立场定调：压力+2；粉圈解释的立场定调再+1。</li></ul><div class="pressure-limit">压力达到10时进入“失声”；若事件结束时仍未降下来，明星的可信生存诉求与粉丝的保护诉求都会失败。</div></div></section>
-        <section class="state-section"><h3>路人反应</h3><div class="reaction" id="reactionPanel"><strong>沉默围观</strong><span>同一叙事同时成为可信度和互联网记忆的唯一第一时，路人才会加入并额外推动1个定调标记；每个问题最多一次。</span></div></section>
+        <section class="state-section"><h3>路人反应</h3><div class="reaction" id="reactionPanel"><strong>沉默围观</strong><span>同一叙事形成可信度与记忆双领先后，路人先观察一个完整话轮；下次结算仍保持双领先才会加入。</span></div></section>
         <section class="state-section"><h3>最近行动</h3><div class="log-list" id="logList"><div class="empty">行动记录会显示在这里。</div></div></section>
       </aside>
       <section class="hand-zone"><div class="hand-head"><h2 id="handTitle">你的手牌</h2><span id="handCount">0张</span></div><div class="hand" id="hand"></div></section>
@@ -114,7 +114,7 @@
     <li>真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；若粉圈解释的立场牌最终定调，再+1。本人主张或忠实转述的立场定调-1，质疑立场定调+2。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>每张成功打到桌面的牌按自身等级增加热度，组合牌将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-1，并视为过牌。</li>
-    <li>同一叙事同时成为可信度与记忆的唯一第一时，路人额外推动它1个定调标记；每个问题最多一次。</li>
+    <li>同一叙事同时成为可信度与记忆的唯一第一时，路人只登记关注；至少到下一话轮结算仍保持双领先，才额外推动它1个定调标记。每个问题最多一次。</li>
     <li>万能牌保留原等级，可作为任意频道，但不能是5级，也不能参与闭环叙事。</li>
     <li>明星每事件一次“正式回应”；粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者每事件三次“截取挪用”。技能详情始终显示在阵营栏。</li>
     <li>三方各有两项公开诉求：完成两个是完整胜利、完成一个是局部胜利、零个是失败。事件结束热度为H时，影响力分别+H、±0、-H。</li>
@@ -197,7 +197,7 @@
       return{
         userRole,phase:"action",roles:Object.fromEntries(ROLE_ORDER.map(role=>[role,{hand:deal.hands[role],discard:[],hiddenDiscard:[]}])),deckRemaining:deal.undealt.length,
         claims:Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),seats:[],issueIndex:0,issueMarkers:emptyMarkers(),roundInIssue:1,roundsCompleted:0,
-        heat:initialHeat,initialHeat,heatFeedback:{amount:0,sequence:0},permanentMemory:null,lastRoundOwner:null,bystanderJoinedThisIssue:false,bystanderOwner:null,
+        heat:initialHeat,initialHeat,heatFeedback:{amount:0,sequence:0},permanentMemory:null,lastRoundOwner:null,bystanderJoinedThisIssue:false,bystanderOwner:null,bystanderPendingOwner:null,
         aiModes:Object.fromEntries(ROLE_ORDER.map(role=>[role,"aggressive"])),simulationMetrics:null,
         currentRole:initialLeader,topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],fanVoiceChoice:"star",fanVoiceThisRound:null,fanOverreachThisRound:false,wildChannelChoice:null,
         skills:{star:{used:false,armed:false},fan:{used:false,target:"fan"},anti:{used:0,captureChoice:null}},
@@ -363,11 +363,22 @@
     }
     function resolveBystanderConsensus(){
       if(state.bystanderJoinedThisIssue)return null;
-      const credibilityLeader=uniqueLeader("credibility"),memoryLeader=uniqueLeader("memory");
-      if(!credibilityLeader||credibilityLeader!==memoryLeader)return null;
-      state.bystanderJoinedThisIssue=true;state.bystanderOwner=credibilityLeader;state.issueMarkers[credibilityLeader]+=1;
-      const text=`路人看到“${currentClaim(credibilityLeader)}”同时成为最可信、也最常被记住的说法，加入讨论并额外推动1个定调标记。`;
-      addLog(text,credibilityLeader);return{owner:credibilityLeader,text};
+      const credibilityLeader=uniqueLeader("credibility"),memoryLeader=uniqueLeader("memory"),consensusOwner=credibilityLeader&&credibilityLeader===memoryLeader?credibilityLeader:null,previousPending=state.bystanderPendingOwner;
+      if(previousPending&&consensusOwner===previousPending){
+        state.bystanderJoinedThisIssue=true;state.bystanderOwner=previousPending;state.bystanderPendingOwner=null;state.issueMarkers[previousPending]+=1;
+        const text=`路人连续观察一个完整话轮后，确认“${currentClaim(previousPending)}”仍同时领先可信度与记忆，加入讨论并推动1个定调标记。`;
+        recordSimulationBystander("joined");addLog(text,previousPending);return{status:"joined",owner:previousPending,text};
+      }
+      state.bystanderPendingOwner=consensusOwner;
+      if(consensusOwner){
+        const text=`路人开始观察“${currentClaim(consensusOwner)}”；至少到下一话轮结算仍保持可信度与记忆双领先，才会加入。`;
+        recordSimulationBystander("watching");addLog(text,consensusOwner);return{status:"watching",owner:consensusOwner,text};
+      }
+      if(previousPending){
+        const text=`“${currentClaim(previousPending)}”的双领先被打破，路人取消关注，不会推动定调。`;
+        recordSimulationBystander("cleared");addLog(text,previousPending);return{status:"cleared",owner:previousPending,text};
+      }
+      return null;
     }
     function highestRoles(metric){
       const max=Math.max(...ROLE_ORDER.map(role=>state.claims[role][metric]));
@@ -406,7 +417,7 @@
         settleEvent("三个公共问题已经全部完成定调。");return;
       }
       const nextLead=completed.issueWon?(uniqueMemoryLeader()||controller):controller;
-      if(completed.issueWon){state.bystanderJoinedThisIssue=false;state.bystanderOwner=null;}
+      if(completed.issueWon){state.bystanderJoinedThisIssue=false;state.bystanderOwner=null;state.bystanderPendingOwner=null;}
       state.topPlay=null;state.claimOwner=null;state.passes=0;state.leadSkips=0;state.selectedIds=[];state.fanVoiceChoice="star";state.fanVoiceThisRound=null;state.fanOverreachThisRound=false;state.wildChannelChoice=null;state.skills.star.armed=false;state.skills.anti.captureChoice=null;
       state.currentRole=nextLead;state.phase="round_break";render();if(!simulationMode)showRoundSummary(completed);
     }
@@ -415,7 +426,7 @@
     }
     function showRoundSummary(completed){
       const notes=[completed.channelOutcome];
-      if(completed.bystanderOutcome)notes.push(`路人加入：${completed.bystanderOutcome.text}`);
+      if(completed.bystanderOutcome){const label=completed.bystanderOutcome.status==="joined"?"路人加入":completed.bystanderOutcome.status==="watching"?"路人观察":"路人取消关注";notes.push(`${label}：${completed.bystanderOutcome.text}`);}
       const finalOwner=completed.issueWinner||completed.owner,progress=completed.issueWon?`问题完成定调：“${ISSUES[completed.issueIndex].claims[finalOwner]}”。`:`当前标记：${markerSnapshotText(completed.markerSnapshot)}。`;
       const nextText=completed.issueWon?`进入问题${state.issueIndex+1}：${currentIssue().title}`:`进入问题${state.issueIndex+1}第${state.roundInIssue===4?"4个决胜":" "+state.roundInIssue+"个"}话轮`;
       const leadReason=completed.issueWon&&uniqueMemoryLeader()===state.currentRole?"（互联网记忆唯一领先）":"";
@@ -453,11 +464,26 @@
     }
     function patternWouldCreateConsensus(owner,pattern){
       if(state.bystanderJoinedThisIssue)return false;
-      const credGain=patternMetricGain(pattern,"credibility"),memoryGain=patternMetricGain(pattern,"memory");
-      return wouldBecomeUniqueLeader(owner,"credibility",credGain)&&wouldBecomeUniqueLeader(owner,"memory",memoryGain);
+      return projectedConsensusOwner(owner,pattern)===owner;
     }
-    function playWouldFinishIssue(owner,pattern){return state.issueMarkers[owner]>=1||patternWouldCreateConsensus(owner,pattern);}
-    function topWouldFinishIssue(){return Boolean(state.topPlay&&state.claimOwner&&playWouldFinishIssue(state.claimOwner,state.topPlay.pattern));}
+    function projectedUniqueLeader(owner,metric,gain){
+      const scores=Object.fromEntries(ROLE_ORDER.map(role=>[role,state.claims[role][metric]+(role===owner?gain:0)])),max=Math.max(...Object.values(scores)),leaders=ROLE_ORDER.filter(role=>scores[role]===max);
+      return max>0&&leaders.length===1?leaders[0]:null;
+    }
+    function projectedConsensusOwner(owner,pattern){
+      const credibilityLeader=projectedUniqueLeader(owner,"credibility",patternMetricGain(pattern,"credibility")),memoryLeader=projectedUniqueLeader(owner,"memory",patternMetricGain(pattern,"memory"));
+      return credibilityLeader&&credibilityLeader===memoryLeader?credibilityLeader:null;
+    }
+    function projectedBystanderJoinOwner(owner,pattern){
+      if(state.bystanderJoinedThisIssue||!state.bystanderPendingOwner)return null;
+      const consensusOwner=projectedConsensusOwner(owner,pattern);return consensusOwner===state.bystanderPendingOwner?consensusOwner:null;
+    }
+    function projectedIssueMarkers(owner,pattern){
+      const markers={...state.issueMarkers};markers[owner]+=1;const joinedOwner=projectedBystanderJoinOwner(owner,pattern);if(joinedOwner)markers[joinedOwner]+=1;return markers;
+    }
+    function playWouldFinishIssue(owner,pattern){return projectedIssueMarkers(owner,pattern)[owner]>=2;}
+    function playWouldFinishAnyIssue(owner,pattern){return ROLE_ORDER.some(role=>projectedIssueMarkers(owner,pattern)[role]>=2);}
+    function topWouldFinishIssue(){return Boolean(state.topPlay&&state.claimOwner&&playWouldFinishAnyIssue(state.claimOwner,state.topPlay.pattern));}
     function roleNeedsLastIssue(role){
       if(ISSUES.length-state.seats.length!==1)return false;
       const counts=seatCounts();
@@ -482,7 +508,11 @@
     function aiStrategyLabel(role){const strategy=aiStrategy(role);return strategy.mode==="aggressive"?"激进 · 抢定调":"保守 · 留手牌";}
     function recordSimulationIssueEnd(issueIndex){
       if(!simulationMode||!state.simulationMetrics)return;
-      state.simulationMetrics.issueEnds[issueIndex]={pressure:state.pressure,totalHands:ROLE_ORDER.reduce((sum,role)=>sum+state.roles[role].hand.length,0),hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,state.roles[role].hand.length]))};
+      state.simulationMetrics.issueEnds[issueIndex]={pressure:state.pressure,rounds:state.roundInIssue,totalHands:ROLE_ORDER.reduce((sum,role)=>sum+state.roles[role].hand.length,0),hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,state.roles[role].hand.length]))};
+    }
+    function recordSimulationBystander(status){
+      if(!simulationMode||!state.simulationMetrics)return;
+      state.simulationMetrics.bystander[status]=(state.simulationMetrics.bystander[status]||0)+1;
     }
     function recordSimulationStrategy(mode,action){
       if(!simulationMode||!state.simulationMetrics)return;
@@ -539,6 +569,10 @@
           if(state.issueIndex===ISSUES.length-1)score+=1.1;
         }
       }
+      const projectedConsensus=projectedConsensusOwner(owner,option.pattern),pendingOwner=state.bystanderPendingOwner;
+      if(projectedConsensus===owner)score+=pendingOwner===owner?3.6:1.1;
+      if(pendingOwner&&projectedConsensus!==pendingOwner&&!claimHelpful(role,pendingOwner))score+=2.8;
+      if(pendingOwner&&projectedConsensus===pendingOwner&&claimHelpful(role,pendingOwner))score+=1.5;
       return score;
     }
     function fanVoiceStrategyScore(voice,choice){
@@ -672,11 +706,15 @@
       const threat=state.issueMarkers[state.claimOwner]===1,best=[...state.topPlay.cards].map(card=>({card,score:captureUtility(card)})).sort((a,b)=>b.score-a.score)[0];
       return best&&(best.score>=2||threat||state.issueIndex===2)?best.card.id:null;
     }
-    function aiPlayReason(role,choice){
-      const owner=role,stateThreat=state.topPlay&&topWouldFinishIssue()&&!claimHelpful(role,state.claimOwner);
+    function aiPlayReason(role,choice,fanVoice=null){
+      const owner=narrativeOwner(role,fanVoice),stateThreat=state.topPlay&&topWouldFinishIssue()&&!claimHelpful(role,state.claimOwner);
       if(choice.formal)return"对方用组合接近控制话题，发动正式回应直接截断";
       if(stateThreat)return"对方可能靠标记或路人共识直接定义本问题，必须改写当前置顶";
       if(playWouldFinishIssue(owner,choice.pattern))return"这次出牌可能直接完成本问题，不能继续保留手牌";
+      const pendingOwner=state.bystanderPendingOwner,projectedConsensus=projectedConsensusOwner(owner,choice.pattern);
+      if(pendingOwner===owner&&projectedConsensus===owner)return"维持路人正在观察的双领先，让其在本轮结算后加入";
+      if(pendingOwner&&projectedConsensus!==pendingOwner&&!claimHelpful(role,pendingOwner))return`打破${ROLES[pendingOwner].short}的双领先，阻止路人加入`;
+      if(!pendingOwner&&projectedConsensus===owner)return"建立可信度与记忆双领先，让路人先开始观察，而不是当轮加入";
       if(role==="star"&&choice.pattern.channel==="stance"&&state.pressure>=7)return"失声风险升高，优先用本人立场减压";
       if(role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
       if(role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆第一";
@@ -695,7 +733,7 @@
       if(yieldDecision.action==="cool"){const card=chooseCoolingCard(role);if(card){recordSimulationStrategy(strategy.mode,"cool");coolWithCard(role,card,`${strategy.reason}；${yieldDecision.reason}`);return;}}
       if(yieldDecision.action==="pass"){recordSimulationStrategy(strategy.mode,"pass");passTurn(role,false,`${strategy.reason}；${yieldDecision.reason}`);return;}
       recordSimulationStrategy(strategy.mode,"play");
-      const captureCardId=role==="anti"?chooseAICaptureCard():null,coreReason=role==="fan"?fanPlan?.reason||yieldDecision.reason:aiPlayReason(role,choice),reason=`${strategy.reason}；${coreReason}`;
+      const captureCardId=role==="anti"?chooseAICaptureCard():null,coreReason=role==="fan"?fanPlan?.reason||yieldDecision.reason:aiPlayReason(role,choice,fanVoice),reason=`${strategy.reason}；${coreReason}`;
       applySuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,reason,{formal:Boolean(choice.formal),captureCardId});
     }
     function queueAutomaticTurn(){
@@ -812,11 +850,16 @@
     function previewSettlement(pattern,owner,cards){
       if(!pattern)return"";
       const heat=playHeat(cards),heatText=` 本次出牌立即使热度+${heat}。`,overreachText=state.userRole==="fan"&&owner==="fan"&&!state.fanOverreachThisRound?" 作为本话轮首次粉圈解释，公开后压力立即+1；即使被反压也不撤销。":"";
-      if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1。${heatText}${overreachText}`;
+      const projectedConsensus=projectedConsensusOwner(owner,pattern),pendingOwner=state.bystanderPendingOwner;
+      let bystanderText="";
+      if(pendingOwner&&projectedConsensus===pendingOwner)bystanderText=` 路人已观察${ROLES[pendingOwner].short}一轮；若这份双领先守到结算，本轮后加入并推动1个定调标记。`;
+      else if(pendingOwner&&projectedConsensus!==pendingOwner)bystanderText=` 这会打破路人对${ROLES[pendingOwner].short}的观察，本轮不会产生额外标记。`;
+      else if(!pendingOwner&&projectedConsensus)bystanderText=` 这只会让路人开始观察${ROLES[projectedConsensus].short}；当轮不会增加定调标记。`;
+      if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1。${heatText}${overreachText}${bystanderText}`;
       const amount=channelRewardAmount(pattern.type),bonus=amount===2?"（连续论证奖励）":"";
-      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${heatText}${overreachText}`;
-      if(pattern.channel==="stance")return`若守到结算：明星压力${owner==="star"?"-1":owner==="fan"?"再+1":"+2"}。${heatText}${overreachText}`;
-      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${heatText}${overreachText}`;
+      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${heatText}${overreachText}${bystanderText}`;
+      if(pattern.channel==="stance")return`若守到结算：明星压力${owner==="star"?"-1":owner==="fan"?"再+1":"+2"}。${heatText}${overreachText}${bystanderText}`;
+      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${heatText}${overreachText}${bystanderText}`;
     }
     function renderConsole(){
       const box=el("actionConsole"),prompt=el("prompt"),sub=el("subprompt"),summary=el("selectionSummary"),controls=el("controlRow"),actions=el("actionButtons");
@@ -862,8 +905,9 @@
       let forecast="粉圈解释每话轮首次公开：压力立即+1。";if(state.topPlay?.pattern.channel==="stance")forecast=state.claimOwner==="star"?"当前本人立场若守住：压力-1。":state.claimOwner==="fan"?"当前粉圈立场若守住：压力再+1。":"当前质疑立场若守住：压力+2。";else if(state.topPlay)forecast=state.claimOwner==="fan"?"粉圈解释已经进入讨论；非立场牌定调不再追加压力。":"当前置顶不是立场牌，结算时不改变压力。";el("pressureForecast").textContent=forecast;
       const cred=uniqueLeader("credibility"),memory=uniqueLeader("memory");let reactionHtml;
       if(state.bystanderJoinedThisIssue)reactionHtml=`<strong>路人已经加入${ROLES[state.bystanderOwner].short}叙事</strong><span>该叙事本问题额外获得了1个定调标记；本问题不会再次触发。</span>`;
-      else if(cred&&cred===memory)reactionHtml=`<strong>共识正在形成：${ROLES[cred].short}</strong><span>该叙事同时是可信度和记忆唯一第一；若话轮结算后仍保持，将获得路人推动的1个定调标记。</span>`;
-      else reactionHtml=`<strong>沉默围观</strong><span>可信领先：${cred?ROLES[cred].short:"并列或未形成"}；记忆领先：${memory?ROLES[memory].short:"并列或未形成"}。只有两项唯一领先属于同一叙事，路人才会加入。</span>`;
+      else if(state.bystanderPendingOwner)reactionHtml=`<strong>路人正在观察：${ROLES[state.bystanderPendingOwner].short}</strong><span>已进入一个完整话轮的观察期；本话轮结算时若该叙事仍同时唯一领先可信度与记忆，路人才加入并推动1个标记。打破任一领先即可取消。</span>`;
+      else if(cred&&cred===memory)reactionHtml=`<strong>双领先刚刚形成：${ROLES[cred].short}</strong><span>它尚未经过一个完整话轮；下一次结算只会让路人开始观察，不会立即增加定调标记。</span>`;
+      else reactionHtml=`<strong>沉默围观</strong><span>可信领先：${cred?ROLES[cred].short:"并列或未形成"}；记忆领先：${memory?ROLES[memory].short:"并列或未形成"}。同一叙事先取得双领先、再守过一个完整话轮，路人才会加入。</span>`;
       el("reactionPanel").innerHTML=reactionHtml;
     }
     function renderLogs(){el("logList").innerHTML=state.logs.length?state.logs.map(log=>`<div class="log-item" style="--log-color:${ROLES[log.role].color}">${log.message}</div>`).join(""):`<div class="empty">行动记录会显示在这里。</div>`;}
@@ -886,13 +930,13 @@
     }
     function runAutomatedSimulations(requestedCount=500){
       const gameCount=clamp(Math.round(Number(requestedCount)||500),1,2000),savedState=state,savedCampaign={eventNumber:campaign.eventNumber,influence:{...campaign.influence},permanentMemory:campaign.permanentMemory?{...campaign.permanentMemory}:null};
-      const stages=ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
-      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},pressureHistogram={};let safetyStops=0;
+      const stages=ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,roundsSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
+      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0},pressureHistogram={};let safetyStops=0;
       simulationMode=true;
       try{
         for(let game=0;game<gameCount;game++){
           campaign.eventNumber=1;campaign.influence={star:0,fan:0,anti:0};campaign.permanentMemory=null;state=initialState("star");
-          state.simulationMetrics={heatSamples:ISSUES.map(()=>[]),issueEnds:[],strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{}};state.simulationMetrics.heatSamples[0].push(state.heat);
+          state.simulationMetrics={heatSamples:ISSUES.map(()=>[]),issueEnds:[],strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0}};state.simulationMetrics.heatSamples[0].push(state.heat);
           let steps=0;
           while(state.phase!=="ended"&&steps<600){
             if(state.phase==="round_break"){state.phase="action";continue;}
@@ -902,11 +946,12 @@
           if(state.phase!=="ended"){safetyStops+=1;settleEvent("自动测试达到行动上限");}
           state.simulationMetrics.heatSamples.forEach((samples,index)=>{
             if(!samples.length)return;const stage=stages[index];stage.reached+=1;stage.averageHeatSum+=samples.reduce((sum,value)=>sum+value,0)/samples.length;
-            const ending=state.simulationMetrics.issueEnds[index];if(!ending)return;stage.completed+=1;stage.endPressureSum+=ending.pressure;stage.endHandsSum+=ending.totalHands;ROLE_ORDER.forEach(role=>{stage.roleHands[role]+=ending.hands[role];});
+            const ending=state.simulationMetrics.issueEnds[index];if(!ending)return;stage.completed+=1;stage.endPressureSum+=ending.pressure;stage.roundsSum+=ending.rounds;stage.endHandsSum+=ending.totalHands;ROLE_ORDER.forEach(role=>{stage.roleHands[role]+=ending.hands[role];});
           });
           final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.pressure>=10?1:0;final.complete+=state.seats.length===ISSUES.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
           Object.keys(state.simulationMetrics.strategyTurns).forEach(mode=>{strategyTurns[mode]+=state.simulationMetrics.strategyTurns[mode];});Object.entries(state.simulationMetrics.strategyActions).forEach(([key,value])=>{strategyActions[key]=(strategyActions[key]||0)+value;});
           Object.entries(state.simulationMetrics.channelWins).forEach(([key,value])=>{channelWins[key]=(channelWins[key]||0)+value;});Object.entries(state.simulationMetrics.ownerChannelWins).forEach(([key,value])=>{ownerChannelWins[key]=(ownerChannelWins[key]||0)+value;});pressureHistogram[state.pressure]=(pressureHistogram[state.pressure]||0)+1;
+          Object.entries(state.simulationMetrics.bystander).forEach(([key,value])=>{bystander[key]+=value;});
         }
       }finally{
         state=savedState;campaign.eventNumber=savedCampaign.eventNumber;campaign.influence=savedCampaign.influence;campaign.permanentMemory=savedCampaign.permanentMemory;simulationMode=false;
@@ -914,10 +959,10 @@
       const round=value=>Math.round(value*100)/100;
       return{
         games:gameCount,safetyStops,
-        stages:stages.map(stage=>({issue:stage.issue,reachedRate:round(stage.reached/gameCount*100),completedRate:round(stage.completed/gameCount*100),averageHeat:stage.reached?round(stage.averageHeatSum/stage.reached):null,averageEndPressure:stage.completed?round(stage.endPressureSum/stage.completed):null,averageRemainingCards:stage.completed?round(stage.endHandsSum/stage.completed):null,averageHands:stage.completed?Object.fromEntries(ROLE_ORDER.map(role=>[role,round(stage.roleHands[role]/stage.completed)])):null})),
+        stages:stages.map(stage=>({issue:stage.issue,reachedRate:round(stage.reached/gameCount*100),completedRate:round(stage.completed/gameCount*100),averageHeat:stage.reached?round(stage.averageHeatSum/stage.reached):null,averageEndPressure:stage.completed?round(stage.endPressureSum/stage.completed):null,averageRounds:stage.completed?round(stage.roundsSum/stage.completed):null,averageRemainingCards:stage.completed?round(stage.endHandsSum/stage.completed):null,averageHands:stage.completed?Object.fromEntries(ROLE_ORDER.map(role=>[role,round(stage.roleHands[role]/stage.completed)])):null})),
         final:{completionRate:round(final.complete/gameCount*100),averagePressure:round(final.pressure/gameCount),silencedRate:round(final.silenced/gameCount*100),averageHeat:round(final.heat/gameCount),averageRemainingCards:round(ROLE_ORDER.reduce((sum,role)=>sum+final.hands[role],0)/gameCount),averageHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,round(final.hands[role]/gameCount)]))},
         strategy:{turns:strategyTurns,actions:strategyActions,conservativePassRate:strategyTurns.conservative?round((strategyActions.conservative_pass||0)/strategyTurns.conservative*100):0},
-        diagnostics:{channelWins,ownerChannelWins,pressureHistogram}
+        diagnostics:{channelWins,ownerChannelWins,bystander,pressureHistogram}
       };
     }
     function setup(){
