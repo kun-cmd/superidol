@@ -732,8 +732,8 @@
       return score;
     }
     function chooseAICapture(){
-      if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT)return null;
-      const cards=[...state.topPlay.cards],score=captureUtility(cards),worthwhile=!(cards.length===1&&cards[0].level===1)&&score>=2.6;
+      if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||state.topPlay.pattern.type==="single")return false;
+      const cards=[...state.topPlay.cards],score=captureUtility(cards),threshold=state.issueIndex===ISSUES.length-1?4.2:5.2,worthwhile=score>=threshold;
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.opportunities+=1;if(!worthwhile)metric.skipped+=1;else metric.utilitySum+=score;}
       return worthwhile;
     }
