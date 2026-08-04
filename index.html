@@ -116,7 +116,7 @@
     <li>每张成功打到桌面的牌按自身等级增加热度，组合牌将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-1，并视为过牌。</li>
     <li>同一叙事同时成为可信度与记忆的唯一第一时，路人只登记关注；至少到下一话轮结算仍保持双领先，才额外推动它1个定调标记。每个问题最多一次。</li>
     <li>万能牌保留原等级，可作为任意频道，但不能是5级，也不能参与闭环叙事。</li>
-    <li>明星每事件一次“正式回应”；粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者有两种取牌技能：“被压取牌”限1次，“压牌取牌”限2次。被压取牌不能取得闭环叙事，且被标记的牌要等离开置顶后才进入质疑者手牌。</li>
+    <li>明星每事件一次“正式回应”；粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者有“越描越黑”1次、“断章取义”2次。“越描越黑”不能取得闭环叙事，且被标记的牌要等离开置顶后才进入质疑者手牌。</li>
     <li>三方各有两项公开诉求：完成两个是完整胜利、完成一个是局部胜利、零个是失败。事件结束热度为H时，影响力分别+H、±0、-H。</li>
   </ol><div class="dialog-actions"><button class="primary-button" id="closeRules">继续游戏</button></div></div></dialog>
   <dialog id="antiCounterDialog"><div class="dialog-body" id="antiCounterBody"></div></dialog>
@@ -127,7 +127,7 @@
     const ROLES={
       star:{name:"明星 / 公关",short:"明星",color:"var(--star)",goal:"本人主张定义2个问题；本人可信度第一且没有失声。",skill:"正式回应（1次）：用更高的事实或立场单张打断普通组合。"},
       fan:{name:"真爱粉",short:"真爱粉",color:"var(--fan)",goal:"本人和粉圈合计定义2个问题；粉圈自己定义1个且明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成万能牌并交给任意一方。"},
-      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆第一。",skill:"被压取牌（1次）：出牌被非闭环牌压过时，获得压你的整组牌。压牌取牌（2次）：压牌成功后，获得整组被压牌。"}
+      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆第一。",skill:"越描越黑（1次）：出牌被非闭环牌压过时，获得压你的整组牌。断章取义（2次）：压牌成功后，获得整组被压牌。"}
     };
     const ISSUES=[
       {title:"发生了什么？",prompt:"爆料、截图与回应之间，公众最终会把哪一种版本当成事件事实？",claims:{star:"等待完整事实",fan:"现有爆料并不完整",anti:"沉默就是默认"}},
@@ -308,15 +308,15 @@
     }
     function releaseCounterCapturedCards(reason){
       const pending=state.skills.anti.counterPending;if(!pending)return[];
-      const captured=takeCardsFromDiscard(pending.sourceRole,pending.cardIds,"反向截取");state.skills.anti.counterPending=null;
+      const captured=takeCardsFromDiscard(pending.sourceRole,pending.cardIds,"越描越黑");state.skills.anti.counterPending=null;
       if(!captured.length)return captured;
       if(simulationMode&&state.simulationMetrics)recordCapturedBundle(state.simulationMetrics.antiCounterCapture,captured);
-      addLog(`“被压取牌”结算：标记牌${reason}，质疑者获得整组${captured.length}张牌。`,"anti");return captured;
+      addLog(`“越描越黑”结算：标记牌${reason}，质疑者获得整组${captured.length}张牌。`,"anti");return captured;
     }
     function armCounterCapture(sourceRole,cards,utility=0){
       state.skills.anti.counterUsed=true;state.skills.anti.counterPending={sourceRole,cardIds:cards.map(card=>card.id)};
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCounterCapture;metric.used+=1;metric.utilitySum+=utility;}
-      addLog(`质疑者发动“被压取牌”，标记${cards.length}张压过自己的牌；这组牌离开置顶后将进入质疑者手中。`,"anti");
+      addLog(`质疑者发动“越描越黑”，标记${cards.length}张压过自己的牌；这组牌离开置顶后将进入质疑者手中。`,"anti");
     }
     function counterCaptureUtility(cards){
       const base=captureUtility(cards),highCard=cards.reduce((max,card)=>Math.max(max,card.level),0),spreadHelp=metricGap("anti","memory")<=0?cards.filter(card=>card.channel==="spread").length*.8:0;
@@ -328,7 +328,7 @@
     }
     function showCounterCaptureChoice(sourceRole,cards){
       const body=el("antiCounterBody"),dialog=el("antiCounterDialog"),bundle=cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");
-      body.innerHTML=`<h2>是否发动“被压取牌”？</h2><p>对手刚用非闭环牌压过你的出牌。你可以标记这组牌；它离开置顶后会进入你的手中。本事件限1次。</p><div class="outcome"><strong>可获得：</strong>${bundle}</div><div class="dialog-actions"><button class="plain-button" id="skipCounterCapture">保留技能</button><button class="primary-button" id="useCounterCapture">标记并获得</button></div>`;
+      body.innerHTML=`<h2>是否发动“越描越黑”？</h2><p>对手刚用非闭环牌压过你的出牌。你可以标记这组牌；它离开置顶后会进入你的手中。本事件限1次。</p><div class="outcome"><strong>可获得：</strong>${bundle}</div><div class="dialog-actions"><button class="plain-button" id="skipCounterCapture">保留技能</button><button class="primary-button" id="useCounterCapture">标记并获得</button></div>`;
       dialog.showModal();
       el("skipCounterCapture").onclick=()=>{dialog.close();render();queueAutomaticTurn();};
       el("useCounterCapture").onclick=()=>{dialog.close();armCounterCapture(sourceRole,cards);render();queueAutomaticTurn();};
@@ -346,7 +346,7 @@
     }
     function captureOvertakenCards(armed){
       if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||!armed)return[];
-      const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds,"压牌取得");
+      const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds,"断章取义");
       if(!captured.length)return captured;
       state.skills.anti.used+=1;
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;recordCapturedBundle(metric,captured);}
@@ -369,7 +369,7 @@
       if(options.formal){state.skills.star.used=true;state.skills.star.armed=false;}
       state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild)})),fanVoice:activeVoice};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
       const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",heatText=state.heat>beforeHeat?`，热度+${state.heat-beforeHeat}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
-      const skillText=options.formal?"，发动“正式回应”打断原组合":captured.length?`，并用“压牌取牌”拿走整组${captured.length}张被压牌`:"",handDelta=captured.length+counterRecovered.length-cards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
+      const skillText=options.formal?"，发动“正式回应”打断原组合":captured.length?`，并用“断章取义”拿走整组${captured.length}张被压牌`:"",handDelta=captured.length+counterRecovered.length-cards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
       addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);
       state.currentRole=nextRole(role);const waitingForCounterChoice=maybeOfferCounterCapture(previousTop,role,cards,pattern);render();if(!waitingForCounterChoice)queueAutomaticTurn();
     }
@@ -979,7 +979,7 @@
       const formalEligible=state.userRole==="star"&&!state.skills.star.used&&state.topPlay&&["pair","run"].includes(state.topPlay.pattern.type)&&cards.length===1&&pattern?.type==="single"&&["fact","stance"].includes(pattern.channel)&&pattern.level>state.topPlay.pattern.level;
       if(formalEligible)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--star)"><span>正式回应 · 每事件1次</span><div class="skill-options"><button id="formalButton" class="${state.skills.star.armed?"selected":""}">${state.skills.star.armed?"已准备打断组合":"用这张牌打断组合"}</button></div></div>`;
       if(state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5&&cards.length===1&&cards[0].level<5){controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${cards[0].level}级牌变成万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton">确认应援</button></div></div>`;}
-      if(state.userRole==="anti"&&state.topPlay&&!counterCaptureTargets(state.topPlay)&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const bundle=state.topPlay.cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>压牌取牌 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（可不发动）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备获得整组":"获得整组"}：${bundle}</button></div></div>`;}
+      if(state.userRole==="anti"&&state.topPlay&&!counterCaptureTargets(state.topPlay)&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const bundle=state.topPlay.cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（可不发动）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备获得整组":"获得整组"}：${bundle}</button></div></div>`;}
       if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>：${response.reason}${response.legal?`<br>${previewSettlement(pattern,owner,cards)}`:""}`;}
       const canPublish=response.legal;
       let actionHtml=`<button class="primary-button" id="publishButton" ${canPublish?"":"disabled"}>${state.topPlay?"发布回应":"领出主张"}</button>`;
@@ -995,7 +995,7 @@
       const counts=seatCounts();
       el("roleSummaries").innerHTML=ROLE_ORDER.map(role=>{
         const extra=role==="star"?`压力 ${state.pressure}/10`:role==="fan"?(state.fanVoiceThisRound?`本轮：${fanVoiceLabel(state.fanVoiceThisRound)}`:"尚未入场"):`记忆 ${state.claims.anti.memory}`;
-        const skillState=role==="star"?(state.skills.star.used?"已使用":"可用1次"):role==="fan"?(state.skills.fan.used?"已使用":"手牌≤5后可用"): `被压取牌 ${state.skills.anti.counterUsed?"已用":"可用"} · 压牌取牌 ${state.skills.anti.used}/${ANTI_CAPTURE_LIMIT}`;
+        const skillState=role==="star"?(state.skills.star.used?"已使用":"可用1次"):role==="fan"?(state.skills.fan.used?"已使用":"手牌≤5后可用"): `越描越黑 ${state.skills.anti.counterUsed?"已用":"可用"} · 断章取义 ${state.skills.anti.used}/${ANTI_CAPTURE_LIMIT}`;
         const strategyText=state.userRole!==role&&state.phase!=="ended"?`<span>AI ${aiStrategyLabel(role)}</span>`:"";
         return`<div class="role-summary" style="--role-color:${ROLES[role].color}"><div class="role-title"><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${state.currentRole===role&&state.phase==="action"?"正在行动":""}</span></div><div class="role-meta"><span>手牌 ${state.roles[role].hand.length}</span><span>问题 ${counts[role]}</span><span>本题标记 ${state.phase==="ended"?"-":state.issueMarkers[role]}</span><span>${extra}</span><span>影响力 ${campaign.influence[role]}</span>${strategyText}</div><div class="role-skill"><strong>${skillState}</strong> · ${ROLES[role].skill}</div></div>`;
       }).join("");
