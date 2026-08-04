@@ -95,7 +95,7 @@
           <div class="stat"><span>可信领先</span><strong id="beliefStat">尚未形成</strong></div>
           <div class="stat"><span>记忆领先</span><strong id="memoryStat">尚未形成</strong></div>
         </div></section>
-        <section class="state-section" id="starPressurePanel"><h3>明星压力规则</h3><div class="pressure-guide"><strong id="pressureForecast">粉圈解释每话轮首次公开：压力立即+1。</strong><ul><li>粉丝选择“粉圈解释”后，本话轮第一次成功出牌立即使压力+1；即使之后被反压也不撤销。</li><li>本人主张或粉丝“转述本人”的立场牌定调：压力-1。</li><li>质疑立场定调：压力+2；粉圈解释的立场定调再+1。</li></ul><div class="pressure-limit">压力达到10时明星立即“失声”，轮到明星只能过牌。只有真爱粉以“转述本人”的立场牌完成定调，把压力降到9，明星才能恢复出牌；事件结束仍失声时，明星的可信生存诉求与粉丝的保护诉求都会失败。</div></div></section>
+        <section class="state-section" id="starPressurePanel"><h3>明星压力规则</h3><div class="pressure-guide"><strong id="pressureForecast">粉圈解释公开+1；非明星叙事赢得话轮再+1。</strong><ul><li>粉丝选择“粉圈解释”后，本话轮第一次成功出牌立即使压力+1；即使之后被反压也不撤销。</li><li>每个话轮结算时，只要最终定调的不是明星本人叙事，压力+1；牌的频道不再额外加压。</li><li>明星本人或粉丝“转述本人”的立场牌赢得话轮：压力-1。</li></ul><div class="pressure-limit">压力达到10时明星立即“失声”，轮到明星只能过牌。只有真爱粉以“转述本人”的立场牌完成定调，把压力降到9，明星才能恢复出牌；事件结束仍失声时，明星的可信生存诉求与粉丝的保护诉求都会失败。</div></div></section>
         <section class="state-section"><h3>路人反应</h3><div class="reaction" id="reactionPanel"><strong>沉默围观</strong><span>同一叙事形成可信度与记忆双领先后，路人先观察一个完整话轮；下次结算仍保持双领先才会加入。</span></div></section>
         <section class="state-section"><h3>最近行动</h3><div class="log-list" id="logList"><div class="empty">行动记录会显示在这里。</div></div></section>
       </aside>
@@ -111,7 +111,7 @@
     <li>同一叙事先获得2个标记便定义当前问题。通常需要2至3个话轮；若三家各得1个，则进入第4个决胜话轮。</li>
     <li>AI在每个问题的首个标记产生前采用激进策略；没抢到首标便转为保守留牌，到下一问题重新激进。对方即将定调、自己已有标记、明星濒临失声或进入最后一题时会打破保守。</li>
     <li>话轮赢家领出本问题的下一话轮；进入新问题时，互联网记忆唯一领先者获得先手。事实定调增加可信度，传播定调增加记忆；连续论证结算2点，闭环同时增加两者1点。</li>
-    <li>真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；若粉圈解释的立场牌最终定调，再+1。本人主张或忠实转述的立场定调-1，质疑立场定调+2。压力达到10后明星立即失声，只能过牌；由于明星本人无法再打立场牌，必须由真爱粉用“转述本人”的立场牌完成定调，将压力降到9后才能恢复。</li>
+    <li>真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；每个话轮最终若由非明星叙事定调，压力再+1，不区分事实、立场或传播。只有本人主张或忠实转述的立场定调会使压力-1。压力达到10后明星立即失声，只能过牌；由于明星本人无法再打立场牌，必须由真爱粉用“转述本人”的立场牌完成定调，将压力降到9后才能恢复。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>每张成功打到桌面的牌按自身等级增加热度，组合牌将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-1，并视为过牌。</li>
     <li>同一叙事同时成为可信度与记忆的唯一第一时，路人只登记关注；至少到下一话轮结算仍保持双领先，才额外推动它1个定调标记。每个问题最多一次。</li>
@@ -145,6 +145,7 @@
     const el=id=>document.getElementById(id);
     const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
     const shuffle=items=>{const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;};
+    const SIMULATION_SCENARIO=new URLSearchParams(location.search).get("scenario")||"baseline";
     const campaign={eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null};
     let state=null,aiTimer=null,generatedCardId=0,animatedHeatState=null,animatedHeatSequence=0,heatMotionTimer=null,simulationMode=false;
 
@@ -271,6 +272,7 @@
     }
     function changePressure(amount){
       const before=state.pressure,wasSilenced=state.silenced;
+      if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&wasSilenced&&amount<0)amount=0;
       state.pressure=clamp(state.pressure+amount,0,10);state.silenced=state.pressure>=10;
       if(simulationMode&&state.simulationMetrics){
         if(!wasSilenced&&state.silenced)state.simulationMetrics.silence.activations+=1;
@@ -354,24 +356,23 @@
       state.currentRole=nextRole(role);render();queueAutomaticTurn();
     }
     function resolveChannelOutcome(completed){
+      const outcomes=[];
       if(completed.patternType==="loop"){
         state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
-        return`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1；明星压力不变。`;
-      }
-      if(completed.channel==="fact"){
+        outcomes.push(`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1。`);
+      }else if(completed.channel==="fact"){
         const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].credibility+=amount;
-        return`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}${amount===2?"（连续论证奖励）":""}。`;
-      }
-      if(completed.channel==="stance"){
-        const delta=completed.owner==="star"?-1:completed.owner==="fan"?1:2,actual=changePressure(delta);
-        const detail=completed.owner==="fan"?"（粉圈解释公开时已经+1，本次为立场定调的追加压力）":"";
-        return`立场定调：明星压力${actual>=0?"+":""}${actual}${detail}，当前为${state.pressure}/10。`;
-      }
-      if(completed.channel==="spread"){
+        outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}${amount===2?"（连续论证奖励）":""}。`);
+      }else if(completed.channel==="spread"){
         const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].memory+=amount;
-        return`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}${amount===2?"（连续论证奖励）":""}。`;
-      }
-      return"本话轮没有产生频道收益。";
+        outcomes.push(`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}${amount===2?"（连续论证奖励）":""}。`);
+      }else outcomes.push("立场定调不再按阵营额外加压。");
+      if(completed.owner!=="star"){
+        const actual=changePressure(1);outcomes.push(`非明星叙事赢得话轮：明星压力+${actual}，当前为${state.pressure}/10。`);
+      }else if(completed.patternType!=="loop"&&completed.channel==="stance"){
+        const actual=changePressure(-1);outcomes.push(`本人立场守住话轮：明星压力${actual}，当前为${state.pressure}/10。`);
+      }else outcomes.push("本人叙事赢得话轮，明星压力不变。");
+      return outcomes.join(" ");
     }
     function resolveBystanderConsensus(){
       if(state.bystanderJoinedThisIssue)return null;
@@ -510,6 +511,7 @@
     function aiStrategy(role){
       const markerTotal=ROLE_ORDER.reduce((sum,item)=>sum+state.issueMarkers[item],0),base=state.aiModes[role]||"aggressive";
       if(role==="star"&&state.silenced)return{mode:"conservative",reason:"压力达到10，明星已经失声，只能过牌等待真爱粉救援"};
+      if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&role==="anti"&&!state.silenced)return{mode:"aggressive",reason:"对照测试：以让明星失声为首要目标，持续争夺每个非明星话轮"};
       if(state.issueIndex===ISSUES.length-1)return{mode:"aggressive",reason:"已经是最后一个问题，没有下一题可以继续留牌"};
       if(roleNeedsLastIssue(role))return{mode:"aggressive",reason:"剩余定义机会已经不足，必须主动争夺"};
       if(state.issueMarkers[role]>=1)return{mode:"aggressive",reason:"自己已有定调标记，正在争取第二标完成问题"};
@@ -578,11 +580,8 @@
         if(completesIssue)score+=counts.anti<1?6.2:2.4;
         score+=memoryGain*(metricGap("anti","memory")<0?4.2:metricGap("anti","memory")===0?3.4:1.2);
         score+=credGain*(uniqueLeader("credibility")==="anti"?.35:1.25);
-        if(option.pattern.channel==="stance"){
-          score+=state.pressure>=8?8:state.pressure>=6?6.8:state.pressure>=5?5.3:3.7;
-          if(counts.anti>=1||uniqueLeader("memory")==="anti")score+=state.pressure>=8?4.8:state.pressure>=6?4.2:3.5;
-          if(state.issueIndex===ISSUES.length-1)score+=1.1;
-        }
+        if(!state.silenced)score+=state.pressure>=8?4.4:state.pressure>=6?3.2:1.8;
+        if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&!state.silenced)score+=8+option.pattern.level*.7+playHeat(option.cards)*.18+(state.topPlay&&state.claimOwner!=="anti"?4:0);
       }
       const projectedConsensus=projectedConsensusOwner(owner,option.pattern),pendingOwner=state.bystanderPendingOwner;
       if(projectedConsensus===owner)score+=pendingOwner===owner?3.6:1.1;
@@ -607,10 +606,11 @@
         if(state.pressure>=8)score+=2.5;
       }
       if(markers.anti===1&&((voice==="fan"&&markers.fan===1)||(voice==="star"&&markers.star===1)))score+=2;
-      if(choice.pattern.channel==="stance")score+=voice==="star"?(state.pressure>=8?5.5:state.pressure>=6?2.8:.5):(state.pressure>=8?-7:state.pressure>=6?-3:-.5);
+      if(choice.pattern.channel==="stance"&&voice==="star")score+=state.pressure>=8?5.5:state.pressure>=6?2.8:.5;
       if(state.topPlay&&state.claimOwner==="star"&&voice==="fan"&&needsOwn)score+=state.issueIndex===2?3.5:1;
       if(state.topPlay&&state.claimOwner==="fan"&&voice==="fan")score+=1.5;
       if(state.silenced)score+=voice==="star"&&choice.pattern.channel==="stance"?18:voice==="star"?-6:-16;
+      if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&state.silenced)score+=voice==="fan"?32:-32;
       return score;
     }
     function fanPlanReason(voice,choice){
@@ -678,6 +678,7 @@
       const owner=state.claimOwner,futureOwner=narrativeOwner(role,fanVoice),counts=seatCounts(),threat=topWouldFinishIssue(),ownFinish=playWouldFinishIssue(futureOwner,choice.pattern),lastChance=roleNeedsLastIssue(role)&&!claimHelpful(role,owner),strategy=aiStrategy(role);
       const fanMustTakeDefinition=role==="fan"&&owner==="star"&&futureOwner==="fan"&&counts.fan<1&&(roleNeedsLastIssue("fan")||state.issueMarkers.fan===1);
       const rescuesSilencedStar=role==="fan"&&state.silenced&&futureOwner==="star"&&choice.pattern.channel==="stance";
+      if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&role==="anti"&&!state.silenced&&owner!=="anti")return{action:"play",reason:"对照测试中优先夺取话轮，让非明星叙事结算并继续加压"};
       if(rescuesSilencedStar)return{action:"play",reason:"明星已经失声，必须让转述本人的立场牌守到定调才能恢复出牌"};
       if(claimHelpful(role,owner)&&!fanMustTakeDefinition)return{action:"pass",reason:`当前“${currentClaim(owner)}”本来就在推进自己的目标，没必要浪费好牌`};
       if(threat&&!claimHelpful(role,owner))return{action:"play",reason:"对方本轮可能靠标记或路人共识直接定义问题，必须反压"};
@@ -743,8 +744,7 @@
       if(role==="star"&&choice.pattern.channel==="stance"&&state.pressure>=7)return"失声风险升高，优先用本人立场减压";
       if(role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
       if(role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆第一";
-      if(role==="anti"&&choice.pattern.channel==="stance"&&seatCounts().anti>=1&&uniqueLeader("memory")==="anti")return"定义权和记忆优势暂时稳定，转而推高压力破坏明星与粉丝的保护诉求";
-      if(role==="anti"&&choice.pattern.channel==="stance"&&state.pressure>=5)return"明星压力已经上升，继续放大它以破坏明星和粉丝的保护诉求";
+      if(role==="anti"&&!state.silenced&&state.pressure>=7)return"质疑叙事只要守住这个话轮就会继续加压，逼迫支持阵营投入牌救援";
       return"建立更有利于自身公开目标的叙事位置";
     }
     function aiTurn(role){
@@ -879,16 +879,17 @@
     function previewSettlement(pattern,owner,cards){
       if(!pattern)return"";
       const heat=playHeat(cards),heatText=` 本次出牌立即使热度+${heat}。`,overreachText=state.userRole==="fan"&&owner==="fan"&&!state.fanOverreachThisRound?" 作为本话轮首次粉圈解释，公开后压力立即+1；即使被反压也不撤销。":"";
+      const pressureText=owner!=="star"?" 若非明星叙事守到话轮结算，压力+1。":pattern.type!=="loop"&&pattern.channel==="stance"?" 若本人立场守到话轮结算，压力-1。":" 本人叙事守住时压力不变。";
       const projectedConsensus=projectedConsensusOwner(owner,pattern),pendingOwner=state.bystanderPendingOwner;
       let bystanderText="";
       if(pendingOwner&&projectedConsensus===pendingOwner)bystanderText=` 路人已观察${ROLES[pendingOwner].short}一轮；若这份双领先守到结算，本轮后加入并推动1个定调标记。`;
       else if(pendingOwner&&projectedConsensus!==pendingOwner)bystanderText=` 这会打破路人对${ROLES[pendingOwner].short}的观察，本轮不会产生额外标记。`;
       else if(!pendingOwner&&projectedConsensus)bystanderText=` 这只会让路人开始观察${ROLES[projectedConsensus].short}；当轮不会增加定调标记。`;
-      if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1。${heatText}${overreachText}${bystanderText}`;
+      if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1。${pressureText}${heatText}${overreachText}${bystanderText}`;
       const amount=channelRewardAmount(pattern.type),bonus=amount===2?"（连续论证奖励）":"";
-      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${heatText}${overreachText}${bystanderText}`;
-      if(pattern.channel==="stance")return`若守到结算：明星压力${owner==="star"?"-1":owner==="fan"?"再+1":"+2"}。${heatText}${overreachText}${bystanderText}`;
-      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${heatText}${overreachText}${bystanderText}`;
+      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${pressureText}${heatText}${overreachText}${bystanderText}`;
+      if(pattern.channel==="stance")return`若守到结算：${pressureText.trim()}${heatText}${overreachText}${bystanderText}`;
+      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${pressureText}${heatText}${overreachText}${bystanderText}`;
     }
     function renderConsole(){
       const box=el("actionConsole"),prompt=el("prompt"),sub=el("subprompt"),summary=el("selectionSummary"),controls=el("controlRow"),actions=el("actionButtons");
@@ -938,7 +939,7 @@
       el("pressureStat").textContent=`${state.pressure} / 10${state.silenced?" · 失声":""}`;el("roundStat").textContent=state.roundsCompleted;el("beliefStat").textContent=leaderText("credibility");el("memoryStat").textContent=leaderText("memory");
       let forecast;
       if(state.silenced)forecast="明星已经失声并无法出牌；只有真爱粉的“转述本人”立场定调能把压力降回9。";
-      else{forecast="粉圈解释每话轮首次公开：压力立即+1。";if(state.topPlay?.pattern.channel==="stance")forecast=state.claimOwner==="star"?"当前本人立场若守住：压力-1。":state.claimOwner==="fan"?"当前粉圈立场若守住：压力再+1。":"当前质疑立场若守住：压力+2。";else if(state.topPlay)forecast=state.claimOwner==="fan"?"粉圈解释已经进入讨论；非立场牌定调不再追加压力。":"当前置顶不是立场牌，结算时不改变压力。";}
+      else{forecast="粉圈解释公开+1；非明星叙事赢得话轮再+1。";if(state.topPlay)forecast=state.claimOwner!=="star"?"当前非明星叙事若守住话轮：压力+1。":state.topPlay.pattern.type!=="loop"&&state.topPlay.pattern.channel==="stance"?"当前本人立场若守住话轮：压力-1。":"当前本人叙事若守住话轮：压力不变。";}
       el("pressureForecast").textContent=forecast;
       const cred=uniqueLeader("credibility"),memory=uniqueLeader("memory");let reactionHtml;
       if(state.bystanderJoinedThisIssue)reactionHtml=`<strong>路人已经加入${ROLES[state.bystanderOwner].short}叙事</strong><span>该叙事本问题额外获得了1个定调标记；本问题不会再次触发。</span>`;
@@ -968,7 +969,7 @@
     function runAutomatedSimulations(requestedCount=500){
       const gameCount=clamp(Math.round(Number(requestedCount)||500),1,2000),savedState=state,savedCampaign={eventNumber:campaign.eventNumber,influence:{...campaign.influence},permanentMemory:campaign.permanentMemory?{...campaign.permanentMemory}:null};
       const stages=ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,roundsSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
-      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0},silence={activations:0,rescues:0,starForcedPasses:0},pressureHistogram={};let safetyStops=0;
+      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0},silence={activations:0,rescues:0,starForcedPasses:0},pressureHistogram={};let safetyStops=0;
       simulationMode=true;
       try{
         for(let game=0;game<gameCount;game++){
@@ -986,6 +987,7 @@
             const ending=state.simulationMetrics.issueEnds[index];if(!ending)return;stage.completed+=1;stage.endPressureSum+=ending.pressure;stage.roundsSum+=ending.rounds;stage.endHandsSum+=ending.totalHands;ROLE_ORDER.forEach(role=>{stage.roleHands[role]+=ending.hands[role];});
           });
           final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.pressure>=10?1:0;final.complete+=state.seats.length===ISSUES.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
+          const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;});
           Object.keys(state.simulationMetrics.strategyTurns).forEach(mode=>{strategyTurns[mode]+=state.simulationMetrics.strategyTurns[mode];});Object.entries(state.simulationMetrics.strategyActions).forEach(([key,value])=>{strategyActions[key]=(strategyActions[key]||0)+value;});
           Object.entries(state.simulationMetrics.channelWins).forEach(([key,value])=>{channelWins[key]=(channelWins[key]||0)+value;});Object.entries(state.simulationMetrics.ownerChannelWins).forEach(([key,value])=>{ownerChannelWins[key]=(ownerChannelWins[key]||0)+value;});pressureHistogram[state.pressure]=(pressureHistogram[state.pressure]||0)+1;
           Object.entries(state.simulationMetrics.bystander).forEach(([key,value])=>{bystander[key]+=value;});
@@ -996,10 +998,11 @@
       }
       const round=value=>Math.round(value*100)/100;
       return{
-        games:gameCount,safetyStops,
+        games:gameCount,scenario:SIMULATION_SCENARIO,safetyStops,
         stages:stages.map(stage=>({issue:stage.issue,reachedRate:round(stage.reached/gameCount*100),completedRate:round(stage.completed/gameCount*100),averageHeat:stage.reached?round(stage.averageHeatSum/stage.reached):null,averageEndPressure:stage.completed?round(stage.endPressureSum/stage.completed):null,averageRounds:stage.completed?round(stage.roundsSum/stage.completed):null,averageRemainingCards:stage.completed?round(stage.endHandsSum/stage.completed):null,averageHands:stage.completed?Object.fromEntries(ROLE_ORDER.map(role=>[role,round(stage.roleHands[role]/stage.completed)])):null})),
         final:{completionRate:round(final.complete/gameCount*100),averagePressure:round(final.pressure/gameCount),silencedRate:round(final.silenced/gameCount*100),averageHeat:round(final.heat/gameCount),averageRemainingCards:round(ROLE_ORDER.reduce((sum,role)=>sum+final.hands[role],0)/gameCount),averageHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,round(final.hands[role]/gameCount)]))},
         strategy:{turns:strategyTurns,actions:strategyActions,conservativePassRate:strategyTurns.conservative?round((strategyActions.conservative_pass||0)/strategyTurns.conservative*100):0},
+        outcomes:Object.fromEntries(ROLE_ORDER.map(role=>[role,Object.fromEntries(Object.entries(outcomes[role]).map(([status,count])=>[status,{count,rate:round(count/gameCount*100)}]))])),
         diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0},pressureHistogram}
       };
     }
