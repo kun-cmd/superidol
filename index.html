@@ -110,7 +110,7 @@
     <li>连续两人过牌，当前置顶叙事赢得1个定调标记；只要后来有人出牌，之前过牌者就能重新加入。</li>
     <li>同一叙事先获得2个标记便定义当前问题。通常需要2至3个话轮；若三家各得1个，则进入第4个决胜话轮。</li>
     <li>AI在每个问题的首个标记产生前采用激进策略；没抢到首标便转为保守留牌，到下一问题重新激进。对方即将定调、自己已有标记、明星濒临失声或进入最后一题时会打破保守。</li>
-    <li>话轮赢家领出本问题的下一话轮；进入新问题时，互联网记忆唯一领先者获得先手。事实定调增加可信度，传播定调增加记忆；连续论证结算2点，闭环同时增加两者1点。</li>
+    <li>话轮赢家领出本问题的下一话轮；进入新问题时，互联网记忆唯一领先者获得先手。事实定调使可信度+1，传播定调使记忆+1；单张、对子与连续论证的累计相同，闭环同时使两者各+1。</li>
     <li>真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；每个话轮最终若由非明星叙事定调，压力再+1，不区分事实、立场或传播。只有本人主张或忠实转述的立场定调会使压力-1。压力达到10后明星立即失声，只能过牌；由于明星本人无法再打立场牌，必须由真爱粉用“转述本人”的立场牌完成定调，将压力降到9后才能恢复。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>每张成功打到桌面的牌按自身等级增加热度，组合牌将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-1，并视为过牌。</li>
@@ -269,7 +269,7 @@
       return`<span class="pattern-badge" style="--pattern-color:${color}"><span class="pattern-channel">${channel}</span><span class="pattern-rank">${rank}</span><span class="pattern-type">${PATTERN_NAMES[pattern.type]}</span></span>`;
     }
     function playHeat(cards){return cards.reduce((sum,card)=>sum+card.level,0);}
-    function channelRewardAmount(patternType){return patternType==="run"?2:1;}
+    function channelRewardAmount(){return 1;}
     function changeHeat(amount,actor){
       if(!amount)return;
       const before=state.heat;state.heat=Math.max(0,state.heat+amount);
@@ -371,11 +371,11 @@
         state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
         outcomes.push(`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1。`);
       }else if(completed.channel==="fact"){
-        const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].credibility+=amount;
-        outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}${amount===2?"（连续论证奖励）":""}。`);
+        const amount=channelRewardAmount();state.claims[completed.owner].credibility+=amount;
+        outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}。`);
       }else if(completed.channel==="spread"){
-        const amount=channelRewardAmount(completed.patternType);state.claims[completed.owner].memory+=amount;
-        outcomes.push(`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}${amount===2?"（连续论证奖励）":""}。`);
+        const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
+        outcomes.push(`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}。`);
       }else outcomes.push("立场定调不再按阵营额外加压。");
       if(completed.owner!=="star"){
         const actual=changePressure(1);outcomes.push(`非明星叙事赢得话轮：明星压力+${actual}，当前为${state.pressure}/10。`);
@@ -478,7 +478,7 @@
       if(pattern.type==="loop")return 1;
       if(metric==="credibility"&&pattern.channel!=="fact")return 0;
       if(metric==="memory"&&pattern.channel!=="spread")return 0;
-      return channelRewardAmount(pattern.type);
+      return channelRewardAmount();
     }
     function wouldBecomeUniqueLeader(owner,metric,gain){
       if(!gain)return uniqueLeader(metric)===owner;
@@ -896,10 +896,10 @@
       else if(pendingOwner&&projectedConsensus!==pendingOwner)bystanderText=` 这会打破路人对${ROLES[pendingOwner].short}的观察，本轮不会产生额外标记。`;
       else if(!pendingOwner&&projectedConsensus)bystanderText=` 这只会让路人开始观察${ROLES[projectedConsensus].short}；当轮不会增加定调标记。`;
       if(pattern.type==="loop")return`若守到结算：“${currentClaim(owner)}”可信度+1、互联网记忆+1。${pressureText}${heatText}${overreachText}${bystanderText}`;
-      const amount=channelRewardAmount(pattern.type),bonus=amount===2?"（连续论证奖励）":"";
-      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}${bonus}。${pressureText}${heatText}${overreachText}${bystanderText}`;
+      const amount=channelRewardAmount();
+      if(pattern.channel==="fact")return`若守到结算：“${currentClaim(owner)}”可信度+${amount}。${pressureText}${heatText}${overreachText}${bystanderText}`;
       if(pattern.channel==="stance")return`若守到结算：${pressureText.trim()}${heatText}${overreachText}${bystanderText}`;
-      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}${bonus}。${pressureText}${heatText}${overreachText}${bystanderText}`;
+      return`若守到结算：“${currentClaim(owner)}”互联网记忆+${amount}。${pressureText}${heatText}${overreachText}${bystanderText}`;
     }
     function renderConsole(){
       const box=el("actionConsole"),prompt=el("prompt"),sub=el("subprompt"),summary=el("selectionSummary"),controls=el("controlRow"),actions=el("actionButtons");
