@@ -106,7 +106,7 @@
   <dialog id="rulesDialog"><div class="dialog-body"><h2>事件规则</h2><ol class="rules-list">
     <li>牌库共39张：事实、立场、传播各13张。三方各发12张，剩余3张不公开，本事件不补牌。</li>
     <li>事件依次回答“发生了什么”“这说明他是谁”“接下来该怎么办”三个问题。</li>
-    <li>每个话轮由一方领出单张、对子、连续论证或闭环叙事。回应通常需要同牌型且等级更高，频道可以不同；闭环能压普通牌型。可信度唯一领先的叙事可用同等级反压。</li>
+    <li>每个话轮由一方领出单张、对子、连续论证或闭环叙事。回应通常需要同牌型且等级更高，频道可以不同；闭环能压普通牌型。可信度唯一领先时，只有该阵营本人为自己的叙事出牌才能同等级反压；真爱粉“转述本人”既不能继承明星的特权，也不能借用粉圈可信度替明星反压。</li>
     <li>连续两人过牌，当前置顶叙事赢得1个定调标记；只要后来有人出牌，之前过牌者就能重新加入。</li>
     <li>同一叙事先获得2个标记便定义当前问题。通常需要2至3个话轮；若三家各得1个，则进入第4个决胜话轮。</li>
     <li>AI在每个问题的首个标记产生前采用激进策略；没抢到首标便转为保守留牌，到下一问题重新激进。对方即将定调、自己已有标记、明星濒临失声或进入最后一题时会打破保守。</li>
@@ -216,22 +216,26 @@
       addLog(opening,state.currentRole);render();queueAutomaticTurn();
     }
     function uniqueLeader(metric){const leaders=positiveHighestRoles(metric);return leaders.length===1?leaders[0]:null;}
+    function canEqualCounter(role,fanVoice=null){
+      const owner=narrativeOwner(role,role==="fan"?(state.fanVoiceThisRound||fanVoice):null);
+      return owner===role&&uniqueLeader("credibility")===role;
+    }
     function responseMode(pattern,role=state.currentRole,fanVoice=null,options={}){
       if(!pattern)return{legal:false,reason:"所选卡牌不能组成合法牌型。"};
       if(!state.topPlay)return{legal:true,mode:"lead",reason:"领出一个新的舆论主张。"};
-      const top=state.topPlay.pattern,owner=narrativeOwner(role,role==="fan"?(state.fanVoiceThisRound||fanVoice):null),equalAllowed=uniqueLeader("credibility")===owner;
+      const top=state.topPlay.pattern,equalAllowed=canEqualCounter(role,fanVoice);
       if(options.formal&&role==="star"&&!state.skills.star.used&&["pair","run"].includes(top.type)&&pattern.type==="single"&&["fact","stance"].includes(pattern.channel)&&pattern.level>top.level){
         return{legal:true,mode:"formal",reason:"正式回应以更高的本人单张打断当前组合；原牌造成的热度不会撤销。"};
       }
       if(top.type==="loop"){
         if(pattern.type!=="loop")return{legal:false,reason:"闭环叙事只能被更高级闭环压过。"};
         if(pattern.level<top.level||(!equalAllowed&&pattern.level===top.level))return{legal:false,reason:equalAllowed?"闭环等级不能低于当前闭环。":"闭环等级必须高于当前闭环。"};
-        return{legal:true,mode:"respond",reason:pattern.level===top.level?"可信度唯一领先，同级闭环也能反压。":"更高闭环可以夺走当前置顶。"};
+        return{legal:true,mode:"respond",reason:pattern.level===top.level?"本阵营可信度唯一领先，本人出牌可以同级反压闭环。":"更高闭环可以夺走当前置顶。"};
       }
       if(pattern.type==="loop")return{legal:true,mode:"respond",reason:"闭环叙事可以压过任何普通牌型。"};
       if(pattern.type!==top.type)return{legal:false,reason:`必须跟${PATTERN_NAMES[top.type]}。`};
       if(pattern.level<top.level||(!equalAllowed&&pattern.level===top.level))return{legal:false,reason:equalAllowed?"回应等级不能低于当前牌。":"回应等级必须更高。"};
-      return{legal:true,mode:"respond",reason:pattern.level===top.level?"可信度唯一领先，同牌型同等级也能反压。":"同牌型、更高等级；频道不同也能改写当前叙事。"};
+      return{legal:true,mode:"respond",reason:pattern.level===top.level?"本阵营可信度唯一领先，本人出牌可以同牌型同等级反压。":"同牌型、更高等级；频道不同也能改写当前叙事。"};
     }
     function selectedCards(){const hand=state.roles[state.userRole].hand;return state.selectedIds.map(id=>hand.find(card=>card.id===id)).filter(Boolean);}
     function toggleCard(cardId){
@@ -868,7 +872,7 @@
       if(state.phase==="round_break"){prompt.textContent="本话轮已经完成定调。";sub.textContent="阅读结算，再进入下一话轮。";return;}
       if(state.currentRole!==state.userRole){prompt.textContent=`${ROLES[state.currentRole].short}正在判断压牌、观望，还是替另一个阵营交出高牌。`;sub.textContent=`AI行动将在约${AI_ACTION_DELAY/1000}秒后显示。`;return;}
       if(!state.topPlay){prompt.textContent="你拥有领出权：选择1至3张牌建立本话轮主张。";sub.textContent="每张成功公开的牌按自身等级增加热度；组合会把所有等级相加。";}
-      else{const owner=narrativeOwner(state.userRole,state.userRole==="fan"?(state.fanVoiceThisRound||state.fanVoiceChoice):null),equal=uniqueLeader("credibility")===owner;prompt.textContent=`回应“${currentClaim(state.claimOwner)}”：同牌型，${equal?"你可信度唯一领先，可以同等级反压":"通常必须更高等级"}。`;sub.textContent="你也可以过牌，或暗置弃1张牌令热度-1并视为过牌。";}
+      else{const voice=state.userRole==="fan"?(state.fanVoiceThisRound||state.fanVoiceChoice):null,equal=canEqualCounter(state.userRole,voice);prompt.textContent=`回应“${currentClaim(state.claimOwner)}”：同牌型，${equal?"你正为自己的叙事发声且可信度唯一领先，可以同等级反压":"通常必须更高等级"}。`;sub.textContent="转述其他叙事不会继承对方的同级反压特权，也不能借用自己的可信度替对方同级反压。你也可以过牌，或暗置弃1张牌令热度-1并视为过牌。";}
       if(state.userRole==="fan"){
         if(state.fanVoiceThisRound)controls.innerHTML=`<div class="voice-lock">本话轮已声明：${fanVoiceLabel(state.fanVoiceThisRound)}。直到本话轮结束都不能更换。</div>`;
         else controls.innerHTML=`<div class="voice-control"><span>本话轮第一次入场时公开声明</span><div class="segmented"><button data-voice="star" class="${state.fanVoiceChoice==="star"?"selected":""}">转述本人</button><button data-voice="fan" class="${state.fanVoiceChoice==="fan"?"selected":""}">粉圈解释</button></div></div>`;
