@@ -116,9 +116,10 @@
     <li>每张成功打到桌面的牌按自身等级增加热度，组合牌将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-1，并视为过牌。</li>
     <li>同一叙事同时成为可信度与记忆的唯一第一时，路人只登记关注；至少到下一话轮结算仍保持双领先，才额外推动它1个定调标记。每个问题最多一次。</li>
     <li>万能牌保留原等级，可作为任意频道，但不能是5级，也不能参与闭环叙事。</li>
-    <li>明星每事件一次“正式回应”；粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者每事件两次“截取挪用”。技能详情始终显示在阵营栏。</li>
+    <li>明星每事件一次“正式回应”；粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者有两种取牌技能：“被压取牌”限1次，“压牌取牌”限2次。被压取牌不能取得闭环叙事，且被标记的牌要等离开置顶后才进入质疑者手牌。</li>
     <li>三方各有两项公开诉求：完成两个是完整胜利、完成一个是局部胜利、零个是失败。事件结束热度为H时，影响力分别+H、±0、-H。</li>
   </ol><div class="dialog-actions"><button class="primary-button" id="closeRules">继续游戏</button></div></div></dialog>
+  <dialog id="antiCounterDialog"><div class="dialog-body" id="antiCounterBody"></div></dialog>
   <dialog id="roundDialog"><div class="dialog-body" id="roundBody"></div></dialog>
   <dialog id="resultDialog"><div class="dialog-body" id="resultBody"></div></dialog>
   <script>
@@ -126,7 +127,7 @@
     const ROLES={
       star:{name:"明星 / 公关",short:"明星",color:"var(--star)",goal:"本人主张定义2个问题；本人可信度第一且没有失声。",skill:"正式回应（1次）：用更高的事实或立场单张打断普通组合。"},
       fan:{name:"真爱粉",short:"真爱粉",color:"var(--fan)",goal:"本人和粉圈合计定义2个问题；粉圈自己定义1个且明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成万能牌并交给任意一方。"},
-      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆第一。",skill:"截取挪用（2次）：压牌成功后，将整组被压牌加入手牌；可以保留次数。"}
+      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆第一。",skill:"被压取牌（1次）：出牌被非闭环牌压过时，获得压你的整组牌。压牌取牌（2次）：压牌成功后，获得整组被压牌。"}
     };
     const ISSUES=[
       {title:"发生了什么？",prompt:"爆料、截图与回应之间，公众最终会把哪一种版本当成事件事实？",claims:{star:"等待完整事实",fan:"现有爆料并不完整",anti:"沉默就是默认"}},
@@ -137,6 +138,7 @@
     const PATTERN_NAMES={single:"单张",pair:"同调对子",run:"连续论证",loop:"闭环叙事"};
     const DECK_COPIES={1:3,2:3,3:3,4:3,5:1};
     const ANTI_CAPTURE_LIMIT=2;
+    const ANTI_COUNTER_CAPTURE_LIMIT=1;
     const AI_ACTION_DELAY=2000;
     const CARD_NAMES={
       star:{fact:["核对原始记录","整理事件时间线","公开可验证细节","提交完整证据","第三方事实证明"],stance:["暂不作出定性","说明本人立场","承认表达瑕疵","划清责任边界","正面承担回应"],spread:["简短公开回应","工作室声明","完整采访回应","公开直播说明","全平台同步发声"]},
@@ -207,7 +209,7 @@
         heat:initialHeat,initialHeat,heatFeedback:{amount:0,sequence:0},permanentMemory:null,lastRoundOwner:null,bystanderJoinedThisIssue:false,bystanderOwner:null,bystanderPendingOwner:null,
         aiModes:Object.fromEntries(ROLE_ORDER.map(role=>[role,"aggressive"])),simulationMetrics:null,
         currentRole:initialLeader,topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],fanVoiceChoice:"star",fanVoiceThisRound:null,fanOverreachThisRound:false,wildChannelChoice:null,
-        skills:{star:{used:false,armed:false},fan:{used:false,target:"fan"},anti:{used:0,captureArmed:false}},
+        skills:{star:{used:false,armed:false},fan:{used:false,target:"fan"},anti:{used:0,captureArmed:false,counterUsed:false,counterPending:null}},
         pressure:4,silenced:false,lastCompletedRound:null,logs:[]
       };
     }
@@ -290,18 +292,70 @@
       if(role!=="fan")return role;
       return fanVoice==="star"?"star":"fan";
     }
+    function takeCardsFromDiscard(sourceRole,cardIds,prefix){
+      const source=state.roles[sourceRole],captured=[];
+      cardIds.forEach(cardId=>{const index=source.discard.findIndex(card=>card.id===cardId);if(index<0)return;const[card]=source.discard.splice(index,1);card.role="anti";card.name=`${prefix}：${card.name}`;captured.push(card);});
+      if(captured.length)state.roles.anti.hand.push(...captured);
+      return captured;
+    }
+    function counterCaptureTargets(play){
+      const pending=state.skills.anti.counterPending;
+      return Boolean(pending&&play&&pending.sourceRole===play.role&&pending.cardIds.length===play.cardIds.length&&pending.cardIds.every(id=>play.cardIds.includes(id)));
+    }
+    function recordCapturedBundle(metric,captured){
+      metric.cardsTaken+=captured.length;metric.bundleSizes[captured.length]=(metric.bundleSizes[captured.length]||0)+1;
+      captured.forEach(card=>{metric.levels[card.level]=(metric.levels[card.level]||0)+1;metric.channels[card.channel]=(metric.channels[card.channel]||0)+1;});
+    }
+    function releaseCounterCapturedCards(reason){
+      const pending=state.skills.anti.counterPending;if(!pending)return[];
+      const captured=takeCardsFromDiscard(pending.sourceRole,pending.cardIds,"反向截取");state.skills.anti.counterPending=null;
+      if(!captured.length)return captured;
+      if(simulationMode&&state.simulationMetrics)recordCapturedBundle(state.simulationMetrics.antiCounterCapture,captured);
+      addLog(`“被压取牌”结算：标记牌${reason}，质疑者获得整组${captured.length}张牌。`,"anti");return captured;
+    }
+    function armCounterCapture(sourceRole,cards,utility=0){
+      state.skills.anti.counterUsed=true;state.skills.anti.counterPending={sourceRole,cardIds:cards.map(card=>card.id)};
+      if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCounterCapture;metric.used+=1;metric.utilitySum+=utility;}
+      addLog(`质疑者发动“被压取牌”，标记${cards.length}张压过自己的牌；这组牌离开置顶后将进入质疑者手中。`,"anti");
+    }
+    function counterCaptureUtility(cards){
+      const base=captureUtility(cards),highCard=cards.reduce((max,card)=>Math.max(max,card.level),0),spreadHelp=metricGap("anti","memory")<=0?cards.filter(card=>card.channel==="spread").length*.8:0;
+      return base+highCard*.15+spreadHelp;
+    }
+    function chooseAICounterCapture(cards){
+      const score=counterCaptureUtility(cards),threshold=state.issueIndex===ISSUES.length-1?3.8:4.8;
+      return{use:score>=threshold,score};
+    }
+    function showCounterCaptureChoice(sourceRole,cards){
+      const body=el("antiCounterBody"),dialog=el("antiCounterDialog"),bundle=cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");
+      body.innerHTML=`<h2>是否发动“被压取牌”？</h2><p>对手刚用非闭环牌压过你的出牌。你可以标记这组牌；它离开置顶后会进入你的手中。本事件限1次。</p><div class="outcome"><strong>可获得：</strong>${bundle}</div><div class="dialog-actions"><button class="plain-button" id="skipCounterCapture">保留技能</button><button class="primary-button" id="useCounterCapture">标记并获得</button></div>`;
+      dialog.showModal();
+      el("skipCounterCapture").onclick=()=>{dialog.close();render();queueAutomaticTurn();};
+      el("useCounterCapture").onclick=()=>{dialog.close();armCounterCapture(sourceRole,cards);render();queueAutomaticTurn();};
+    }
+    function maybeOfferCounterCapture(previousTop,sourceRole,cards,pattern){
+      if(!previousTop||previousTop.role!=="anti"||sourceRole==="anti")return false;
+      const metric=simulationMode&&state.simulationMetrics?state.simulationMetrics.antiCounterCapture:null;
+      if(state.skills.anti.counterUsed>=ANTI_COUNTER_CAPTURE_LIMIT)return false;
+      if(pattern.type==="loop"){if(metric)metric.blockedLoops+=1;return false;}
+      if(metric)metric.opportunities+=1;
+      if(state.userRole==="anti"&&!simulationMode){showCounterCaptureChoice(sourceRole,cards);return true;}
+      const decision=chooseAICounterCapture(cards);
+      if(decision.use)armCounterCapture(sourceRole,cards,decision.score);else if(metric)metric.skipped+=1;
+      return false;
+    }
     function captureOvertakenCards(armed){
       if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||!armed)return[];
-      const source=state.roles[state.topPlay.role],captured=[];
-      state.topPlay.cardIds.forEach(cardId=>{const index=source.discard.findIndex(card=>card.id===cardId);if(index<0)return;const[card]=source.discard.splice(index,1);card.role="anti";card.name=`截取：${card.name}`;captured.push(card);});
+      const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds,"压牌取得");
       if(!captured.length)return captured;
-      state.roles.anti.hand.push(...captured);state.skills.anti.used+=1;
-      if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;metric.cardsTaken+=captured.length;metric.bundleSizes[captured.length]=(metric.bundleSizes[captured.length]||0)+1;captured.forEach(card=>{metric.levels[card.level]=(metric.levels[card.level]||0)+1;metric.channels[card.channel]=(metric.channels[card.channel]||0)+1;});}
+      state.skills.anti.used+=1;
+      if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;recordCapturedBundle(metric,captured);}
       return captured;
     }
     function applySuccessfulPlay(role,cards,pattern,fanVoice=null,decisionNote="",options={}){
-      const roleState=state.roles[role],spent=cards.map(card=>card.id),beforeHeat=state.heat,wasResponse=Boolean(state.topPlay);
-      const captured=role==="anti"&&wasResponse?captureOvertakenCards(options.captureAll):[];
+      const roleState=state.roles[role],spent=cards.map(card=>card.id),beforeHeat=state.heat,previousTop=state.topPlay,wasResponse=Boolean(previousTop),counterClaimed=counterCaptureTargets(previousTop);
+      const counterRecovered=counterClaimed?releaseCounterCapturedCards("已经离开置顶"):[];
+      const captured=role==="anti"&&wasResponse&&!counterClaimed?captureOvertakenCards(options.captureAll):[];
       if(pattern.type!=="loop")cards.forEach(card=>{if(card.isWild)card.channel=pattern.channel;});
       roleState.hand=roleState.hand.filter(card=>!spent.includes(card.id));roleState.discard.push(...cards);
       if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound=fanVoice||state.fanVoiceChoice;
@@ -315,9 +369,9 @@
       if(options.formal){state.skills.star.used=true;state.skills.star.armed=false;}
       state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild)})),fanVoice:activeVoice};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
       const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",heatText=state.heat>beforeHeat?`，热度+${state.heat-beforeHeat}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
-      const skillText=options.formal?"，发动“正式回应”打断原组合":captured.length?`，并用“截取挪用”拿走整组${captured.length}张被压牌`:"",handDelta=captured.length-cards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
+      const skillText=options.formal?"，发动“正式回应”打断原组合":captured.length?`，并用“压牌取牌”拿走整组${captured.length}张被压牌`:"",handDelta=captured.length+counterRecovered.length-cards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
       addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);
-      state.currentRole=nextRole(role);render();queueAutomaticTurn();
+      state.currentRole=nextRole(role);const waitingForCounterChoice=maybeOfferCounterCapture(previousTop,role,cards,pattern);render();if(!waitingForCounterChoice)queueAutomaticTurn();
     }
     function publishSelection(){
       if(state.phase!=="action"||state.currentRole!==state.userRole||!roleCanPlay(state.userRole))return;
@@ -436,6 +490,7 @@
         resetAIStrategies();if(simulationMode&&state.simulationMetrics&&state.issueIndex<ISSUES.length)state.simulationMetrics.heatSamples[state.issueIndex].push(state.heat);
       }else state.roundInIssue+=1;
       state.lastCompletedRound=completed;
+      if(counterCaptureTargets(state.topPlay))releaseCounterCapturedCards("已经完成本话轮结算");
       if(state.seats.length>=ISSUES.length){
         settleEvent("三个公共问题已经全部完成定调。");return;
       }
@@ -737,7 +792,7 @@
       return score;
     }
     function chooseAICapture(){
-      if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||state.topPlay.pattern.type==="single")return false;
+      if(!state.topPlay||counterCaptureTargets(state.topPlay)||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||state.topPlay.pattern.type==="single")return false;
       const cards=[...state.topPlay.cards],score=captureUtility(cards),threshold=state.issueIndex===ISSUES.length-1?4.2:5.2,worthwhile=score>=threshold;
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.opportunities+=1;if(!worthwhile)metric.skipped+=1;else metric.utilitySum+=score;}
       return worthwhile;
@@ -789,7 +844,7 @@
     }
     function settleEvent(reason){
       if(!state||state.phase==="ended")return;
-      clearAITimer();state.phase="ended";state.silenced=state.pressure>=10;
+      clearAITimer();if(state.skills.anti.counterPending)releaseCounterCapturedCards("随事件结束离开置顶");state.phase="ended";state.silenced=state.pressure>=10;
       const checks=objectiveChecks(),credibilityLeaders=positiveHighestRoles("credibility"),memoryLeaders=positiveHighestRoles("memory"),uniqueMemory=memoryLeaders.length===1?memoryLeaders[0]:null;
       if(uniqueMemory){
         const memorySeat=[...state.seats].reverse().find(seat=>seat.owner===uniqueMemory),claim=memorySeat?.claim||ISSUES[ISSUES.length-1].claims[uniqueMemory];
@@ -924,7 +979,7 @@
       const formalEligible=state.userRole==="star"&&!state.skills.star.used&&state.topPlay&&["pair","run"].includes(state.topPlay.pattern.type)&&cards.length===1&&pattern?.type==="single"&&["fact","stance"].includes(pattern.channel)&&pattern.level>state.topPlay.pattern.level;
       if(formalEligible)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--star)"><span>正式回应 · 每事件1次</span><div class="skill-options"><button id="formalButton" class="${state.skills.star.armed?"selected":""}">${state.skills.star.armed?"已准备打断组合":"用这张牌打断组合"}</button></div></div>`;
       if(state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5&&cards.length===1&&cards[0].level<5){controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${cards[0].level}级牌变成万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton">确认应援</button></div></div>`;}
-      if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const bundle=state.topPlay.cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>截取挪用 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（可不发动）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备获得整组":"获得整组"}：${bundle}</button></div></div>`;}
+      if(state.userRole==="anti"&&state.topPlay&&!counterCaptureTargets(state.topPlay)&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const bundle=state.topPlay.cards.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>压牌取牌 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（可不发动）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备获得整组":"获得整组"}：${bundle}</button></div></div>`;}
       if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>：${response.reason}${response.legal?`<br>${previewSettlement(pattern,owner,cards)}`:""}`;}
       const canPublish=response.legal;
       let actionHtml=`<button class="primary-button" id="publishButton" ${canPublish?"":"disabled"}>${state.topPlay?"发布回应":"领出主张"}</button>`;
@@ -940,7 +995,7 @@
       const counts=seatCounts();
       el("roleSummaries").innerHTML=ROLE_ORDER.map(role=>{
         const extra=role==="star"?`压力 ${state.pressure}/10`:role==="fan"?(state.fanVoiceThisRound?`本轮：${fanVoiceLabel(state.fanVoiceThisRound)}`:"尚未入场"):`记忆 ${state.claims.anti.memory}`;
-        const skillState=role==="star"?(state.skills.star.used?"已使用":"可用1次"):role==="fan"?(state.skills.fan.used?"已使用":"手牌≤5后可用"): `已用 ${state.skills.anti.used} / ${ANTI_CAPTURE_LIMIT}`;
+        const skillState=role==="star"?(state.skills.star.used?"已使用":"可用1次"):role==="fan"?(state.skills.fan.used?"已使用":"手牌≤5后可用"): `被压取牌 ${state.skills.anti.counterUsed?"已用":"可用"} · 压牌取牌 ${state.skills.anti.used}/${ANTI_CAPTURE_LIMIT}`;
         const strategyText=state.userRole!==role&&state.phase!=="ended"?`<span>AI ${aiStrategyLabel(role)}</span>`:"";
         return`<div class="role-summary" style="--role-color:${ROLES[role].color}"><div class="role-title"><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${state.currentRole===role&&state.phase==="action"?"正在行动":""}</span></div><div class="role-meta"><span>手牌 ${state.roles[role].hand.length}</span><span>问题 ${counts[role]}</span><span>本题标记 ${state.phase==="ended"?"-":state.issueMarkers[role]}</span><span>${extra}</span><span>影响力 ${campaign.influence[role]}</span>${strategyText}</div><div class="role-skill"><strong>${skillState}</strong> · ${ROLES[role].skill}</div></div>`;
       }).join("");
@@ -969,22 +1024,22 @@
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }
     function restart(){
-      clearAITimer();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
+      clearAITimer();if(el("antiCounterDialog").open)el("antiCounterDialog").close();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
     }
     function advanceEvent(){
-      const role=state?.userRole||"star";clearAITimer();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.eventNumber+=1;state=initialState(role);
+      const role=state?.userRole||"star";clearAITimer();if(el("antiCounterDialog").open)el("antiCounterDialog").close();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.eventNumber+=1;state=initialState(role);
       const opening=campaign.permanentMemory?`永久记忆“${campaign.permanentMemory.claim}”以强度${campaign.permanentMemory.strength}进入新事件，${ROLES[state.currentRole].short}取得开场。`:"新事件没有旧记忆主导，质疑者取得开场。";
       addLog(opening,state.currentRole);render();queueAutomaticTurn();
     }
     function runAutomatedSimulations(requestedCount=500){
       const gameCount=clamp(Math.round(Number(requestedCount)||500),1,2000),savedState=state,savedCampaign={eventNumber:campaign.eventNumber,influence:{...campaign.influence},permanentMemory:campaign.permanentMemory?{...campaign.permanentMemory}:null};
       const stages=ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,roundsSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
-      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0},silence={activations:0,rescues:0,starForcedPasses:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},pressureHistogram={};let safetyStops=0;
+      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),objectiveHits=Object.fromEntries(ROLE_ORDER.map(role=>[role,[0,0]])),claimTotals=Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),antiMemoryLead={unique:0,tied:0},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0},silence={activations:0,rescues:0,starForcedPasses:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiCounterCapture={opportunities:0,used:0,skipped:0,blockedLoops:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},pressureHistogram={};let safetyStops=0;
       simulationMode=true;
       try{
         for(let game=0;game<gameCount;game++){
           campaign.eventNumber=1;campaign.influence={star:0,fan:0,anti:0};campaign.permanentMemory=null;state=initialState("star");
-          state.simulationMetrics={heatSamples:ISSUES.map(()=>[]),issueEnds:[],strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0},silence:{activations:0,rescues:0,starForcedPasses:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
+          state.simulationMetrics={heatSamples:ISSUES.map(()=>[]),issueEnds:[],strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0},silence:{activations:0,rescues:0,starForcedPasses:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiCounterCapture:{opportunities:0,used:0,skipped:0,blockedLoops:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
           let steps=0;
           while(state.phase!=="ended"&&steps<600){
             if(state.phase==="round_break"){state.phase="action";continue;}
@@ -997,12 +1052,14 @@
             const ending=state.simulationMetrics.issueEnds[index];if(!ending)return;stage.completed+=1;stage.endPressureSum+=ending.pressure;stage.roundsSum+=ending.rounds;stage.endHandsSum+=ending.totalHands;ROLE_ORDER.forEach(role=>{stage.roleHands[role]+=ending.hands[role];});
           });
           final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.pressure>=10?1:0;final.complete+=state.seats.length===ISSUES.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
-          const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;});
+          const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;checks[role].forEach((item,index)=>{if(item.ok)objectiveHits[role][index]+=1;});claimTotals[role].credibility+=state.claims[role].credibility;claimTotals[role].memory+=state.claims[role].memory;});
+          const memoryLeaders=positiveHighestRoles("memory");if(memoryLeaders.includes("anti")){if(memoryLeaders.length===1)antiMemoryLead.unique+=1;else antiMemoryLead.tied+=1;}
           Object.keys(state.simulationMetrics.strategyTurns).forEach(mode=>{strategyTurns[mode]+=state.simulationMetrics.strategyTurns[mode];});Object.entries(state.simulationMetrics.strategyActions).forEach(([key,value])=>{strategyActions[key]=(strategyActions[key]||0)+value;});
           Object.entries(state.simulationMetrics.channelWins).forEach(([key,value])=>{channelWins[key]=(channelWins[key]||0)+value;});Object.entries(state.simulationMetrics.ownerChannelWins).forEach(([key,value])=>{ownerChannelWins[key]=(ownerChannelWins[key]||0)+value;});pressureHistogram[state.pressure]=(pressureHistogram[state.pressure]||0)+1;
           Object.entries(state.simulationMetrics.bystander).forEach(([key,value])=>{bystander[key]+=value;});
           Object.entries(state.simulationMetrics.silence).forEach(([key,value])=>{silence[key]+=value;});
           const capture=state.simulationMetrics.antiCapture;antiCapture.opportunities+=capture.opportunities;antiCapture.used+=capture.used;antiCapture.skipped+=capture.skipped;antiCapture.cardsTaken+=capture.cardsTaken;antiCapture.utilitySum+=capture.utilitySum;Object.entries(capture.bundleSizes).forEach(([key,value])=>{antiCapture.bundleSizes[key]=(antiCapture.bundleSizes[key]||0)+value;});Object.entries(capture.levels).forEach(([key,value])=>{antiCapture.levels[key]=(antiCapture.levels[key]||0)+value;});Object.entries(capture.channels).forEach(([key,value])=>{antiCapture.channels[key]=(antiCapture.channels[key]||0)+value;});
+          const counterCapture=state.simulationMetrics.antiCounterCapture;antiCounterCapture.opportunities+=counterCapture.opportunities;antiCounterCapture.used+=counterCapture.used;antiCounterCapture.skipped+=counterCapture.skipped;antiCounterCapture.blockedLoops+=counterCapture.blockedLoops;antiCounterCapture.cardsTaken+=counterCapture.cardsTaken;antiCounterCapture.utilitySum+=counterCapture.utilitySum;Object.entries(counterCapture.bundleSizes).forEach(([key,value])=>{antiCounterCapture.bundleSizes[key]=(antiCounterCapture.bundleSizes[key]||0)+value;});Object.entries(counterCapture.levels).forEach(([key,value])=>{antiCounterCapture.levels[key]=(antiCounterCapture.levels[key]||0)+value;});Object.entries(counterCapture.channels).forEach(([key,value])=>{antiCounterCapture.channels[key]=(antiCounterCapture.channels[key]||0)+value;});
         }
       }finally{
         state=savedState;campaign.eventNumber=savedCampaign.eventNumber;campaign.influence=savedCampaign.influence;campaign.permanentMemory=savedCampaign.permanentMemory;simulationMode=false;
@@ -1014,7 +1071,10 @@
         final:{completionRate:round(final.complete/gameCount*100),averagePressure:round(final.pressure/gameCount),silencedRate:round(final.silenced/gameCount*100),averageHeat:round(final.heat/gameCount),averageRemainingCards:round(ROLE_ORDER.reduce((sum,role)=>sum+final.hands[role],0)/gameCount),averageHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,round(final.hands[role]/gameCount)]))},
         strategy:{turns:strategyTurns,actions:strategyActions,conservativePassRate:strategyTurns.conservative?round((strategyActions.conservative_pass||0)/strategyTurns.conservative*100):0},
         outcomes:Object.fromEntries(ROLE_ORDER.map(role=>[role,Object.fromEntries(Object.entries(outcomes[role]).map(([status,count])=>[status,{count,rate:round(count/gameCount*100)}]))])),
-        diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0},antiCapture:{...antiCapture,useRate:antiCapture.opportunities?round(antiCapture.used/antiCapture.opportunities*100):0,averageCardsPerUse:antiCapture.used?round(antiCapture.cardsTaken/antiCapture.used):0,averageUtility:antiCapture.used?round(antiCapture.utilitySum/antiCapture.used):0},pressureHistogram}
+        objectives:Object.fromEntries(ROLE_ORDER.map(role=>[role,{first:{count:objectiveHits[role][0],rate:round(objectiveHits[role][0]/gameCount*100)},second:{count:objectiveHits[role][1],rate:round(objectiveHits[role][1]/gameCount*100)}}])),
+        averageClaims:Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:round(claimTotals[role].credibility/gameCount),memory:round(claimTotals[role].memory/gameCount)}])),
+        antiMemoryLead:{unique:{count:antiMemoryLead.unique,rate:round(antiMemoryLead.unique/gameCount*100)},tied:{count:antiMemoryLead.tied,rate:round(antiMemoryLead.tied/gameCount*100)}},
+        diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0},antiCapture:{...antiCapture,useRate:antiCapture.opportunities?round(antiCapture.used/antiCapture.opportunities*100):0,averageCardsPerUse:antiCapture.used?round(antiCapture.cardsTaken/antiCapture.used):0,averageUtility:antiCapture.used?round(antiCapture.utilitySum/antiCapture.used):0},antiCounterCapture:{...antiCounterCapture,useRate:antiCounterCapture.opportunities?round(antiCounterCapture.used/antiCounterCapture.opportunities*100):0,averageCardsPerUse:antiCounterCapture.used?round(antiCounterCapture.cardsTaken/antiCounterCapture.used):0,averageUtility:antiCounterCapture.used?round(antiCounterCapture.utilitySum/antiCounterCapture.used):0},pressureHistogram}
       };
     }
     function setup(){
@@ -1023,7 +1083,7 @@
       renderPlayedCards();
       el("rolePicks").innerHTML=ROLE_ORDER.map(role=>`<button class="role-pick" style="--role-color:${ROLES[role].color}" data-role="${role}"><strong>${ROLES[role].name}</strong><span>${ROLES[role].goal}<br><br>${ROLES[role].skill}</span></button>`).join("");
       el("rolePicks").querySelectorAll("[data-role]").forEach(button=>button.onclick=()=>startGame(button.dataset.role));
-      el("rulesButton").onclick=()=>el("rulesDialog").showModal();el("closeRules").onclick=()=>el("rulesDialog").close();el("restartButton").onclick=restart;el("roundDialog").oncancel=event=>event.preventDefault();el("startDialog").showModal();
+      el("rulesButton").onclick=()=>el("rulesDialog").showModal();el("closeRules").onclick=()=>el("rulesDialog").close();el("restartButton").onclick=restart;el("antiCounterDialog").oncancel=event=>event.preventDefault();el("roundDialog").oncancel=event=>event.preventDefault();el("startDialog").showModal();
     }
     setup();
   </script>
