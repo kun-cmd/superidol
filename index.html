@@ -119,7 +119,7 @@
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>每个事件热度都从3开始。每张成功打到桌面的牌按自身等级增加热度，组合将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-3，并视为过牌。</li>
     <li><strong>路人补标：</strong>某叙事在话轮开始前已经同时是可信度与互联网记忆唯一第一；它取得本题第一个定调标记，结算后仍保持双第一，路人补上第二标并完成本题。每个问题最多一次；当轮才由闭环建立的双领先不能立即触发。</li>
-    <li>万能牌保留原等级，可作为任意频道，但不能是5级，也不能参与闭环叙事。</li>
+    <li><strong>万能应援牌：</strong>不保留原点数，使用时可自动成为1至4级、任意频道，不能成为5级。单独打出时固定为玩家选择频道的4级单张；加入对子或闭环时自动匹配缺少的点数与频道；加入连续论证时自动补位，只有同时能向大、向小时才由玩家选择方向。</li>
     <li><strong>明星技能“沉淀成章”：</strong>公开作品牌初始2级。明星可以用一次行动暗置1张手牌，使作品升1级并视为过牌；3至4级可作为万能频道加入对子或连续论证，不能组成闭环。达到5级后可单独完整发布，无法被反压并按传播牌结算。明星一旦失声，未发布作品和全部投入牌立即消失。完整发布会让下一事件围绕新作品展开。</li>
     <li>粉丝在手牌不多于5张时每事件一次“最后应援”；质疑者有“断章取义”2次：用组合成功压牌后，可以获得整组被压牌；是否发动由质疑者自己决定。</li>
     <li><strong>永久记忆：</strong>事件最终置顶、可信度唯一第一和互联网记忆唯一第一必须属于同一叙事，且事件热度H严格高于旧永久记忆强度M，才能以H覆盖旧记忆。否则旧记忆继续存在。永久记忆拥有者进入下一事件时互联网记忆从1开始，但新事件仍由质疑者领出。</li>
@@ -131,7 +131,7 @@
     const ROLE_ORDER=["star","fan","anti"];
     const ROLES={
       star:{name:"明星 / 公关",short:"明星",color:"var(--star)",goal:"本人主张定义2个问题；本人可信度第一且没有失声。",skill:"沉淀成章：暗置手牌打磨公开作品牌；可提前加入组合，满级后无法被反压并改变下一事件。"},
-      fan:{name:"真爱粉",short:"真爱粉",color:"var(--fan)",goal:"本人和粉圈合计定义2个问题；粉圈自己定义1个且明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成万能牌并交给任意一方。"},
+      fan:{name:"真爱粉",short:"真爱粉",color:"var(--fan)",goal:"本人和粉圈合计定义2个问题；粉圈自己定义1个且明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方。"},
       anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆第一。",skill:"断章取义（2次）：用组合成功压牌后，可以获得整组被压牌。"}
     };
     const CONTROVERSY_ISSUES=[
@@ -180,28 +180,42 @@
       const sorted=[...cards].sort((a,b)=>a.level-b.level),channels=new Set(sorted.map(card=>card.channel)),levels=new Set(sorted.map(card=>card.level));
       if(cards.length===1)return{type:"single",channel:cards[0].channel,level:cards[0].level,size:1};
       if(cards.length===2&&channels.size===1&&levels.size===1)return{type:"pair",channel:cards[0].channel,level:cards[0].level,size:2};
-      if(cards.length===3&&!cards.some(card=>card.isWild)&&channels.size===3&&levels.size===1)return{type:"loop",channel:"loop",level:cards[0].level,size:3};
+      if(cards.length===3&&!cards.some(card=>card.isWork)&&channels.size===3&&levels.size===1)return{type:"loop",channel:"loop",level:cards[0].level,size:3};
       if(cards.length===3&&channels.size===1&&sorted[1].level===sorted[0].level+1&&sorted[2].level===sorted[1].level+1)return{type:"run",channel:sorted[0].channel,level:sorted[2].level,low:sorted[0].level,size:3};
       return null;
+    }
+    function patternOptionKey(pattern,assignments=[]){return`${pattern.type}-${pattern.channel}-${pattern.level}-${pattern.low||0}-${assignments.map(item=>`${item.id}:${item.channel}:${item.level}`).sort().join("|")}`;}
+    function describeFanWildOption(pattern){
+      const assignment=pattern.wildAssignments?.find(item=>item.isFanWild);if(!assignment)return patternLabel(pattern);
+      if(pattern.type==="single")return`${CHANNELS[assignment.channel].name}频道 · 4级单张`;
+      if(pattern.type==="pair")return`自动匹配 · ${CHANNELS[assignment.channel].name}${assignment.level}级对子`;
+      if(pattern.type==="loop")return`自动补齐 · ${assignment.level}级${CHANNELS[assignment.channel].name}频道闭环`;
+      const direction=pattern.wildDirection==="low"?"向小补位":pattern.wildDirection==="high"?"向大补位":"自动补中间";
+      return`${direction} · ${CHANNELS[assignment.channel].name}${pattern.low}-${pattern.level}连续论证`;
     }
     function detectPatternOptions(cards){
       if(!cards.length||cards.length>3)return[];
       const wildIndexes=cards.map((card,index)=>card.isWild?index:-1).filter(index=>index>=0);
-      if(!wildIndexes.length){const pattern=detectConcretePattern(cards);return pattern?[pattern]:[];}
-      if(cards.some(card=>card.isWild&&card.level>=5))return[];
+      if(!wildIndexes.length){const pattern=detectConcretePattern(cards);if(!pattern)return[];pattern.optionKey=patternOptionKey(pattern);return[pattern];}
       const options=[],seen=new Set(),assigned=cards.map(card=>({...card}));
       function walk(index){
         if(index>=wildIndexes.length){
-          const pattern=detectConcretePattern(assigned);if(!pattern||pattern.type==="loop")return;
-          const key=`${pattern.type}-${pattern.channel}-${pattern.level}-${pattern.low||0}`;if(!seen.has(key)){seen.add(key);options.push(pattern);}return;
+          const pattern=detectConcretePattern(assigned);if(!pattern)return;
+          const assignments=wildIndexes.map(wildIndex=>({id:cards[wildIndex].id,channel:assigned[wildIndex].channel,level:assigned[wildIndex].level,isFanWild:Boolean(cards[wildIndex].isFanWild),isWork:Boolean(cards[wildIndex].isWork)}));
+          if(pattern.type==="loop"&&assignments.some(item=>item.isWork))return;
+          const fanAssignment=assignments.find(item=>item.isFanWild),otherLevels=assigned.filter(card=>!card.isFanWild).map(card=>card.level);
+          if(pattern.type==="run"&&fanAssignment&&otherLevels.length){const min=Math.min(...otherLevels),max=Math.max(...otherLevels);pattern.wildDirection=fanAssignment.level<min?"low":fanAssignment.level>max?"high":"middle";}
+          pattern.wildAssignments=assignments;pattern.optionKey=patternOptionKey(pattern,assignments);
+          if(!seen.has(pattern.optionKey)){seen.add(pattern.optionKey);options.push(pattern);}return;
         }
-        Object.keys(CHANNELS).forEach(channel=>{assigned[wildIndexes[index]]={...assigned[wildIndexes[index]],channel};walk(index+1);});
+        const wildIndex=wildIndexes[index],card=cards[wildIndex],levels=card.isFanWild?(cards.length===1?[4]:[1,2,3,4]):[card.level];
+        Object.keys(CHANNELS).forEach(channel=>levels.forEach(level=>{assigned[wildIndex]={...card,channel,level};walk(index+1);}));
       }
       walk(0);return options;
     }
-    function detectPattern(cards,preferredChannel=null){
+    function detectPattern(cards,preferredOption=null){
       const options=detectPatternOptions(cards);if(!options.length)return null;
-      return options.find(pattern=>pattern.channel===preferredChannel)||options[0];
+      return options.find(pattern=>pattern.optionKey===preferredOption)||options[0];
     }
     function personalizeCards(cards,role){return cards.map(card=>({...card,id:`${role}-${card.id}`,role,name:CARD_NAMES[role][card.channel][card.level-1]}));}
     function dealHands(){
@@ -266,10 +280,10 @@
     function selectedCards(){const hand=state.roles[state.userRole].hand,cards=state.selectedIds.map(id=>hand.find(card=>card.id===id)).filter(Boolean);if(state.userRole==="star"&&state.skills.star.selected)cards.push(currentWorkCard());return cards;}
     function selectedPatternOptions(cards){
       const work=cards.find(card=>card.isWork);if(!work)return detectPatternOptions(cards);
-      if(work.level===5&&cards.length===1)return[{type:"single",channel:"spread",level:5,size:1,isWorkRelease:true}];
+      if(work.level===5&&cards.length===1){const pattern={type:"single",channel:"spread",level:5,size:1,isWorkRelease:true};pattern.optionKey=patternOptionKey(pattern);return[pattern];}
       return detectPatternOptions(cards).filter(pattern=>["pair","run"].includes(pattern.type));
     }
-    function selectedPattern(cards,preferredChannel=null){const options=selectedPatternOptions(cards);if(!options.length)return null;return options.find(pattern=>pattern.channel===preferredChannel)||options[0];}
+    function selectedPattern(cards,preferredOption=null){const options=selectedPatternOptions(cards);if(!options.length)return null;return options.find(pattern=>pattern.optionKey===preferredOption)||options[0];}
     function toggleCard(cardId){
       if(state.phase!=="action"||state.currentRole!==state.userRole||!roleCanPlay(state.userRole))return;
       const index=state.selectedIds.indexOf(cardId);
@@ -296,7 +310,11 @@
       const rank=pattern.type==="run"?`${pattern.low}-${pattern.level}级`:`${pattern.level}级`;
       return`<span class="pattern-badge" style="--pattern-color:${color}"><span class="pattern-channel">${channel}</span><span class="pattern-rank">${rank}</span><span class="pattern-type">${PATTERN_NAMES[pattern.type]}</span></span>`;
     }
-    function playHeat(cards){return cards.reduce((sum,card)=>sum+card.level,0);}
+    function resolvedCardLevel(card,pattern){return pattern?.wildAssignments?.find(item=>item.id===card.id)?.level??card.level;}
+    function playHeat(cards,pattern=null){return cards.reduce((sum,card)=>sum+resolvedCardLevel(card,pattern),0);}
+    function applyWildAssignments(cards,pattern){
+      pattern?.wildAssignments?.forEach(assignment=>{const card=cards.find(item=>item.id===assignment.id);if(card){card.channel=assignment.channel;card.level=assignment.level;}});
+    }
     function channelRewardAmount(){return 1;}
     function changeHeat(amount,actor){
       if(!amount)return;
@@ -364,7 +382,7 @@
     function applySuccessfulPlay(role,cards,pattern,fanVoice=null,decisionNote="",options={}){
       const roleState=state.roles[role],usesWork=cards.some(card=>card.isWork),workLevel=usesWork?state.skills.star.level:0,ordinaryCards=cards.filter(card=>!card.isWork),spent=ordinaryCards.map(card=>card.id),beforeHeat=state.heat,wasResponse=Boolean(state.topPlay);
       const captured=role==="anti"&&wasResponse?captureOvertakenCards(options.captureAll):[];
-      if(pattern.type!=="loop")cards.forEach(card=>{if(card.isWild)card.channel=pattern.channel;});
+      applyWildAssignments(cards,pattern);
       roleState.hand=roleState.hand.filter(card=>!spent.includes(card.id));roleState.discard.push(...ordinaryCards);
       if(usesWork){consumeStarWork(workLevel===5?"released":"releasedEarly");if(workLevel===5)campaign.nextTheme="work";}
       if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound=fanVoice||state.fanVoiceChoice;
@@ -374,8 +392,8 @@
         state.fanOverreachThisRound=true;
         const pressureChange=changePressure(1);pressureText=`，粉圈越界使压力+${pressureChange}`;
       }
-      changeHeat(playHeat(cards),role);
-      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild)})),fanVoice:activeVoice};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
+      changeHeat(playHeat(cards,pattern),role);
+      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild),isFanWild:Boolean(card.isFanWild)})),fanVoice:activeVoice};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
       const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",heatText=state.heat>beforeHeat?`，热度+${state.heat-beforeHeat}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
       const skillText=usesWork?(workLevel===5?"，完整发布“沉淀成章”，本轮无法被反压":"，提前发布“未完成的新作”加入论证"):captured.length?`，并用“断章取义”拿走整组${captured.length}张被压牌`:"",handDelta=captured.length-ordinaryCards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
       addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);
@@ -387,14 +405,14 @@
       if(!response.legal)return;
       applySuccessfulPlay(state.userRole,cards,pattern,state.userRole==="fan"?state.fanVoiceChoice:null,"",{workRelease,captureAll:state.skills.anti.captureArmed});
     }
-    function setWildChannel(channel){if(!CHANNELS[channel])return;state.wildChannelChoice=channel;render();}
+    function setWildChoice(optionKey){state.wildChannelChoice=optionKey;render();}
     function toggleAntiCapture(){if(state.userRole!=="anti"||state.skills.anti.used>=ANTI_CAPTURE_LIMIT)return;state.skills.anti.captureArmed=!state.skills.anti.captureArmed;render();}
     function setFanGiftTarget(role){if(state.userRole!=="fan"||!ROLE_ORDER.includes(role))return;state.skills.fan.target=role;render();}
     function useFanSkill(){
       if(state.userRole!=="fan"||state.skills.fan.used||state.roles.fan.hand.length>5||state.selectedIds.length!==1)return;
-      const card=selectedCards()[0],target=state.skills.fan.target;if(!card||card.level>=5)return;
-      state.roles.fan.hand=state.roles.fan.hand.filter(item=>item.id!==card.id);card.isWild=true;card.originalChannel=card.channel;card.role=target;card.name=`万能应援：${card.name}`;state.roles[target].hand.push(card);
-      state.skills.fan.used=true;state.selectedIds=[];state.wildChannelChoice=null;addLog(`真爱粉发动“最后应援”，把${card.level}级牌变成万能牌并交给${ROLES[target].short}；万能牌不能参与闭环。`,"fan");render();queueAutomaticTurn();
+      const card=selectedCards()[0],target=state.skills.fan.target;if(!card||card.level>=5||card.isWild)return;
+      state.roles.fan.hand=state.roles.fan.hand.filter(item=>item.id!==card.id);card.isWild=true;card.isFanWild=true;card.originalChannel=card.channel;card.originalLevel=card.level;card.role=target;card.name=`万能应援：${card.name}`;state.roles[target].hand.push(card);
+      state.skills.fan.used=true;state.selectedIds=[];state.wildChannelChoice=null;addLog(`真爱粉发动“最后应援”，把${card.originalLevel}级牌变成1—4级万能牌并交给${ROLES[target].short}；程序会按牌型自动补齐点数与频道，也可以组成闭环。`,"fan");render();queueAutomaticTurn();
     }
     function coolWithCard(role,card,decisionNote=""){
       if(state.phase!=="action"||state.currentRole!==role||!card||!roleCanPlay(role))return;
@@ -530,12 +548,12 @@
     function antiBaitReserve(options,option){
       if(state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||!["pair","run"].includes(option.pattern.type))return null;
       const spent=new Set(option.cards.map(card=>card.id)),minimumReserve=option.pattern.type==="run"?5:4;
-      return options.filter(candidate=>candidate.pattern.type===option.pattern.type&&candidate.pattern.level>=minimumReserve&&candidate.pattern.level>option.pattern.level&&candidate.cards.every(card=>!spent.has(card.id))).sort((a,b)=>b.pattern.level-a.pattern.level||playHeat(b.cards)-playHeat(a.cards))[0]||null;
+      return options.filter(candidate=>candidate.pattern.type===option.pattern.type&&candidate.pattern.level>=minimumReserve&&candidate.pattern.level>option.pattern.level&&candidate.cards.every(card=>!spent.has(card.id))).sort((a,b)=>b.pattern.level-a.pattern.level||playHeat(b.cards,b.pattern)-playHeat(a.cards,a.pattern))[0]||null;
     }
     function antiBaitScore(option,reserve){
       if(!reserve)return 0;
-      const rankGap=reserve.pattern.level-option.pattern.level,reserveHeat=playHeat(reserve.cards),earlyValue=state.issueIndex===state.issues.length-1?1:1.8;
-      return 4.8+rankGap*1.15+reserveHeat*.18+earlyValue-playHeat(option.cards)*.08;
+      const rankGap=reserve.pattern.level-option.pattern.level,reserveHeat=playHeat(reserve.cards,reserve.pattern),earlyValue=state.issueIndex===state.issues.length-1?1:1.8;
+      return 4.8+rankGap*1.15+reserveHeat*.18+earlyValue-playHeat(option.cards,option.pattern)*.08;
     }
     function followsAntiBaitPlan(option){
       const plan=state.skills.anti.baitPlan;if(!plan||!state.topPlay||state.topPlay.pattern.type!==plan.patternType)return false;
@@ -662,7 +680,7 @@
         score+=memoryGain*(metricGap("anti","memory")<0?5.8:metricGap("anti","memory")===0?4.8:1.4);
         score+=credGain*(uniqueLeader("credibility")==="anti"?.35:1.25);
         if(!state.silenced)score+=state.pressure>=8?4.4:state.pressure>=6?3.2:1.8;
-        if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&!state.silenced)score+=8+option.pattern.level*.7+playHeat(option.cards)*.18+(state.topPlay&&state.claimOwner!=="anti"?4:0);
+        if(simulationMode&&SIMULATION_SCENARIO==="no-rescue-anti-focus"&&!state.silenced)score+=8+option.pattern.level*.7+playHeat(option.cards,option.pattern)*.18+(state.topPlay&&state.claimOwner!=="anti"?4:0);
       }
       const projectedConsensus=projectedConsensusOwner(owner,option.pattern),eligibleOwner=state.roundStartConsensusOwner;
       if(projectedConsensus===owner)score+=eligibleOwner===owner&&state.issueMarkers[owner]===0?3.8:1.1;
@@ -725,7 +743,7 @@
       }
       return options.map(option=>{
         const response=responseMode(option.pattern,role,fanVoice,{workRelease:Boolean(option.workRelease)});if(!response.legal)return null;
-        const used=new Set(option.cards.filter(card=>!card.isWork).map(card=>card.id)),remaining=hand.filter(card=>!used.has(card.id)),cardHeat=playHeat(option.cards);
+        const used=new Set(option.cards.filter(card=>!card.isWork).map(card=>card.id)),remaining=hand.filter(card=>!used.has(card.id)),cardHeat=playHeat(option.cards,option.pattern);
         const baitReserve=role==="anti"?antiBaitReserve(options,option):null,usesBaitPlan=role==="anti"&&followsAntiBaitPlan(option);
         let score=handShapeScore(remaining)*.42-cardHeat*.11+Math.random()*.18+aiGoalScore(role,option,fanVoice)+antiBaitScore(option,baitReserve)+(usesBaitPlan?12:0);
         if(role==="fan"&&!state.silenced&&state.pressure>=7){
@@ -796,7 +814,7 @@
       if(ownFinish)return{action:"play",reason:"这次出牌可能靠现有标记或路人共识直接完成问题"};
       if(lastChance)return{action:"play",reason:"只剩最后一个问题，尚未完成的必要定义不能再让步"};
       if(role==="anti"&&counts.anti>=1&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&state.passes===0&&state.issueIndex<state.issues.length-1&&!threat&&!ownFinish&&["pair","run"].includes(state.topPlay.pattern.type)){
-        const responseHand=state.roles.anti.hand.filter(card=>!choice.cards.some(spent=>spent.id===card.id)),offeredValue=captureUtility(capturableTopCards(),responseHand),costlyAnswer=choice.pattern.type==="loop"||playHeat(choice.cards)>=8;
+        const responseHand=state.roles.anti.hand.filter(card=>!choice.cards.some(spent=>spent.id===card.id)),offeredValue=captureUtility(capturableTopCards(),responseHand),costlyAnswer=choice.pattern.type==="loop"||playHeat(choice.cards,choice.pattern)>=8;
         if(state.topPlay.pattern.level<=2&&offeredValue<7.4&&costlyAnswer)return{action:"pass",tacticalWait:true,reason:"对手目前只投入了低级组合，先让另一方决定是否继续抬牌；等更好的整组出现再反压取牌"};
       }
       if(role==="anti"&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&["pair","run"].includes(state.topPlay.pattern.type)){
@@ -811,14 +829,14 @@
         return{action:"play",reason:"保守阶段只用低级单张试探，不投入关键组合"};
       }
       if(state.heat>=16&&state.issueIndex>=1&&aiOutlookScore(role)<.9&&state.roles[role].hand.length>3&&Math.random()<.58)return{action:"cool",reason:"当前更接近失败方，主动压低热度以减少事件损失"};
-      const highCost=playHeat(choice.cards)>=8||choice.pattern.type==="loop";
+      const highCost=playHeat(choice.cards,choice.pattern)>=8||choice.pattern.type==="loop";
       if(highCost&&choice.score<3&&Math.random()<.22)return{action:"pass",reason:"虽然处于激进状态，但这组高牌不能有效推进目标"};
       if(choice.score<1.2&&Math.random()<.25)return{action:"pass",reason:"这次回应几乎不能推进公开目标"};
       if(Math.random()<.04)return{action:"pass",reason:"短暂观察另外两方是否继续消耗高牌"};
       return{action:"play",reason:"这张牌能改善当前目标位置"};
     }
     function wildcardFitScore(card,target){
-      const wild={...card,isWild:true},patterns=allPatterns([...state.roles[target].hand,wild]).filter(option=>option.cards.some(item=>item.id===wild.id));
+      const wild={...card,isWild:true,isFanWild:true},patterns=allPatterns([...state.roles[target].hand,wild]).filter(option=>option.cards.some(item=>item.id===wild.id));
       return patterns.reduce((best,option)=>Math.max(best,option.pattern.type==="run"?2.4:option.pattern.type==="pair"?1.7:.25),0);
     }
     function maybeUseAIFanSkill(){
@@ -834,9 +852,9 @@
         candidates.push({card,target,score});
       }));
       const best=candidates.sort((a,b)=>b.score-a.score)[0];if(!best||best.score<2)return false;
-      const{card,target}=best;state.roles.fan.hand=fanHand.filter(item=>item.id!==card.id);card.isWild=true;card.originalChannel=card.channel;card.role=target;card.name=`万能应援：${card.name}`;state.roles[target].hand.push(card);state.skills.fan.used=true;
+      const{card,target}=best;state.roles.fan.hand=fanHand.filter(item=>item.id!==card.id);card.isWild=true;card.isFanWild=true;card.originalChannel=card.channel;card.originalLevel=card.level;card.role=target;card.name=`万能应援：${card.name}`;state.roles[target].hand.push(card);state.skills.fan.used=true;
       const reason=state.silenced?"明星已经失声，把万能牌留在粉丝手中寻找转述本人的立场救援":target==="fan"?"保留一张能帮助粉圈完成牌型的万能牌":"把最适合组合的牌交给本人，帮助支持阵营或处理高压力";
-      addLog(`真爱粉发动“最后应援”，把${card.level}级牌变成万能牌并交给${ROLES[target].short}。判断：${reason}。`,"fan");return true;
+      addLog(`真爱粉发动“最后应援”，把${card.originalLevel}级牌变成1—4级万能牌并交给${ROLES[target].short}。判断：${reason}；程序会按最终牌型自动补齐点数与频道。`,"fan");return true;
     }
     function captureUtility(cards,hand=state.roles.anti.hand){
       const shapeGain=Math.max(0,handShapeScore([...hand,...cards])-handShapeScore(hand));
@@ -1026,7 +1044,7 @@
     }
     function previewSettlement(pattern,owner,cards){
       if(!pattern)return"";
-      const heat=playHeat(cards),heatText=` 本次出牌立即使热度+${heat}。`,overreachText=state.userRole==="fan"&&owner==="fan"&&!state.fanOverreachThisRound?" 作为本话轮首次粉圈解释，公开后压力立即+1；即使被反压也不撤销。":"";
+      const heat=playHeat(cards,pattern),heatText=` 本次出牌立即使热度+${heat}。`,overreachText=state.userRole==="fan"&&owner==="fan"&&!state.fanOverreachThisRound?" 作为本话轮首次粉圈解释，公开后压力立即+1；即使被反压也不撤销。":"";
       const pressureText=owner!=="star"?" 若非明星叙事守到话轮结算，压力+1。":pattern.type!=="loop"&&pattern.channel==="stance"?" 若本人立场守到话轮结算，压力-1。":" 本人叙事守住时压力不变。";
       const projectedConsensus=projectedConsensusOwner(owner,pattern),eligibleOwner=state.roundStartConsensusOwner;
       let bystanderText="";
@@ -1061,10 +1079,16 @@
         const work=state.skills.star,canInvest=work.level<5&&state.selectedIds.length===1&&!work.selected,canSelect=work.level>=3;
         controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--star)"><span>沉淀成章 · 当前${work.level}级 · 已投入${work.invested.length}张</span><div class="skill-options">${canSelect?`<button id="workSelectButton" class="${work.selected?"selected":""}">${work.selected?"取消选择作品牌":work.level===5?"选择5级作品完整发布":"把作品牌加入对子／顺子"}</button>`:"<button disabled>打磨到3级后可提前使用</button>"}${canInvest?`<button id="workInvestButton">暗置所选手牌 · 打磨到${work.level+1}级</button>`:""}</div></div>`;
       }
-      const cards=selectedCards(),patternOptions=selectedPatternOptions(cards),availableChannels=[...new Set(patternOptions.filter(pattern=>pattern.type!=="loop").map(pattern=>pattern.channel))];
-      if(cards.some(card=>card.isWild)&&availableChannels.length>1){if(!availableChannels.includes(state.wildChannelChoice))state.wildChannelChoice=availableChannels[0];controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--heat)"><span>万能牌选择频道 · 不能组成闭环</span><div class="skill-options">${availableChannels.map(channel=>`<button data-wild-channel="${channel}" class="${state.wildChannelChoice===channel?"selected":""}">${CHANNELS[channel].name}</button>`).join("")}</div></div>`;}
+      const cards=selectedCards(),patternOptions=selectedPatternOptions(cards),hasFanWild=cards.some(card=>card.isFanWild);
+      if(hasFanWild&&patternOptions.length){
+        if(!patternOptions.some(pattern=>pattern.optionKey===state.wildChannelChoice))state.wildChannelChoice=patternOptions[0].optionKey;
+        if(patternOptions.length>1)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--heat)"><span>万能牌有多个合法补位 · 选择结果</span><div class="skill-options">${patternOptions.map(option=>`<button data-wild-choice="${option.optionKey}" class="${state.wildChannelChoice===option.optionKey?"selected":""}">${describeFanWildOption(option)}</button>`).join("")}</div></div>`;
+        else controls.innerHTML+=`<div class="voice-lock">万能牌自动推导：${describeFanWildOption(patternOptions[0])}。</div>`;
+      }
       const pattern=selectedPattern(cards,state.wildChannelChoice),workRelease=Boolean(pattern?.isWorkRelease),response=responseMode(pattern,state.userRole,state.userRole==="fan"?state.fanVoiceChoice:null,{workRelease}),owner=narrativeOwner(state.userRole,state.userRole==="fan"?(state.fanVoiceThisRound||state.fanVoiceChoice):null);
-      if(state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5&&cards.length===1&&cards[0].level<5){controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${cards[0].level}级牌变成万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton">确认应援</button></div></div>`;}
+      const fanSkillReady=state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5,fanGiftCard=fanSkillReady&&cards.length===1&&!cards[0].isWild&&cards[0].level<5?cards[0]:null;
+      if(fanGiftCard)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${fanGiftCard.level}级牌变成1—4级万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton">确认应援</button></div></div>`;
+      else if(fanSkillReady)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援已就绪</span><div class="action-hint">选择恰好一张1—4级普通牌，再决定把万能牌交给谁。</div></div>`;
       if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（作品牌不能被获得）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备获得":"获得被压普通牌"}：${bundle}</button></div></div>`;}
       if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>：${response.reason}${response.legal?`<br>${previewSettlement(pattern,owner,cards)}`:""}`;}
       const canPublish=response.legal;
@@ -1074,7 +1098,7 @@
       else if(!state.roles[state.userRole].hand.length)actionHtml+=`<button class="plain-button" id="passButton">无牌可领出</button>`;
       actions.innerHTML=actionHtml;
       controls.querySelectorAll("[data-voice]").forEach(button=>button.onclick=()=>setFanVoice(button.dataset.voice));
-      controls.querySelectorAll("[data-wild-channel]").forEach(button=>button.onclick=()=>setWildChannel(button.dataset.wildChannel));controls.querySelectorAll("[data-gift-target]").forEach(button=>button.onclick=()=>setFanGiftTarget(button.dataset.giftTarget));
+      controls.querySelectorAll("[data-wild-choice]").forEach(button=>button.onclick=()=>setWildChoice(button.dataset.wildChoice));controls.querySelectorAll("[data-gift-target]").forEach(button=>button.onclick=()=>setFanGiftTarget(button.dataset.giftTarget));
       if(el("workSelectButton"))el("workSelectButton").onclick=toggleWorkSelection;if(el("workInvestButton"))el("workInvestButton").onclick=investSelectedWork;if(el("fanSkillButton"))el("fanSkillButton").onclick=useFanSkill;if(el("antiCaptureButton"))el("antiCaptureButton").onclick=toggleAntiCapture;if(el("publishButton"))el("publishButton").onclick=publishSelection;if(el("coolButton"))el("coolButton").onclick=coolSelection;if(el("passButton"))el("passButton").onclick=()=>passTurn(state.userRole);
     }
     function renderRoles(){
@@ -1122,8 +1146,8 @@
       const role=state.userRole,hand=state.roles[role].hand,isTurn=state.phase==="action"&&state.currentRole===role&&roleCanPlay(role),order={fact:0,stance:1,spread:2},sorted=[...hand].sort((a,b)=>order[a.channel]-order[b.channel]||a.level-b.level);
       el("handTitle").textContent=`${ROLES[role].name}的手牌${role==="star"&&state.silenced?" · 失声锁定":isTurn?" · 选择出牌":""}`;el("handCount").textContent=`${hand.length}张 · 未发 ${state.deckRemaining}张`;
       el("hand").innerHTML=sorted.length?sorted.map(card=>{
-        const selected=state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),disabled=!isTurn||(!selected&&selectedCount>=3),channelColor=card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`;
-        return`<button class="card ${card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${card.level}</span></div><h3>${card.name}</h3><p>${card.isWild?"使用时选择任意频道；不能参与闭环叙事。":role==="star"?"本人表达。":role==="fan"?"粉丝行动。":"质疑或二创。"}</p><div class="card-foot"><span>等级 ${card.level}</span><span>${selected?`主牌 ${state.selectedIds.indexOf(card.id)+1}`:"点击选择"}</span></div></button>`;
+        const selected=state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),disabled=!isTurn||(!selected&&selectedCount>=3),channelColor=card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isFanWild?"自动频道":card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`,levelText=card.isFanWild?"1—4":card.level;
+        return`<button class="card ${card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3>${card.name}</h3><p>${card.isFanWild?"单张固定4级；组合自动补齐点数与频道，可参与闭环。":card.isWild?"使用时由牌型自动决定频道。":role==="star"?"本人表达。":role==="fan"?"粉丝行动。":"质疑或二创。"}</p><div class="card-foot"><span>${card.isFanWild?"等级 1—4":"等级 "+card.level}</span><span>${selected?`主牌 ${state.selectedIds.indexOf(card.id)+1}`:"点击选择"}</span></div></button>`;
       }).join(""):`<div class="empty">手牌已经用尽。轮到你领出时，领出权会顺延给下一方。</div>`;
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }
