@@ -133,7 +133,7 @@
     const ROLES={
       star:{name:"明星 / 公关",short:"明星",color:"var(--star)",goal:"本人主张定义2个问题；本人可信度唯一第一且没有失声。",skill:"沉淀成章：2点技能牌开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
       fan:{name:"真爱粉",short:"真爱粉",color:"var(--fan)",goal:"本人和粉圈合计定义2个问题；粉圈自己定义1个且明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方。"},
-      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因成为互联网记忆唯一第一。",skill:"断章取义（2次）：用组合成功压牌后，可以获得整组被压牌。"}
+      anti:{name:"质疑者 / 迷因群体",short:"质疑者",color:"var(--anti)",goal:"质疑叙事定义1个问题；质疑或迷因达到互联网记忆第一（并列也算）。",skill:"断章取义（2次）：用组合成功压牌后，可以获得整组被压牌。"}
     };
     const CONTROVERSY_ISSUES=[
       {title:"发生了什么？",prompt:"爆料、截图与回应之间，公众最终会把哪一种版本当成事件事实？",claims:{star:"等待完整事实",fan:"现有爆料并不完整",anti:"沉默就是默认"}},
@@ -886,7 +886,7 @@
       if(!eligibleOwner&&projectedConsensus===owner)return"建立可信度与记忆双领先，为下一话轮争取路人补标资格";
       if(role==="star"&&choice.pattern.channel==="stance"&&state.pressure>=7)return"失声风险升高，优先用本人立场减压";
       if(role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
-      if(role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆第一";
+      if(role==="anti"&&choice.pattern.channel==="spread"&&!positiveHighestRoles("memory").includes("anti"))return"需要进入互联网记忆第一（并列也算）";
       if(role==="anti"&&!state.silenced&&state.pressure>=7)return"质疑叙事只要守住这个话轮就会继续加压，逼迫支持阵营投入牌救援";
       return"建立更有利于自身公开目标的叙事位置";
     }
@@ -926,11 +926,11 @@
       if(state.currentRole!==state.userRole){const role=state.currentRole;aiTimer=setTimeout(()=>{aiTimer=null;aiTurn(role);},AI_ACTION_DELAY);}
     }
     function objectiveChecks(){
-      const counts=seatCounts(),credibilityLeader=uniqueLeader("credibility"),memoryLeader=uniqueLeader("memory");
+      const counts=seatCounts(),credibilityLeader=uniqueLeader("credibility"),memoryLeaders=positiveHighestRoles("memory");
       return{
         star:[{ok:counts.star>=2,label:"本人主张定义2个问题"},{ok:credibilityLeader==="star"&&state.pressure<10,label:"本人可信度唯一第一且没有失声"}],
         fan:[{ok:counts.star+counts.fan>=2,label:"支持阵营合计定义2个问题"},{ok:counts.fan>=1&&state.pressure<10,label:"粉圈定义1个问题且明星未失声"}],
-        anti:[{ok:counts.anti>=1,label:"质疑叙事定义至少1个问题"},{ok:memoryLeader==="anti",label:"质疑或迷因成为互联网记忆唯一第一"}]
+        anti:[{ok:counts.anti>=1,label:"质疑叙事定义至少1个问题"},{ok:memoryLeaders.includes("anti"),label:"质疑或迷因达到互联网记忆第一（并列也算）"}]
       };
     }
     function resolvePermanentMemory(){
