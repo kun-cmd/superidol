@@ -81,13 +81,34 @@
     @media(max-width:940px){body{overflow:hidden}.topbar{height:58px;min-height:58px;padding:6px 9px;grid-template-columns:auto minmax(130px,1fr) auto;gap:7px}.brand span,.turn-chip:first-child,.topbar .memory-challenge{display:none}.brand strong{font-size:18px}.topbar .heat-block{height:43px;min-width:0;padding:4px 7px;grid-template-columns:minmax(70px,1fr) auto;grid-template-areas:"label value" "track delta";gap:2px 6px}.topbar .heat-number{font-size:16px}.topbar .heat-delta{font-size:7px}.turn-cluster{gap:4px}.turn-chip{padding:4px 6px}.icon-button{min-width:31px;padding:0 7px}.workspace{grid-template-columns:1fr;grid-template-rows:58px minmax(0,1fr) 64px 174px;grid-template-areas:"issues" "play" "roles" "hand"}.sidebar{display:none}.issue-strip{padding:5px 7px;gap:4px}.seat{min-height:46px;padding:5px 6px}.seat strong{font-size:9px}.playfield{padding:6px 7px;grid-template-rows:minmax(0,1fr) auto;gap:5px}.post-stage{padding:6px 7px;gap:5px}.issue-copy em{display:none}.issue-copy strong{font-size:14px}.public-scoreboard{gap:4px}.score-rail{padding:3px 4px;gap:2px}.score-token{padding:2px 4px;font-size:7px}.thread-strip{width:100%;padding:8px 9px;grid-template-columns:30px minmax(0,1fr);gap:5px 7px}.thread-avatar{width:29px;height:29px;font-size:13px}.thread-main>strong{font-size:15px}.thread-meta{margin-top:4px}.pattern-badge{font-size:7px}.pattern-badge span{padding:2px 4px}.reaction{padding:4px 6px}.reaction>span{font-size:8px}.action-console{padding:6px 7px;max-height:146px;overflow:auto}.prompt{font-size:10px}.subprompt{font-size:8px}.role-dashboard{padding:5px 7px;overflow:hidden}.role-summary-grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(230px,76vw);overflow-x:auto}.role-summary{padding:5px 7px}.hand-zone{padding:5px 7px 8px}.hand{height:136px;grid-template-columns:repeat(var(--hand-count,1),minmax(108px,1fr));overflow-x:auto;scroll-snap-type:x proximity}.card{height:132px;scroll-snap-align:start}.card p{display:none}.mechanism-copy{position:fixed;left:12px;right:12px;bottom:82px;width:auto}}
     @media(max-width:940px){.role-summary .mechanism-copy{position:fixed;left:12px;right:12px;top:auto;bottom:82px;width:auto}}
     .thread-avatar{background:var(--thread-role-color,var(--thread-color))}
+    /* Immersive public-opinion battlefield */
+    :root{--paper:#151c2a;--page:#070b14;--ink:#edf3ff;--muted:#91a0b7;--line:#2b3950;--soft:#0f1725;--info:#69b7e8;--bystander:#ff9a3d;--network:#35d3df;--signal:#ff5478;--night:#070b14}
+    body{background:#070b14;background-image:radial-gradient(circle at 20% 0,rgba(49,94,143,.22),transparent 32%),radial-gradient(circle at 82% 18%,rgba(147,66,113,.16),transparent 30%),linear-gradient(rgba(69,104,145,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(69,104,145,.055) 1px,transparent 1px);background-size:auto,auto,28px 28px,28px 28px}.app{position:relative;background:linear-gradient(155deg,rgba(6,10,19,.96),rgba(12,18,31,.94) 54%,rgba(9,13,24,.97))}.app::before{content:"";position:fixed;z-index:0;inset:0;background:linear-gradient(115deg,transparent 0 46%,rgba(59,205,217,.035) 46% 46.3%,transparent 46.3% 100%);pointer-events:none}.app>*{position:relative;z-index:1}
+    .topbar{background:rgba(7,12,22,.96);border-bottom-color:#f05a69;box-shadow:0 7px 28px rgba(0,0,0,.34)}.brand strong{color:#f4f8ff;text-shadow:0 0 20px rgba(53,211,223,.24)}.brand span{color:#7e91aa}.icon-button,.turn-chip{color:#eaf2ff;background:#141e2e;border-color:#34445a}.icon-button:hover{background:#1d2a3d}.topbar .heat-block{background:linear-gradient(110deg,rgba(74,37,29,.92),rgba(88,43,28,.94) 56%,rgba(57,28,52,.94));border-color:#9f5f3c;box-shadow:inset 0 0 24px rgba(255,142,59,.06)}.topbar .heat-number{font-size:25px}.topbar .heat-track{background:#17121a;border-color:#714431}.topbar .memory-challenge{color:#c6a58f}
+    .workspace{grid-template-columns:minmax(0,1fr) 360px;background:rgba(5,9,17,.56)}.issue-strip{background:rgba(11,17,29,.96);border-color:#27364b}.seat{color:#cbd6e6;background:#111a29;border-color:#3a4a60}.seat.active{background:linear-gradient(120deg,#132337,#151d2c);border-color:#4ea4d5;box-shadow:inset 0 0 20px rgba(48,151,210,.09)}.seat.active strong{color:#8bd9ff}.seat.filled{background:#121b2a}
+    .playfield{background:rgba(8,13,23,.82)}.post-stage{grid-template-rows:auto minmax(0,1fr) auto;background:linear-gradient(145deg,rgba(18,27,42,.96),rgba(12,19,31,.97));border-color:#304057;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 18px 45px rgba(0,0,0,.22)}.issue-focus{border-color:#334258}.issue-copy small,.issue-copy em{color:#8192aa}.issue-copy strong{color:#f4f7fc}
+    .narrative-stage{min-height:0;display:grid;grid-template-columns:minmax(170px,.9fr) minmax(440px,2.2fr) minmax(170px,.9fr);gap:12px;align-items:stretch}.public-scoreboard{display:contents}.score-rail{min-height:0;padding:14px 12px;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:9px;background:linear-gradient(155deg,#121b2a,#182234);border:1px solid #34455d;border-radius:10px;box-shadow:0 12px 26px rgba(0,0,0,.22)}.score-rail>b{padding-bottom:8px;border-bottom:1px solid #34435a;font-size:14px;letter-spacing:.08em;text-align:center}.score-rail.credibility{grid-column:1;grid-row:1;border-color:#285b7c;background:linear-gradient(155deg,rgba(14,43,62,.96),rgba(17,27,43,.98))}.score-rail.memory{grid-column:3;grid-row:1;border-color:#8b5b29;background:linear-gradient(155deg,rgba(62,38,19,.96),rgba(27,25,37,.98))}.score-rail.credibility>b{color:#72d0ff}.score-rail.memory>b{color:#ffb35f}.score-token{padding:7px 9px;justify-content:space-between;color:#b7c4d5;background:rgba(7,13,23,.58);border-color:#304158;font-size:10px}.score-token strong{font-size:15px}.score-token.leader{color:#fff;background:#1c293c;box-shadow:0 0 18px color-mix(in srgb,var(--role-color) 25%,transparent)}
+    .thread-column{position:relative;min-width:0;min-height:0;grid-column:2;grid-row:1;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}.thread-strip{width:100%;height:100%;min-height:0;background:radial-gradient(circle at 30% 0,rgba(61,83,116,.24),transparent 42%),linear-gradient(145deg,#161f2f,#101724);border-color:#3b4a60;border-left-color:var(--thread-color);box-shadow:0 16px 34px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.04)}.thread-main small,.thread-actor{color:#91a2b9}.thread-main>strong{color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.38)}.thread-footer{border-color:#334156}.thread-passes{color:#aebdd0}.thread-avatar{box-shadow:0 0 20px color-mix(in srgb,var(--thread-role-color,var(--thread-color)) 34%,transparent)}
+    .engagement-row{position:relative;min-height:52px;padding:7px 10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:rgba(8,13,23,.8);border:1px solid #33445b;border-radius:9px;overflow:hidden}.engagement-metric{min-width:0;padding:3px 9px;border-left:3px solid var(--metric-color);background:linear-gradient(90deg,color-mix(in srgb,var(--metric-color) 12%,transparent),transparent)}.engagement-metric.views{--metric-color:#54d6e2}.engagement-metric.likes{--metric-color:#ff6482}.engagement-metric.reposts{--metric-color:#ff9a3d}.engagement-metric span{display:block;color:#8f9fb4;font-size:8px;font-weight:900;letter-spacing:.08em}.engagement-metric strong{display:block;margin-top:1px;overflow:hidden;color:#f5f8ff;font-size:20px;font-weight:1000;font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap}.reach-milestone{position:absolute;z-index:4;inset:0;display:grid;place-items:center;color:#1f1105;background:linear-gradient(90deg,#ffbc54,#ff8d3e);font-size:17px;font-weight:1000;letter-spacing:.08em;opacity:0;pointer-events:none}.engagement-row.milestone .reach-milestone{animation:reach-milestone 1250ms ease both}
+    .displaced-reply{position:absolute;z-index:7;left:5%;right:5%;top:45%;padding:10px 13px;color:#aeb9c8;background:#121a27;border:1px solid #3c495b;border-left:5px solid var(--old-thread-color,var(--heat));border-radius:8px;box-shadow:0 15px 30px rgba(0,0,0,.36);pointer-events:none}.displaced-reply span{display:block;color:#7f8ea2;font-size:8px}.displaced-reply strong{display:block;margin-top:3px;font-size:13px}.displaced-reply.departing{animation:reply-push-down 720ms cubic-bezier(.2,.7,.2,1) both}.thread-strip.incoming{animation:reply-arrive 560ms cubic-bezier(.18,.85,.25,1) both}
+    .reaction{min-height:44px;padding:8px 13px;color:#ffe8d2;background:linear-gradient(90deg,rgba(255,138,50,.24),rgba(115,55,18,.24));border-color:#c8722d;box-shadow:inset 0 0 22px rgba(255,143,59,.06)}.reaction::before{color:#ff9a3d;font-size:18px}.reaction strong{color:#ffbd78;font-size:13px}.reaction>span{color:#d6b99d;font-size:11px}.mechanism-help summary{color:#ffd6aa;background:#392315;border-color:#a65d26}.mechanism-copy{color:#e9eef7;background:#111a29;border-color:#46566c;box-shadow:0 16px 36px rgba(0,0,0,.48)}
+    .action-console{color:#e8eef7;background:linear-gradient(125deg,rgba(20,28,42,.98),rgba(15,21,33,.98));border-color:#39485d;box-shadow:0 10px 26px rgba(0,0,0,.18)}.selection-summary,.skill-control{background:#121c2b;border-color:#34445a}.voice-control>span,.skill-control>span,.subprompt,.action-hint{color:#91a0b5}.primary-button{background:#e35d48;border-color:#f07b62}.plain-button,.segmented button,.skill-options button{color:#dce5f2;background:#172233;border-color:#43536a}.plain-button:hover,.skill-options button:hover{background:#213047}
+    .sidebar{padding:12px;background:rgba(8,13,22,.95);border-color:#29384d}.sidebar .log-state{background:linear-gradient(160deg,#101827,#0d1421);border-color:#34445c;border-top-color:#5a78e6}.sidebar .log-state h3{font-size:14px;color:#91a7ff}.sidebar .log-state h3::after{font-size:8px;color:#75849a}.log-list{overflow-y:auto;scrollbar-width:none}.log-list::-webkit-scrollbar{display:none}.log-item{padding:10px 11px;color:#dfe7f2;background:#151f2f;border-color:#35455b;font-size:11px;line-height:1.58}.log-index{margin-bottom:4px;color:#8494aa;font-size:8px}.empty{color:#7f90a7;background:#101927;border-color:#34445b}
+    .role-dashboard{background:rgba(12,18,29,.96);border-color:#2b394d}.role-summary{color:#e8eef7;background:linear-gradient(145deg,#151e2d,#101825);border-color:#34445a;border-left-color:var(--role-color)}.role-meta{color:#9dabc0}.role-meta span{background:#1b2738}.pressure-forecast{color:#ff9ca5!important;background:#371d29!important}.pressure-dots i{background:#354154}.role-skill{color:#aab7c9}
+    .hand-zone{background:linear-gradient(180deg,#101724,#0a111d);box-shadow:0 -10px 28px rgba(0,0,0,.28)}.hand-head h2{color:#f0f5ff}.hand-head span{color:#f8d5d1;background:#44231f;box-shadow:none}.card{color:#e8edf6;background:linear-gradient(150deg,#172131,#101824);border-color:#34445a;box-shadow:0 4px 13px rgba(0,0,0,.2)}.card:hover:not(:disabled){background:#1b283a;box-shadow:0 10px 22px rgba(0,0,0,.32)}.card.selected{background:linear-gradient(145deg,#3f3117,#1d2633);border-color:#f2a13e;box-shadow:0 0 0 3px rgba(242,161,62,.18),0 10px 24px rgba(0,0,0,.35)}.card.wild{background:linear-gradient(145deg,#342918,#1a2434)}.card p,.card-foot{color:#8f9db0}.card.memory-card{color:#2d210c;background:linear-gradient(145deg,#ffe89b,#c98b25)}
+    dialog{color:#eaf0f8;background:#111927;border-color:#405067}dialog::backdrop{background:rgba(2,5,10,.82);backdrop-filter:blur(7px)}.role-pick,.result-card,.outcome{color:#e7edf7;background:#172131;border-color:#3a4a60}.role-pick span,.result-card p,.outcome,.dialog-body>p{color:#9dabc0}.rules-list{color:#c7d1df}.rules-list li:target{background:#3b2d16}
+    .flying-response-card{position:fixed;z-index:120;width:92px;height:72px;padding:8px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--flight-color) 38%,#182337),#0e1624);border:2px solid color-mix(in srgb,var(--flight-color) 72%,#fff);border-top-width:6px;border-radius:7px;box-shadow:0 18px 42px rgba(0,0,0,.52),0 0 30px color-mix(in srgb,var(--flight-color) 55%,transparent);pointer-events:none}.flying-response-card span{display:block;color:#fff;font-size:8px;font-weight:900}.flying-response-card strong{display:block;margin-top:7px;overflow:hidden;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.app.playing-card .action-console,.app.playing-card .hand-zone{pointer-events:none}
+    @keyframes reply-arrive{0%{opacity:0;transform:translateY(-18px) scale(.975)}100%{opacity:1;transform:none}}@keyframes reply-push-down{0%{opacity:.92;transform:translateY(-18px) scale(.99)}65%{opacity:.58}100%{opacity:0;transform:translateY(92px) scale(.955)}}@keyframes reach-milestone{0%,100%{opacity:0;transform:scale(.97)}12%,72%{opacity:1;transform:scale(1)}}
+    @media(max-height:820px) and (min-width:941px){.workspace{grid-template-columns:minmax(0,1fr) 330px}.narrative-stage{grid-template-columns:minmax(145px,.8fr) minmax(410px,2.2fr) minmax(145px,.8fr)}.score-rail{padding:8px}.engagement-row{min-height:44px}.engagement-metric strong{font-size:17px}.reaction{min-height:38px;padding:5px 10px}}
+    @media(max-width:940px){.topbar{grid-template-columns:auto minmax(150px,1fr) auto}.turn-chip{display:none}.workspace{grid-template-columns:1fr}.post-stage{grid-template-rows:auto minmax(0,1fr) auto}.narrative-stage{grid-template-columns:1fr 1fr;grid-template-rows:auto minmax(0,1fr);gap:5px}.score-rail{min-height:34px;padding:4px 6px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:4px}.score-rail.credibility{grid-column:1;grid-row:1}.score-rail.memory{grid-column:2;grid-row:1}.score-rail>b{padding:0 5px 0 0;border:0;font-size:9px}.score-token{padding:3px 4px;font-size:7px}.score-token strong{font-size:9px}.thread-column{grid-column:1/-1;grid-row:2;gap:4px}.engagement-row{min-height:39px;padding:4px 5px;gap:4px}.engagement-metric{padding:1px 5px}.engagement-metric strong{font-size:15px}.reaction{min-height:36px;padding:4px 7px}.reaction strong{font-size:10px}.reaction>span{font-size:8px}.reach-milestone{font-size:14px}.flying-response-card{width:74px;height:58px}.sidebar{display:none}}
+    @media(prefers-reduced-motion:reduce){.thread-strip.incoming,.displaced-reply.departing,.engagement-row.milestone .reach-milestone{animation:none!important}.flying-response-card{display:none!important}}
   </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
       <div class="brand"><strong>定义权</strong><span>ROUND POST · 回合舆论战</span></div>
-      <div class="status-block heat-block" id="heatBlock"><div class="status-label">全网热度 · 累计浏览</div><div class="heat-readout"><strong class="heat-number" id="heatStatus">3万</strong><span class="heat-delta" id="heatDelta">争议出现</span></div><div class="heat-track" id="heatTrack" aria-label="当前浏览量3万"><span class="heat-fill" style="width:3%"></span></div><div class="memory-challenge" id="memoryChallenge">本事件尚无旧永久记忆纪录</div></div>
+      <div class="status-block heat-block" id="heatBlock"><div class="status-label">全网热度 · 舆论强度</div><div class="heat-readout"><strong class="heat-number" id="heatStatus">3</strong><span class="heat-delta" id="heatDelta">争议出现</span></div><div class="heat-track" id="heatTrack" aria-label="当前热度3"><span class="heat-fill" style="width:3%"></span></div><div class="memory-challenge" id="memoryChallenge">本事件尚无旧永久记忆纪录</div></div>
       <div class="turn-cluster"><span class="turn-chip">进程<strong id="roundStatus">问题1 · 话轮1</strong></span><span class="turn-chip">回应<strong id="turnStatus">等待开始</strong></span><div class="top-actions"><button class="icon-button" id="rulesButton" title="查看完整规则">规则</button><button class="icon-button" id="restartButton" title="重新开始">R</button></div></div>
     </header>
     <details class="played-tracker" id="playedTracker" hidden>
@@ -107,8 +128,14 @@
             <div class="marker-summary" id="markerSummary"></div>
           </section>
           <section class="claim-grid" id="claimGrid" hidden></section>
-          <section class="public-scoreboard" id="publicScoreboard" aria-label="可信度与互联网记忆比较"></section>
-          <section class="thread-strip" id="threadStrip"><div class="thread-avatar" aria-hidden="true">@</div><div class="thread-main"><small>热评第1 · 当前最先被看见的回应</small><strong id="threadTop">尚未出现回应</strong><div class="thread-meta" id="threadMeta"></div></div><div class="thread-footer"><span class="thread-views" id="threadViews">👁 3万次浏览</span><span class="thread-passes" id="passStatus">等待主动方</span></div></section>
+          <section class="narrative-stage" id="narrativeStage">
+            <section class="public-scoreboard" id="publicScoreboard" aria-label="可信度与互联网记忆比较"></section>
+            <div class="thread-column" id="threadColumn">
+              <section class="thread-strip" id="threadStrip"><div class="thread-avatar" aria-hidden="true">@</div><div class="thread-main"><small>热评第1 · 当前最先被看见的回应</small><strong id="threadTop">尚未出现回应</strong><div class="thread-meta" id="threadMeta"></div></div><div class="thread-footer"><span class="thread-passes" id="passStatus">等待主动方</span></div></section>
+              <div class="displaced-reply" id="displacedReply" hidden></div>
+              <section class="engagement-row" id="engagementRow" aria-label="全网互动数据"><div class="engagement-metric views"><span>浏览</span><strong id="threadViews">3万</strong></div><div class="engagement-metric likes"><span>点赞</span><strong id="likeStatus">560</strong></div><div class="engagement-metric reposts"><span>转发</span><strong id="repostStatus">132</strong></div><div class="reach-milestone" id="reachMilestone" aria-live="polite"></div></section>
+            </div>
+          </section>
           <section class="reaction" id="reactionPanel"><strong>路人仍在观望</strong><span>尚无叙事获得补标资格</span></section>
         </section>
         <section class="action-notice" id="actionNotice" style="--notice-color:#7b8491" hidden><small>最近行动</small><strong id="actionNoticeText">行动结果会显示在回应记录中。</strong></section>
@@ -139,7 +166,7 @@
     <li>每个新事件固定由质疑者领出；话轮赢家领出本问题的下一话轮，进入新问题时互联网记忆唯一领先者获得先手。事实定调使可信度+1，传播定调使记忆+1；单张、对子与连续论证的累计相同，闭环同时使两者各+1。</li>
     <li id="rule-pressure"><strong>明星压力：</strong>真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；每个话轮最终若由非明星叙事定调，压力再+1，不区分事实、立场或传播。只有本人主张或忠实转述的立场定调会使压力-1。压力达到10后明星立即失声，只能过牌；由于明星本人无法再打立场牌，必须由真爱粉用“转述本人”的立场牌完成定调，将压力降到9后才能恢复。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
-    <li>每个事件热度都从3开始。每张成功打到桌面的牌按自身等级增加热度，组合将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-3，并视为过牌。主界面把热度换算成累计浏览量：3点约3万、80点约1085万、90点约2330万、100点约5000万；浏览量只是同一热度的公开表现，不是新资源。</li>
+    <li>每个事件热度都从3开始。每张成功打到桌面的牌按自身等级增加热度，组合将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-3，并视为过牌。顶部始终显示真实热度点数。中央互动数据按热度换算：浏览量 V=30000×1.07948^(热度−3)；点赞=V×min(4.5%, 1.8%+热度×0.022%)；转发=V×min(2.2%, 0.4%+热度×0.013%)。浏览、点赞与转发只是公开表现，不是新资源。</li>
     <li id="rule-bystander"><strong>路人补标：</strong>某叙事在话轮开始前已经同时是可信度与互联网记忆唯一第一；它取得本题第一个定调标记，结算后仍保持双第一，路人补上第二标并完成本题。每个问题最多一次；当轮才由闭环建立的双领先不能立即触发。</li>
     <li><strong>万能应援牌：</strong>不保留原点数，使用时可自动成为1至4级、任意频道，不能成为5级。单独打出时固定为玩家选择频道的4级单张；加入对子或闭环时自动匹配缺少的点数与频道；加入连续论证时自动补位，只有同时能向大、向小时才由玩家选择方向。</li>
     <li><strong>明星技能“沉淀成章”：</strong>技能牌从游戏开始便直接放入明星手牌，初始2点、最高6点，任何点数都只能作为传播频道单牌打出，不能与普通牌组成对子、连续论证或闭环。明星可以用一次行动暗置1张普通手牌，使技能牌升1点并视为过牌。2至5点按普通单牌回应规则结算；达到6点后单独完整发布，无法被任何牌反压。明星一旦失声，未打出的技能牌和全部投入牌立即消失。6点完整发布会让下一事件围绕新作品展开。</li>
@@ -187,7 +214,7 @@
     const shuffle=items=>{const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;};
     const SIMULATION_SCENARIO=new URLSearchParams(location.search).get("scenario")||"baseline";
     const campaign={eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"controversy",nextTheme:null};
-    let state=null,aiTimer=null,generatedCardId=0,animatedHeatState=null,animatedHeatSequence=0,heatMotionTimer=null,eventIntroTimer=null,animatedWorkState=null,animatedWorkSequence=0,workMotionTimer=null,animatedBystanderState=null,animatedBystanderSequence=0,bystanderMotionTimer=null,simulationMode=false;
+    let state=null,aiTimer=null,generatedCardId=0,animatedHeatState=null,animatedHeatSequence=0,heatMotionTimer=null,eventIntroTimer=null,animatedWorkState=null,animatedWorkSequence=0,workMotionTimer=null,animatedBystanderState=null,animatedBystanderSequence=0,bystanderMotionTimer=null,animatedEngagementState=null,animatedEngagement={views:0,likes:0,reposts:0},engagementFrames={},milestoneTimer=null,renderedThreadState=null,renderedTopSignature="",threadMotionTimer=null,playAnimationActive=false,playAnimationTimer=null,simulationMode=false;
 
     function makeDeck(){
       const cards=[];
@@ -272,7 +299,7 @@
     function nextRole(role){return ROLE_ORDER[(ROLE_ORDER.indexOf(role)+1)%ROLE_ORDER.length];}
     function fanVoiceLabel(value){return value==="star"?"转述本人":"粉圈解释";}
     function startGame(role){
-      clearAITimer();state=initialState(role);el("startDialog").close();
+      clearAITimer();clearPlayAnimation();state=initialState(role);el("startDialog").close();
       state.roundStartConsensusOwner=consensusLeader();
       const opening=campaign.permanentMemory?`永久记忆“${campaign.permanentMemory.claim}”以${formatHeatReach(campaign.permanentMemory.strength)}浏览纪录继续存在，${ROLES[campaign.permanentMemory.owner].short}从互联网记忆1开始；质疑者固定领出新事件。`:`新事件从${formatHeatReach(state.initialHeat)}浏览开始，质疑者固定获得第一个话轮的领出权。`;
       addLog(opening,"anti");render();showEventIntro();queueAutomaticTurn();
@@ -348,6 +375,32 @@
       return`${wan.toFixed(1).replace(/\.0$/,'')}万`;
     }
     function formatHeatReach(heat){return formatReachValue(heatReach(heat));}
+    function formatSocialValue(value){
+      const amount=Math.max(0,Math.round(value));
+      if(amount>=100000000)return`${(amount/100000000).toFixed(1).replace(/\.0$/,'')}亿`;
+      if(amount>=10000){const wan=amount/10000;return`${(wan>=100?Math.round(wan):wan.toFixed(1).replace(/\.0$/,'')).toLocaleString("zh-CN")}万`;}
+      return amount.toLocaleString("zh-CN");
+    }
+    function engagementStats(heat){
+      const views=heatReach(heat),likeRate=Math.min(.045,.018+Math.max(0,heat)*.00022),repostRate=Math.min(.022,.004+Math.max(0,heat)*.00013);
+      return{views,likes:Math.round(views*likeRate),reposts:Math.round(views*repostRate)};
+    }
+    function animateEngagementValue(id,from,to,formatter){
+      const target=el(id);cancelAnimationFrame(engagementFrames[id]);
+      if(from===to||matchMedia("(prefers-reduced-motion: reduce)").matches){target.textContent=formatter(to);return;}
+      const started=performance.now(),duration=680,difference=to-from;
+      const step=now=>{const progress=Math.min(1,(now-started)/duration),eased=1-Math.pow(1-progress,3);target.textContent=formatter(from+difference*eased);if(progress<1)engagementFrames[id]=requestAnimationFrame(step);};
+      engagementFrames[id]=requestAnimationFrame(step);
+    }
+    function showReachMilestone(value){
+      const row=el("engagementRow"),badge=el("reachMilestone");clearTimeout(milestoneTimer);row.classList.remove("milestone");badge.textContent=value>=10000000?"浏览突破 1000万 · 全网大战":"浏览突破 100万 · 冲上热门";void row.offsetWidth;row.classList.add("milestone");milestoneTimer=setTimeout(()=>row.classList.remove("milestone"),1300);
+    }
+    function renderEngagement(){
+      const current=engagementStats(state.heat),isNewState=animatedEngagementState!==state,previous=isNewState?current:animatedEngagement;
+      if(isNewState){animatedEngagementState=state;el("threadViews").textContent=formatReachValue(current.views);el("likeStatus").textContent=formatSocialValue(current.likes);el("repostStatus").textContent=formatSocialValue(current.reposts);}
+      else if(current.views!==previous.views){animateEngagementValue("threadViews",previous.views,current.views,formatReachValue);animateEngagementValue("likeStatus",previous.likes,current.likes,formatSocialValue);animateEngagementValue("repostStatus",previous.reposts,current.reposts,formatSocialValue);const crossed=[1000000,10000000].filter(threshold=>previous.views<threshold&&current.views>=threshold).pop();if(crossed)showReachMilestone(crossed);}
+      animatedEngagement=current;
+    }
     function heatTier(heat){if(heat>=100)return"平台级风暴";if(heat>=80)return"全网大战";if(heat>=60)return"全站热议";if(heat>=30)return"进入热门";return"争议扩散";}
     function applyWildAssignments(cards,pattern){
       pattern?.wildAssignments?.forEach(assignment=>{const card=cards.find(item=>item.id===assignment.id);if(card){card.channel=assignment.channel;card.level=assignment.level;}});
@@ -416,6 +469,23 @@
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;recordCapturedBundle(metric,captured);}
       return captured;
     }
+    function clearPlayAnimation(){clearTimeout(playAnimationTimer);playAnimationActive=false;document.querySelector(".app")?.classList.remove("playing-card");document.querySelectorAll(".flying-response-card").forEach(node=>node.remove());}
+    function animateSuccessfulPlay(role,cards,commit){
+      if(simulationMode||matchMedia("(prefers-reduced-motion: reduce)").matches){commit();return;}
+      const target=el("threadStrip")?.getBoundingClientRect(),roleSource=document.querySelector(`.role-summary[data-role="${role}"]`),sourceElements=role===state.userRole?cards.map(card=>document.querySelector(`[data-card="${CSS.escape(card.id)}"]`)).filter(Boolean):[],fallback=roleSource?.getBoundingClientRect();
+      if(!target||(!sourceElements.length&&!fallback)){commit();return;}
+      const activeState=state;playAnimationActive=true;document.querySelector(".app")?.classList.add("playing-card");
+      cards.slice(0,3).forEach((card,index)=>{
+        const source=(sourceElements[index]||sourceElements[0])?.getBoundingClientRect()||fallback,color=card.isCapturedMemory?"#d8a62f":card.isWork?"#e84f45":CHANNELS[card.channel]?.color||ROLES[role].color,node=document.createElement("div");
+        node.className="flying-response-card";node.style.setProperty("--flight-color",color);node.style.left=`${source.left+source.width/2-46}px`;node.style.top=`${source.top+source.height/2-36}px`;node.innerHTML=`<span>${card.isWork?"明星技能牌":CHANNELS[card.channel]?.name||"回应"}</span><strong>${card.name}</strong>`;document.body.appendChild(node);
+        const destinationX=target.left+target.width*.5+(index-(cards.length-1)/2)*48-(source.left+source.width/2),destinationY=target.top+target.height*.45-(source.top+source.height/2),animation=node.animate([{opacity:.96,transform:"translate(0,0) scale(1.08) rotate(0deg)"},{opacity:1,offset:.86,transform:`translate(${destinationX*.84}px,${destinationY*.84-30}px) scale(.96) rotate(${(index-1)*3}deg)`},{opacity:0,transform:`translate(${destinationX}px,${destinationY}px) scale(.6) rotate(0deg)`}],{duration:760+index*55,delay:index*45,easing:"cubic-bezier(.18,.78,.25,1)",fill:"forwards"});
+        animation.finished.finally(()=>node.remove());
+      });
+      playAnimationTimer=setTimeout(()=>{playAnimationActive=false;document.querySelector(".app")?.classList.remove("playing-card");if(state===activeState)commit();},820+Math.max(0,cards.length-1)*70);
+    }
+    function submitSuccessfulPlay(role,cards,pattern,fanVoice=null,decisionNote="",options={}){
+      if(playAnimationActive)return;animateSuccessfulPlay(role,cards,()=>applySuccessfulPlay(role,cards,pattern,fanVoice,decisionNote,options));
+    }
     function applySuccessfulPlay(role,cards,pattern,fanVoice=null,decisionNote="",options={}){
       const roleState=state.roles[role],usesWork=cards.some(card=>card.isWork),workLevel=usesWork?state.skills.star.level:0,ordinaryCards=cards.filter(card=>!card.isWork),spent=ordinaryCards.map(card=>card.id),beforeHeat=state.heat,wasResponse=Boolean(state.topPlay);
       const captured=role==="anti"&&wasResponse?captureOvertakenCards(options.captureAll):[];
@@ -440,7 +510,7 @@
       if(state.phase!=="action"||state.currentRole!==state.userRole||!roleCanPlay(state.userRole))return;
       const cards=selectedCards(),pattern=selectedPattern(cards,state.wildChannelChoice),workRelease=Boolean(pattern?.isWorkRelease),response=responseMode(pattern,state.userRole,state.userRole==="fan"?state.fanVoiceChoice:null,{workRelease});
       if(!response.legal)return;
-      applySuccessfulPlay(state.userRole,cards,pattern,state.userRole==="fan"?state.fanVoiceChoice:null,"",{workRelease,captureAll:state.skills.anti.captureArmed});
+      submitSuccessfulPlay(state.userRole,cards,pattern,state.userRole==="fan"?state.fanVoiceChoice:null,"",{workRelease,captureAll:state.skills.anti.captureArmed});
     }
     function setWildChoice(optionKey){state.wildChannelChoice=optionKey;render();}
     function toggleAntiCapture(){if(state.userRole!=="anti"||state.skills.anti.used>=ANTI_CAPTURE_LIMIT)return;state.skills.anti.captureArmed=!state.skills.anti.captureArmed;render();}
@@ -957,7 +1027,7 @@
         state.skills.anti.baitPlan=null;if(simulationMode&&state.simulationMetrics)state.simulationMetrics.antiTactics.baitCounters+=1;
       }
       const captureAll=role==="anti"?chooseAICapture(choice):false,coreReason=role==="fan"?fanPlan?.reason||yieldDecision.reason:captureAll?yieldDecision.reason:aiPlayReason(role,choice,fanVoice),reason=`${strategy.reason}；${coreReason}`;
-      applySuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,reason,{workRelease:Boolean(choice.workRelease),captureAll});
+      submitSuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,reason,{workRelease:Boolean(choice.workRelease),captureAll});
     }
     function queueAutomaticTurn(){
       clearAITimer();if(simulationMode||!state||state.phase!=="action")return;
@@ -1026,13 +1096,13 @@
       const block=el("heatBlock"),delta=el("heatDelta"),track=el("heatTrack"),feedback=state.heatFeedback||{amount:0,sequence:0},isNewState=animatedHeatState!==state;
       if(isNewState){animatedHeatState=state;animatedHeatSequence=feedback.sequence;block.classList.remove("rising","falling","record-broken");delta.textContent=heatTier(state.heat);}
       const changed=!isNewState&&animatedHeatSequence!==feedback.sequence;
-      el("heatStatus").textContent=formatHeatReach(state.heat);
+      el("heatStatus").textContent=state.heat;
       const challenge=el("memoryChallenge"),target=state.memoryTarget;if(!target){challenge.textContent="本事件尚无旧永久记忆纪录";challenge.classList.remove("ready");}else if(state.heat>target){challenge.textContent=`已超过旧纪录 ${formatHeatReach(target)} · 仍需最终热评与可信、记忆双第一`;challenge.classList.add("ready");}else{challenge.textContent=`旧纪录 ${formatHeatReach(target)} · 还需超过${formatHeatReach(target)}`;challenge.classList.remove("ready");}
-      track.setAttribute("aria-label",`当前累计浏览${formatHeatReach(state.heat)}`);
+      track.setAttribute("aria-label",`当前热度${state.heat}`);
       track.innerHTML=`<span class="heat-fill" style="width:${Math.min(100,state.heat)}%"></span>`;
       if(!changed)return;
       animatedHeatSequence=feedback.sequence;clearTimeout(heatMotionTimer);block.classList.remove("rising","falling","record-broken");void block.offsetWidth;
-      const direction=feedback.amount>0?"rising":"falling",previousHeat=Math.max(0,state.heat-feedback.amount),reachDelta=Math.abs(heatReach(state.heat)-heatReach(previousHeat));block.classList.add(direction);delta.textContent=`${feedback.amount>0?"+":"−"}${formatReachValue(reachDelta)}`;
+      const direction=feedback.amount>0?"rising":"falling";block.classList.add(direction);delta.textContent=`${feedback.amount>0?"+":"−"}${Math.abs(feedback.amount)}热度`;
       if(feedback.recordBroken)block.classList.add("record-broken");
       heatMotionTimer=setTimeout(()=>{if(animatedHeatState===state&&animatedHeatSequence===feedback.sequence){block.classList.remove(direction,"record-broken");delta.textContent=heatTier(state.heat);}},900);
     }
@@ -1070,7 +1140,14 @@
     }
     function renderThread(){
       const strip=el("threadStrip"),meta=el("threadMeta");
-      el("threadViews").textContent=`👁 ${formatHeatReach(state.heat)}次浏览`;
+      renderEngagement();
+      const isNewState=renderedThreadState!==state,signature=state.topPlay?`${state.topPlay.role}:${state.topPlay.cardIds.join("-")}:${state.topPlay.pattern.type}:${state.topPlay.pattern.level}:${state.claimOwner}`:"";
+      if(isNewState){renderedThreadState=state;renderedTopSignature=signature;}
+      else if(signature!==renderedTopSignature){
+        const displaced=el("displacedReply"),oldTitle=el("threadTop").textContent,oldActor=meta.querySelector(".thread-actor")?.textContent||"上一条热评";
+        if(renderedTopSignature&&oldTitle){displaced.hidden=false;displaced.style.setProperty("--old-thread-color",getComputedStyle(strip).getPropertyValue("--thread-color")||"var(--heat)");displaced.innerHTML=`<span>${oldActor}</span><strong>${oldTitle}</strong>`;displaced.classList.remove("departing");void displaced.offsetWidth;displaced.classList.add("departing");}
+        strip.classList.remove("incoming");void strip.offsetWidth;strip.classList.add("incoming");clearTimeout(threadMotionTimer);threadMotionTimer=setTimeout(()=>{strip.classList.remove("incoming");displaced.classList.remove("departing");displaced.hidden=true;},760);renderedTopSignature=signature;
+      }
       if(!state.topPlay){strip.style.setProperty("--thread-color",ROLES[state.currentRole].color);strip.style.setProperty("--thread-role-color",ROLES[state.currentRole].color);el("threadTop").textContent="等待第一条回应";meta.innerHTML=`<span class="thread-actor">@${ROLES[state.currentRole].short}拥有本话轮领出权</span>`;el("passStatus").textContent="尚无热评";return;}
       const voice=state.topPlay.role==="fan"?` · ${fanVoiceLabel(state.topPlay.fanVoice)}`:"";
       const pattern=state.topPlay.pattern,color=pattern.type==="loop"?"var(--heat)":pattern.memoryConverted?"#9b6900":CHANNELS[pattern.channel].color;
@@ -1154,7 +1231,7 @@
         const skillState=role==="star"?(work.status==="forging"?`沉淀成章 ${work.level}点`:work.status==="released"?"沉淀成章已完整发布":work.status==="releasedEarly"?"沉淀成章已打出":"沉淀成章已消失"):role==="fan"?(state.skills.fan.used?"最后应援已使用":"最后应援待机"): `断章取义剩余 ${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次`;
         const pressure=role==="star"?`<span>压力 <b>${state.pressure}/10</b></span><span class="pressure-dots" aria-label="明星压力${state.pressure}/10">${Array.from({length:10},(_,index)=>`<i class="${index<state.pressure?"filled":""}"></i>`).join("")}</span><span class="pressure-forecast">${pressureForecastText()}</span>`:"";
         const help=role==="star"?`<details class="mechanism-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力</strong>粉圈解释首次成功出牌：+1；非明星叙事赢得话轮：+1；本人或“转述本人”的立场赢得话轮：−1。达到10时明星失声，只能由真爱粉的“转述本人”立场定调恢复到9。</div></details>`:"";
-        return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" style="--role-color:${ROLES[role].color}"><div class="role-title"><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${isCurrent?"正在回应":""}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span><span>影响力 <b>${campaign.influence[role]}</b></span>${pressure}</div><div class="role-skill"><strong>${skillState}</strong></div>${help}</article>`;
+        return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" data-role="${role}" style="--role-color:${ROLES[role].color}"><div class="role-title"><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${isCurrent?"正在回应":""}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span><span>影响力 <b>${campaign.influence[role]}</b></span>${pressure}</div><div class="role-skill"><strong>${skillState}</strong></div>${help}</article>`;
       }).join("");
     }
     function renderState(){
@@ -1200,10 +1277,10 @@
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }
     function restart(){
-      clearAITimer();clearTimeout(eventIntroTimer);el("eventIntro").classList.remove("active");if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
+      clearAITimer();clearPlayAnimation();clearTimeout(eventIntroTimer);el("eventIntro").classList.remove("active");if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
     }
     function advanceEvent(){
-      const role=state?.userRole||"star";clearAITimer();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.eventNumber+=1;campaign.activeTheme=campaign.nextTheme||"controversy";campaign.nextTheme=null;state=initialState(role);state.roundStartConsensusOwner=consensusLeader();
+      const role=state?.userRole||"star";clearAITimer();clearPlayAnimation();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.eventNumber+=1;campaign.activeTheme=campaign.nextTheme||"controversy";campaign.nextTheme=null;state=initialState(role);state.roundStartConsensusOwner=consensusLeader();
       const opening=campaign.permanentMemory?`永久记忆“${campaign.permanentMemory.claim}”以${formatHeatReach(campaign.permanentMemory.strength)}浏览成为本事件要挑战的纪录，${ROLES[campaign.permanentMemory.owner].short}从互联网记忆1开始；质疑者仍固定开场。`:`新事件没有旧永久记忆，从${formatHeatReach(state.initialHeat)}浏览开始，质疑者固定开场。`;
       addLog(opening,"anti");render();showEventIntro();queueAutomaticTurn();
     }
