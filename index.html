@@ -222,7 +222,7 @@
     <li>AI在每个问题的首个标记产生前采用激进策略；没抢到首标便转为保守留牌，到下一问题重新激进。对方即将定调、自己已有标记、明星濒临失声或进入最后一题时会打破保守。</li>
     <li>每个新事件的第一题固定由黑粉领出，正常行动循环为“黑粉 → 明星 → 真爱粉”；话轮最终置顶帖的发帖者领出本题下一话轮。第二、三题由上一题最终置顶帖的实际发帖者领出，不按叙事归属，也不再由记忆第一者直接取得领出权。事实定调使可信度+1，传播定调使记忆+1；单张、对子与连续论证的累计相同，闭环同时使两者各+1。</li>
     <li><strong>旧事点名 · 核心基线停用：</strong>原规则会让互联网记忆唯一第一者在第二、第三题首轮改变回应顺序；本轮核心测试完全不触发。</li>
-    <li id="rule-pressure"><strong>明星压力 · 四格轨道实验：</strong>压力从0开始。真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；黑粉叙事赢得话轮时压力+1，真爱粉叙事赢得话轮不再自动增加压力。只有本人主张或忠实转述的立场定调会使压力-1。压力达到4后明星立即失声，只能过牌；本阶段仍沿用原恢复规则，真爱粉用“转述本人”的立场牌完成定调，将压力降到3后即可恢复。</li>
+    <li id="rule-pressure"><strong>明星压力 · 恢复滞后实验：</strong>压力从0开始。真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；黑粉叙事赢得话轮时压力+1，真爱粉叙事赢得话轮不再自动增加压力。只有本人主张或忠实转述的立场定调会使压力-1。压力达到4后明星立即失声；降到3时仍然失声，必须降到2或更低才能恢复。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
     <li>每个事件热度都从3开始。每张成功打到桌面的牌按自身等级增加热度，组合将等级相加；热度使用整数且没有上限。行动时可暗置弃1张牌令热度-3，并视为过牌。顶部始终显示真实热度点数。中央互动数据按热度换算：浏览量 V=30000×1.07948^(热度−3)；点赞=V×min(4.5%, 1.8%+热度×0.022%)；转发=V×min(2.2%, 0.4%+热度×0.013%)。浏览、点赞与转发只是公开表现，不是新资源。</li>
     <li id="rule-bystander"><strong>路人补标 · 核心基线停用：</strong>原规则会让可信度与互联网记忆双领先者获得额外定调标记；本轮核心测试完全不触发。</li>
@@ -264,7 +264,7 @@
     const STAR_WORK_START_LEVEL=2;
     const STAR_WORK_RELEASE_LEVEL=6;
     const PRESSURE_MAX=4;
-    const PRESSURE_RECOVERY=PRESSURE_MAX-1;
+    const PRESSURE_RECOVERY=2;
     const PRESSURE_WATCH=1;
     const PRESSURE_HIGH=2;
     const PRESSURE_CRITICAL=3;
@@ -683,17 +683,22 @@
       const applied=state.heat-before,recordBroken=state.memoryTarget>0&&before<=state.memoryTarget&&state.heat>state.memoryTarget;if(applied)state.heatFeedback={amount:applied,sequence:state.heatFeedback.sequence+1,recordBroken};
       if(applied&&simulationMode&&state.simulationMetrics)state.simulationMetrics.heatSamples[state.issueIndex]?.push(state.heat);
     }
+    function pressureSilenceState(pressure,wasSilenced=false){return wasSilenced?pressure>PRESSURE_RECOVERY:pressure>=PRESSURE_MAX;}
     function changePressure(amount){
       const before=state.pressure,wasSilenced=state.silenced;
-      state.pressure=clamp(state.pressure+amount,0,PRESSURE_MAX);state.silenced=state.pressure>=PRESSURE_MAX;
+      state.pressure=clamp(state.pressure+amount,0,PRESSURE_MAX);state.silenced=pressureSilenceState(state.pressure,wasSilenced);
       if(!wasSilenced&&state.silenced)destroyStarWork();
       if(simulationMode&&state.simulationMetrics){
         PRESSURE_MILESTONES.forEach(threshold=>{
           const milestones=state.simulationMetrics.pressureMilestones;
           if(before<threshold&&state.pressure>=threshold&&milestones?.[threshold]===null)milestones[threshold]={round:state.roundsCompleted+1,issueIndex:state.issueIndex};
         });
-        if(!wasSilenced&&state.silenced)state.simulationMetrics.silence.activations+=1;
-        if(wasSilenced&&!state.silenced)state.simulationMetrics.silence.rescues+=1;
+        if(!wasSilenced&&state.silenced){state.simulationMetrics.silence.activations+=1;state.simulationMetrics.silenceRecoveryStartedRound=state.roundsCompleted;}
+        if(wasSilenced&&!state.silenced){
+          const started=state.simulationMetrics.silenceRecoveryStartedRound;state.simulationMetrics.silence.rescues+=1;
+          if(Number.isInteger(started)){state.simulationMetrics.silence.recoveryRoundsTotal+=Math.max(0,state.roundsCompleted-started);state.simulationMetrics.silence.recoveryRoundsSamples+=1;}
+          state.simulationMetrics.silenceRecoveryStartedRound=null;
+        }
       }
       return state.pressure-before;
     }
@@ -1381,8 +1386,8 @@
     function objectiveChecks(){
       const counts=seatCounts(),credibilityLeader=uniqueLeader("credibility"),memoryLeader=uniqueLeader("memory");
       return{
-        star:[{ok:counts.star>=2,label:"本人主张定义2个问题"},{ok:credibilityLeader==="star"&&state.pressure<PRESSURE_MAX,label:"本人可信度唯一第一且没有失声"}],
-        fan:[{ok:counts.star+counts.fan>=2&&counts.fan>=1,label:"支持阵营合计定义2个问题且粉圈自己定义1个"},{ok:state.pressure<PRESSURE_MAX,label:"明星未失声"}],
+        star:[{ok:counts.star>=2,label:"本人主张定义2个问题"},{ok:credibilityLeader==="star"&&!state.silenced,label:"本人可信度唯一第一且没有失声"}],
+        fan:[{ok:counts.star+counts.fan>=2&&counts.fan>=1,label:"支持阵营合计定义2个问题且粉圈自己定义1个"},{ok:!state.silenced,label:"明星未失声"}],
         anti:[{ok:counts.anti>=1,label:"黑粉叙事定义至少1个问题"},{ok:memoryLeader==="anti",label:"黑粉成为互联网记忆唯一第一"}]
       };
     }
@@ -1399,7 +1404,7 @@
     }
     function settleEvent(reason){
       if(!state||state.phase==="ended")return;
-      clearAITimer();state.phase="ended";state.silenced=state.pressure>=PRESSURE_MAX;
+      clearAITimer();state.phase="ended";state.silenced=pressureSilenceState(state.pressure,state.silenced);
       const work=state.skills.star;if(work.status==="forging"){const count=work.invested.length;consumeStarWork("expired");if(count)addLog(`事件结束时作品仍未发布，${count}张投入牌随本次作品窗口一同作废。`,"star");}
       resolvePermanentMemory();
       const checks=objectiveChecks(),credibilityLeaders=positiveHighestRoles("credibility"),memoryLeaders=positiveHighestRoles("memory");
@@ -1605,7 +1610,7 @@
         const work=state.skills.star,isCurrent=state.currentRole===role&&state.phase==="action",visibleHandCount=state.roles[role].hand.length+(role==="star"&&work.status==="forging"?1:0);
         const skill=roleSkillDetails(role);
         const pressure=role==="star"?`<span>压力 <b>${state.pressure}/${PRESSURE_MAX}</b></span><span class="pressure-dots" aria-label="明星压力${state.pressure}/${PRESSURE_MAX}">${Array.from({length:PRESSURE_MAX},(_,index)=>`<i class="${index<state.pressure?"filled":""}"></i>`).join("")}</span><span class="pressure-forecast">${pressureForecastText()}</span>`:"";
-        const help=role==="star"?`<details class="mechanism-help pressure-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力 · 0—${PRESSURE_MAX}</strong>粉圈解释首次成功进入桌面：+1；黑粉叙事赢得话轮：+1；真爱粉叙事赢得话轮不自动加压；本人或“转述本人”的立场赢得话轮：−1。达到${PRESSURE_MAX}时明星失声；本阶段仍在压力降到${PRESSURE_RECOVERY}时立即恢复。</div></details>`:"";
+        const help=role==="star"?`<details class="mechanism-help pressure-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力 · 0—${PRESSURE_MAX}</strong>粉圈解释首次成功进入桌面：+1；黑粉叙事赢得话轮：+1；真爱粉叙事赢得话轮不自动加压；本人或“转述本人”的立场赢得话轮：−1。达到${PRESSURE_MAX}时明星失声；降到3仍保持失声，必须降到${PRESSURE_RECOVERY}或更低才恢复。</div></details>`:"";
         return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" data-role="${role}" style="--role-color:${ROLES[role].color}"><div class="role-title"><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${isCurrent?"正在回应":""}</span></div><div class="role-account-line"><b>${ROLES[role].accountName}</b><span>${ROLES[role].handle}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span><span>影响力 <b>${campaign.influence[role]}</b></span>${pressure}</div><div class="role-skill"><strong>${skill.name}</strong><span class="role-skill-status">${skill.status}</span></div>${help}</article>`;
       }).join("");
     }
@@ -1663,12 +1668,12 @@
       const gameCount=clamp(Math.round(Number(requestedCount)||500),1,10000),numericSeed=requestedSeed===null||requestedSeed===""?null:Number(requestedSeed),seed=Number.isFinite(numericSeed)?Math.round(numericSeed):null,originalRandom=Math.random,savedState=state,savedCampaign={eventNumber:campaign.eventNumber,influence:{...campaign.influence},permanentMemory:campaign.permanentMemory?{...campaign.permanentMemory}:null,activeTheme:campaign.activeTheme,nextTheme:campaign.nextTheme,storyTime:campaign.storyTime,lastGapMonths:campaign.lastGapMonths};
       if(seed!==null)Math.random=seededRandom(seed);
       const stages=CONTROVERSY_ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,roundsSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
-      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),objectiveHits=Object.fromEntries(ROLE_ORDER.map(role=>[role,[0,0]])),claimTotals=Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),antiMemoryLead={unique:0,tied:0},skillUsage={star:{fullRelease:0,earlyRelease:0,lost:0,expired:0},fan:{used:0},anti:{used:0,totalUses:0}},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence={activations:0,rescues:0,starForcedPasses:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics={baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel={reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanDiagnostics={fanDefined:0,starSafe:0,both:0,fanSeats:0,starSeats:0,voicePlays:{star:0,fan:0}},oldStory={windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}},pressureHistogram={},pressureTiming=Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,{reached:0,positionSum:0,byIssue:Array(CONTROVERSY_ISSUES.length).fill(0)}])),prototypeAggregate=createPrototypeAggregate(CONTROVERSY_ISSUES.length);let safetyStops=0;
+      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),objectiveHits=Object.fromEntries(ROLE_ORDER.map(role=>[role,[0,0]])),claimTotals=Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),antiMemoryLead={unique:0,tied:0},skillUsage={star:{fullRelease:0,earlyRelease:0,lost:0,expired:0},fan:{used:0},anti:{used:0,totalUses:0}},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence={activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics={baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel={reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanDiagnostics={fanDefined:0,starSafe:0,both:0,fanSeats:0,starSeats:0,voicePlays:{star:0,fan:0}},oldStory={windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}},pressureHistogram={},pressureTiming=Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,{reached:0,positionSum:0,byIssue:Array(CONTROVERSY_ISSUES.length).fill(0)}])),prototypeAggregate=createPrototypeAggregate(CONTROVERSY_ISSUES.length);let safetyStops=0;
       simulationMode=true;
       try{
         for(let game=0;game<gameCount;game++){
           campaign.eventNumber=1;campaign.influence={star:0,fan:0,anti:0};campaign.permanentMemory=null;campaign.activeTheme="controversy";campaign.nextTheme=null;campaign.storyTime=CAMPAIGN_START_TIME;campaign.lastGapMonths=0;state=initialState("star");
-          state.roundStartConsensusOwner=consensusLeader();state.simulationMetrics={heatSamples:state.issues.map(()=>[]),issueEnds:[],pressureMilestones:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,null])),strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence:{activations:0,rescues:0,starForcedPasses:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics:{baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel:{reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanVoicePlays:{star:0,fan:0},oldStory:{windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
+          state.roundStartConsensusOwner=consensusLeader();state.simulationMetrics={heatSamples:state.issues.map(()=>[]),issueEnds:[],pressureMilestones:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,null])),silenceRecoveryStartedRound:null,strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence:{activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics:{baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel:{reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanVoicePlays:{star:0,fan:0},oldStory:{windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
           let steps=0;
           while(state.phase!=="ended"&&steps<600){
             if(state.phase==="round_break"){state.phase="action";continue;}
@@ -1680,10 +1685,10 @@
             if(!samples.length)return;const stage=stages[index];stage.reached+=1;stage.averageHeatSum+=samples.reduce((sum,value)=>sum+value,0)/samples.length;
             const ending=state.simulationMetrics.issueEnds[index];if(!ending)return;stage.completed+=1;stage.endPressureSum+=ending.pressure;stage.roundsSum+=ending.rounds;stage.endHandsSum+=ending.totalHands;ROLE_ORDER.forEach(role=>{stage.roleHands[role]+=ending.hands[role];});
           });
-          final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.pressure>=PRESSURE_MAX?1:0;final.complete+=state.seats.length===state.issues.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
+          final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.silenced?1:0;final.complete+=state.seats.length===state.issues.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
           PRESSURE_MILESTONES.forEach(threshold=>{const milestone=state.simulationMetrics.pressureMilestones[threshold];if(!milestone)return;const timing=pressureTiming[threshold];timing.reached+=1;timing.positionSum+=milestone.round/Math.max(1,state.roundsCompleted)*100;if(timing.byIssue[milestone.issueIndex]!==undefined)timing.byIssue[milestone.issueIndex]+=1;});
           const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;checks[role].forEach((item,index)=>{if(item.ok)objectiveHits[role][index]+=1;});claimTotals[role].credibility+=state.claims[role].credibility;claimTotals[role].memory+=state.claims[role].memory;});
-          const finalSeats=seatCounts();if(finalSeats.fan>=1)fanDiagnostics.fanDefined+=1;if(state.pressure<PRESSURE_MAX)fanDiagnostics.starSafe+=1;if(finalSeats.fan>=1&&state.pressure<PRESSURE_MAX)fanDiagnostics.both+=1;fanDiagnostics.fanSeats+=finalSeats.fan;fanDiagnostics.starSeats+=finalSeats.star;
+          const finalSeats=seatCounts();if(finalSeats.fan>=1)fanDiagnostics.fanDefined+=1;if(!state.silenced)fanDiagnostics.starSafe+=1;if(finalSeats.fan>=1&&!state.silenced)fanDiagnostics.both+=1;fanDiagnostics.fanSeats+=finalSeats.fan;fanDiagnostics.starSeats+=finalSeats.star;
           if(state.skills.star.status==="released")skillUsage.star.fullRelease+=1;else if(state.skills.star.status==="releasedEarly")skillUsage.star.earlyRelease+=1;else if(state.skills.star.status==="lost")skillUsage.star.lost+=1;else if(state.skills.star.status==="expired")skillUsage.star.expired+=1;
           if(state.skills.fan.used)skillUsage.fan.used+=1;if(state.skills.anti.used>0)skillUsage.anti.used+=1;skillUsage.anti.totalUses+=state.skills.anti.used;
           const memoryLeaders=positiveHighestRoles("memory");if(memoryLeaders.includes("anti")){if(memoryLeaders.length===1)antiMemoryLead.unique+=1;else antiMemoryLead.tied+=1;}
@@ -1716,7 +1721,7 @@
         fanDiagnostics:{fanDefined:{count:fanDiagnostics.fanDefined,rate:round(fanDiagnostics.fanDefined/gameCount*100)},starNotSilenced:{count:fanDiagnostics.starSafe,rate:round(fanDiagnostics.starSafe/gameCount*100)},both:{count:fanDiagnostics.both,rate:round(fanDiagnostics.both/gameCount*100)},averageSeats:{fan:round(fanDiagnostics.fanSeats/gameCount),star:round(fanDiagnostics.starSeats/gameCount)},voicePlays:fanDiagnostics.voicePlays},
         oldStory:{...oldStory,activationRate:oldStory.windows?round(oldStory.activated/oldStory.windows*100):0,passRate:oldStory.responderPlays+oldStory.responderPasses?round(oldStory.responderPasses/(oldStory.responderPlays+oldStory.responderPasses)*100):0},
         coreBaseline:finalizePrototypeAggregate(prototypeAggregate,gameCount,round),
-        diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0},pressureTiming:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>{const timing=pressureTiming[threshold];return[threshold,{reached:{count:timing.reached,rate:round(timing.reached/gameCount*100)},averageEventPosition:timing.reached?round(timing.positionSum/timing.reached):null,firstReachedByIssue:Object.fromEntries(timing.byIssue.map((count,index)=>[index+1,{count,rate:timing.reached?round(count/timing.reached*100):0}]))}];})),antiCapture:{...antiCapture,useRate:antiCapture.opportunities?round(antiCapture.used/antiCapture.opportunities*100):0,averageCardsPerUse:antiCapture.used?round(antiCapture.cardsTaken/antiCapture.used):0,averageUtility:antiCapture.used?round(antiCapture.utilitySum/antiCapture.used):0},antiTactics,pressureHistogram}
+        diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0,averageRecoveryRounds:silence.recoveryRoundsSamples?round(silence.recoveryRoundsTotal/silence.recoveryRoundsSamples):null},pressureTiming:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>{const timing=pressureTiming[threshold];return[threshold,{reached:{count:timing.reached,rate:round(timing.reached/gameCount*100)},averageEventPosition:timing.reached?round(timing.positionSum/timing.reached):null,firstReachedByIssue:Object.fromEntries(timing.byIssue.map((count,index)=>[index+1,{count,rate:timing.reached?round(count/timing.reached*100):0}]))}];})),antiCapture:{...antiCapture,useRate:antiCapture.opportunities?round(antiCapture.used/antiCapture.opportunities*100):0,averageCardsPerUse:antiCapture.used?round(antiCapture.cardsTaken/antiCapture.used):0,averageUtility:antiCapture.used?round(antiCapture.utilitySum/antiCapture.used):0},antiTactics,pressureHistogram}
       };
     }
     function setup(){
