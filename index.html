@@ -210,7 +210,7 @@
     </div>
     <div class="render-support" hidden><span id="seatStatus"></span><div id="turnBlock"></div><span id="pressureStat"></span><span id="roundStat"></span><span id="beliefStat"></span><span id="memoryStat"></span><strong id="pressureForecast"></strong><div id="permanentMemoryPanel"></div><div id="workPanel"></div></div>
   </div>
-  <dialog id="startDialog"><div class="dialog-body"><h2>选择你要扮演的阵营</h2><div class="prototype-banner"><strong>核心压牌基线 · 跨频道回应</strong>普通反压只要求同牌型、更高等级，不限制频道。可信度 / 互联网记忆仍记录结算值，但其同级反压、查暗牌、旧事点名、路人补标与永久记忆反馈在本轮核心测试中停用。</div><p id="startCopy">固定39张公共牌库。三个频道分别洗牌，每方各暗发2张；再从混合余牌暗发6张，每方共12张。明星另有1张公开技能牌直接放入手牌；最后3张不会公开或补牌。</p><div class="role-picks" id="rolePicks"></div></div></dialog>
+  <dialog id="startDialog"><div class="dialog-body"><h2>选择你要扮演的阵营</h2><div class="prototype-banner"><strong>核心压牌基线 · 跨频道回应</strong>普通反压只要求同牌型、更高等级，不限制频道。Fact / Spread 暂无额外效果；可信度与互联网记忆不记录数值，也不参与出牌、领出或本轮核心数据判断。整体胜负与影响力留待后续胜利规则实验，本轮暂不结算。</div><p id="startCopy">固定39张公共牌库。三个频道分别洗牌，每方各暗发2张；再从混合余牌暗发6张，每方共12张。明星另有1张公开技能牌直接放入手牌；最后3张不会公开或补牌。</p><div class="role-picks" id="rolePicks"></div></div></dialog>
   <dialog id="rulesDialog"><div class="dialog-body"><h2 id="rulesTitle" tabindex="-1">完整规则</h2><p>当前为跨频道核心压牌基线；下列保留但停用的正反馈均已明确标记。</p><ol class="rules-list">
     <li><strong>发牌规则（2+6暗发）：</strong>牌库共39张，事实、立场、传播各13张。先将三个频道分别洗牌，每方从每个频道各暗发2张，获得6张频道保底牌；再把剩余21张混合洗牌，每方追加暗发6张。最终每方12张普通牌，明星另将1张公开技能牌放入手牌；最后3张面朝下暗置，整场事件不公开也不补入手牌。</li>
     <li><strong>查明未发暗牌 · 核心基线停用：</strong>原规则会让可信度唯一第一者查看全部3张未发暗牌；本轮核心测试不触发，也不会让 AI 使用这项信息。</li>
@@ -220,7 +220,7 @@
     <li>连续两人过牌，当前置顶叙事赢得1个定调标记；只要后来有人出牌，之前过牌者就能重新加入。</li>
     <li>同一叙事先获得2个标记便定义当前问题。通常需要2至3个话轮；若三家各得1个，则进入第4个决胜话轮。</li>
     <li>AI在每个问题的首个标记产生前采用激进策略；没抢到首标便转为保守留牌，到下一问题重新激进。对方即将定调、自己已有标记、明星濒临失声或进入最后一题时会打破保守。</li>
-    <li>每个新事件的第一题固定由黑粉领出，正常行动循环为“黑粉 → 明星 → 真爱粉”；话轮最终置顶帖的发帖者领出本题下一话轮。第二、三题由上一题最终置顶帖的实际发帖者领出，不按叙事归属，也不再由记忆第一者直接取得领出权。事实定调使可信度+1，传播定调使记忆+1；单张、对子与连续论证的累计相同，闭环同时使两者各+1。</li>
+    <li>每个新事件的第一题固定由黑粉领出，正常行动循环为“黑粉 → 明星 → 真爱粉”；话轮最终置顶帖的发帖者领出本题下一话轮。第二、三题由上一题最终置顶帖的实际发帖者领出，不按叙事归属，也不再由记忆第一者直接取得领出权。Fact / Spread / 闭环在本轮核心测试中都不增加可信度或互联网记忆；赢家只获得1个定调标记与下一话轮领出权，另按现有 Stance Pressure 规则结算压力。</li>
     <li><strong>旧事点名 · 核心基线停用：</strong>原规则会让互联网记忆唯一第一者在第二、第三题首轮改变回应顺序；本轮核心测试完全不触发。</li>
     <li id="rule-pressure"><strong>明星压力 · 恢复滞后实验：</strong>压力从0开始。真爱粉每个话轮第一次以“粉圈解释”成功出牌，明星压力立即+1，即使后来被反压也不撤销；黑粉叙事赢得话轮时压力+1，真爱粉叙事赢得话轮不再自动增加压力。只有本人主张或忠实转述的立场定调会使压力-1。压力达到4后明星立即失声；降到3时仍然失声，必须降到2或更低才能恢复。</li>
     <li>真爱粉第一次进入每个话轮时，公开选择“转述本人”或“粉圈解释”，并在该话轮内保持不变。</li>
@@ -270,7 +270,7 @@
     const PRESSURE_CRITICAL=3;
     const PRESSURE_MILESTONES=[PRESSURE_CRITICAL,PRESSURE_MAX];
     const AI_ACTION_DELAY=2000;
-    const CORE_BASELINE={id:"cross-channel-response-baseline",label:"核心压牌基线",positiveFeedback:false};
+    const CORE_BASELINE={id:"cross-channel-response-baseline",label:"核心压牌基线",positiveFeedback:false,evaluateVictory:false};
     const CARD_NAMES={
       star:{fact:["核对原始记录","整理事件时间线","公开可验证细节","提交完整证据","第三方事实证明"],stance:["暂不作出定性","说明本人立场","承认表达瑕疵","划清责任边界","正面承担回应"],spread:["简短公开回应","工作室声明","完整采访回应","公开直播说明","全平台同步发声"]},
       fan:{fact:["核对爆料出处","整理公开资料","制作澄清时间线","补充交叉证据","发布完整档案"],stance:["等待本人回应","保持克制支持","承认合理质疑","守住支持立场","共同承担声援"],spread:["转发本人原话","澄清帖扩散","评论区集中说明","反黑长文联动","全站应援动员"]},
@@ -841,19 +841,21 @@
     }
     function resolveChannelOutcome(completed){
       const outcomes=[];
-      if(completed.patternType==="loop"){
-        state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
-        outcomes.push(`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1。`);
-      }else if(completed.memoryConverted){
-        const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
-        outcomes.push(`金色记忆牌定调：“${currentClaim(completed.owner)}”按传播牌使互联网记忆+${amount}。`);
-      }else if(completed.channel==="fact"){
-        const amount=channelRewardAmount();state.claims[completed.owner].credibility+=amount;
-        outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}。`);
-      }else if(completed.channel==="spread"){
-        const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
-        outcomes.push(`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}。`);
-      }else outcomes.push("立场定调本身不改变可信度或互联网记忆。");
+      if(CORE_BASELINE.positiveFeedback){
+        if(completed.patternType==="loop"){
+          state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
+          outcomes.push(`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1。`);
+        }else if(completed.memoryConverted){
+          const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
+          outcomes.push(`金色记忆牌定调：“${currentClaim(completed.owner)}”按传播牌使互联网记忆+${amount}。`);
+        }else if(completed.channel==="fact"){
+          const amount=channelRewardAmount();state.claims[completed.owner].credibility+=amount;
+          outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}。`);
+        }else if(completed.channel==="spread"){
+          const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
+          outcomes.push(`传播定调：“${currentClaim(completed.owner)}”互联网记忆+${amount}。`);
+        }else outcomes.push("立场定调本身不改变可信度或互联网记忆。");
+      }else outcomes.push(`${completed.patternType==="loop"?"闭环":CHANNELS[completed.channel]?.name||"当前频道"}定调：核心基线暂无频道额外效果。`);
       const intelLeader=revealUndealtToCredibilityLeader();
       if(intelLeader===completed.owner)outcomes.push(`${ROLES[intelLeader].short}首次成为可信度唯一第一，已私下查明全部3张未发暗牌。`);
       if(completed.owner==="star"&&completed.patternType!=="loop"&&completed.channel==="stance"){
@@ -969,6 +971,7 @@
       return state.claims[role][metric]-bestOther;
     }
     function patternMetricGain(pattern,metric){
+      if(!CORE_BASELINE.positiveFeedback)return 0;
       if(pattern.type==="loop")return 1;
       if(pattern.memoryConverted)return metric==="memory"?channelRewardAmount():0;
       if(metric==="credibility"&&pattern.channel!=="fact")return 0;
@@ -1039,9 +1042,28 @@
       if(!simulationMode||!state.simulationMetrics)return;
       const metrics=state.simulationMetrics;metrics.strategyTurns[mode]+=1;metrics.strategyActions[`${mode}_${action}`]=(metrics.strategyActions[`${mode}_${action}`]||0)+1;
     }
+    function createRateCounter(){return{opportunities:0,repeats:0};}
+    function createRepeatWinMetrics(){return{lastRound:null,overall:createRateCounter(),withinIssue:createRateCounter(),acrossIssues:createRateCounter(),byNextRound:{2:createRateCounter(),3:createRateCounter(),4:createRateCounter()},byPreviousController:Object.fromEntries(ROLE_ORDER.map(role=>[role,createRateCounter()])),repeatResource:{samples:0,handCountDelta:0,levelSumDelta:0,shapeScoreDelta:0}};}
+    function recordRateCounter(counter,repeated){counter.opportunities+=1;if(repeated)counter.repeats+=1;}
+    function mergeRateCounter(target,source){target.opportunities+=source.opportunities;target.repeats+=source.repeats;}
+    function mergeRepeatWinMetrics(target,source){
+      mergeRateCounter(target.overall,source.overall);mergeRateCounter(target.withinIssue,source.withinIssue);mergeRateCounter(target.acrossIssues,source.acrossIssues);
+      Object.keys(target.byNextRound).forEach(key=>mergeRateCounter(target.byNextRound[key],source.byNextRound[key]));ROLE_ORDER.forEach(role=>mergeRateCounter(target.byPreviousController[role],source.byPreviousController[role]));
+      target.repeatResource.samples+=source.repeatResource.samples;target.repeatResource.handCountDelta+=source.repeatResource.handCountDelta;target.repeatResource.levelSumDelta+=source.repeatResource.levelSumDelta;target.repeatResource.shapeScoreDelta+=source.repeatResource.shapeScoreDelta;
+    }
+    function handResourceSnapshot(role){const hand=state.roles[role].hand;return{handCount:hand.length,levelSum:hand.reduce((sum,card)=>sum+(Number(card.level)||0),0),shapeScore:handShapeScore(hand)};}
     function recordSimulationRound(completed){
       if(!simulationMode||!state.simulationMetrics)return;
       const metrics=state.simulationMetrics,channel=completed.patternType==="loop"?"loop":completed.memoryConverted?"spread":completed.channel,ownerChannel=`${completed.owner}_${channel}`;metrics.channelWins[channel]=(metrics.channelWins[channel]||0)+1;metrics.ownerChannelWins[ownerChannel]=(metrics.ownerChannelWins[ownerChannel]||0)+1;
+      const repeat=metrics.repeatWin,currentResource=handResourceSnapshot(completed.controller),previous=repeat.lastRound;
+      if(previous){
+        const repeated=previous.controller===completed.controller,sameIssue=previous.issueIndex===completed.issueIndex;
+        recordRateCounter(repeat.overall,repeated);recordRateCounter(sameIssue?repeat.withinIssue:repeat.acrossIssues,repeated);recordRateCounter(repeat.byPreviousController[previous.controller],repeated);
+        if(sameIssue&&repeat.byNextRound[completed.roundInIssue])recordRateCounter(repeat.byNextRound[completed.roundInIssue],repeated);
+        if(repeated){const resource=repeat.repeatResource;resource.samples+=1;resource.handCountDelta+=currentResource.handCount-previous.resource.handCount;resource.levelSumDelta+=currentResource.levelSum-previous.resource.levelSum;resource.shapeScoreDelta+=currentResource.shapeScore-previous.resource.shapeScore;}
+      }
+      repeat.lastRound={controller:completed.controller,owner:completed.owner,issueIndex:completed.issueIndex,roundInIssue:completed.roundInIssue,resource:currentResource};
+      if(!metrics.firstMarkerByIssue[completed.issueIndex]&&ROLE_ORDER.every(role=>state.issueMarkers[role]===0))metrics.firstMarkerByIssue[completed.issueIndex]={owner:completed.owner,controller:completed.controller};
     }
     function claimHelpful(role,owner){
       const counts=seatCounts(),openIssues=state.issues.length-state.seats.length;
@@ -1284,8 +1306,7 @@
     function captureUtility(cards,hand=state.roles.anti.hand){
       const shapeGain=Math.max(0,handShapeScore([...hand,...cards])-handShapeScore(hand));
       let score=cards.length*.75+cards.reduce((sum,card)=>sum+card.level*.28+(card.isWild?2.5:0),0)+shapeGain*1.7;
-      if(metricGap("anti","memory")<=0)score+=cards.length*2.4;
-      if(uniqueLeader("credibility")!=="anti")score+=cards.filter(card=>card.channel==="fact").length*.35;
+      if(CORE_BASELINE.positiveFeedback){if(metricGap("anti","memory")<=0)score+=cards.length*2.4;if(uniqueLeader("credibility")!=="anti")score+=cards.filter(card=>card.channel==="fact").length*.35;}
       return score;
     }
     function capturableTopCards(){return state.topPlay?.cards.filter(card=>card.id!=="star-work")||[];}
@@ -1309,9 +1330,9 @@
         if(!eligibleOwner&&projectedConsensus===owner)return"建立可信度与记忆双领先，为下一话轮争取路人补标资格";
       }
       if(role==="star"&&choice.pattern.channel==="stance"&&state.pressure>=PRESSURE_HIGH)return"失声风险升高，优先用本人立场减压";
-      if(role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
-      if(role==="anti"&&choice.pattern.memoryConverted)return"金色记忆牌保留原牌型，同时能把本轮定调转化为互联网记忆";
-      if(role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆唯一第一";
+      if(CORE_BASELINE.positiveFeedback&&role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
+      if(CORE_BASELINE.positiveFeedback&&role==="anti"&&choice.pattern.memoryConverted)return"金色记忆牌保留原牌型，同时能把本轮定调转化为互联网记忆";
+      if(CORE_BASELINE.positiveFeedback&&role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆唯一第一";
       if(role==="anti"&&!state.silenced&&state.pressure>=PRESSURE_HIGH)return"黑粉叙事守住话轮会继续加压，逼迫支持阵营投入牌救援";
       return"建立更有利于自身公开目标的叙事位置";
     }
@@ -1409,15 +1430,16 @@
       resolvePermanentMemory();
       const checks=objectiveChecks(),credibilityLeaders=positiveHighestRoles("credibility"),memoryLeaders=positiveHighestRoles("memory");
       const influenceChanges={};
-      ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length,change=completed===2?state.heat:completed===0?-state.heat:0;influenceChanges[role]=change;campaign.influence[role]+=change;});
+      ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length,change=CORE_BASELINE.evaluateVictory?(completed===2?state.heat:completed===0?-state.heat:0):0;influenceChanges[role]=change;campaign.influence[role]+=change;});
       if(simulationMode)return;
       render();
       const narratives=state.issues.map((issue,index)=>{const seat=state.seats.find(item=>item.issueIndex===index);return`<li><strong>${issue.title}</strong> ${seat?issue.claims[seat.owner]:"尚未完成定调"}</li>`;}).join("");
       const belief=credibilityLeaders.length?credibilityLeaders.map(role=>`${ROLES[role].short}叙事`).join("、"):"尚未形成可信结论",memory=memoryLeaders.length?memoryLeaders.map(role=>`${ROLES[role].short}叙事`).join("、"):"尚未形成稳定记忆";
       const resultCards=ROLE_ORDER.map(role=>{
-        const completed=checks[role].filter(item=>item.ok).length,status=completed===2?"完整胜利":completed===1?"局部胜利":"诉求未达成";
+        const completed=checks[role].filter(item=>item.ok).length,status=CORE_BASELINE.evaluateVictory?(completed===2?"完整胜利":completed===1?"局部胜利":"诉求未达成"):"本轮不判定胜负";
         const change=influenceChanges[role],changeText=change>0?`+${change}`:`${change}`;
-        return`<div class="result-card" style="--role-color:${ROLES[role].color}"><span>${ROLES[role].name}</span><strong>${status}</strong><p>${checks[role].map(item=>`${item.ok?"已完成":"未完成"}：${item.label}`).join("<br>")}<br><b>影响力 ${changeText} · 总计 ${campaign.influence[role]}</b></p></div>`;
+        const detail=CORE_BASELINE.evaluateVictory?checks[role].map(item=>`${item.ok?"已完成":"未完成"}：${item.label}`).join("<br>"):`本轮只记录定调、领出权、手牌消耗与明星压力；旧胜利目标不参与结算。`;
+        return`<div class="result-card" style="--role-color:${ROLES[role].color}"><span>${ROLES[role].name}</span><strong>${status}</strong><p>${detail}<br><b>影响力 ${changeText} · 总计 ${campaign.influence[role]}</b></p></div>`;
       }).join("");
       const memoryOutcome=state.permanentMemoryOutcome,failedChecks=[];if(memoryOutcome.status!=="disabled"){if(!memoryOutcome.checks.finalTop)failedChecks.push("没有事件最终热评");if(memoryOutcome.checks.finalTop&&!memoryOutcome.checks.credibility)failedChecks.push("最终热评并非可信度唯一第一");if(memoryOutcome.checks.finalTop&&!memoryOutcome.checks.memory)failedChecks.push("最终热评并非互联网记忆唯一第一");if(!memoryOutcome.checks.heat)failedChecks.push(`浏览量${formatHeatReach(state.heat)}未超过旧纪录${formatHeatReach(state.memoryTarget)}`);}
       const memoryLine=memoryOutcome.status==="disabled"?`<br><strong>核心基线：</strong>永久记忆反馈已停用。`:memoryOutcome.status==="formed"?`<br><strong>新永久记忆：</strong>“${state.permanentMemory.claim}” · 峰值${formatHeatReach(state.permanentMemory.strength)}；其拥有者下局互联网记忆从1开始。`:state.permanentMemory?`<br><strong>旧永久记忆保留：</strong>“${state.permanentMemory.claim}” · 峰值${formatHeatReach(state.permanentMemory.strength)}。本局未覆盖：${failedChecks.join("、")}。`:`<br><strong>永久记忆：</strong>本局未形成。${failedChecks.join("、")}。`;
@@ -1489,9 +1511,9 @@
     }
     function renderPublicScoreboard(){
       const credibilityLeaders=positiveHighestRoles("credibility"),memoryLeaders=positiveHighestRoles("memory");
-      const tokens=(metric,leaders)=>ROLE_ORDER.map(role=>{const leader=leaders.length===1&&leaders[0]===role,title=leader?"核心基线只记录领先，不授予额外压制或顺序能力":"";return`<span class="score-token ${leader?"leader":""}" style="--role-color:${ROLES[role].color}" title="${title}">${ROLES[role].short}<strong>${state.claims[role][metric]}</strong></span>`;}).join("");
-      const credibilityHelp=`<details class="mechanism-help" style="--help-color:var(--fact)"><summary aria-label="查看可信度规则">i</summary><div class="mechanism-copy"><strong>可信度 · 实验停权</strong>事实牌或闭环叙事守到结算时仍记录数值，但核心基线不提供同等级反压、查明暗牌或其他出牌优势。</div></details>`;
-      const memoryHelp=`<details class="mechanism-help" style="--help-color:var(--spread)"><summary aria-label="查看互联网记忆规则">i</summary><div class="mechanism-copy"><strong>互联网记忆 · 实验停权</strong>传播牌、金色记忆牌或闭环叙事守到结算时仍记录数值，但核心基线不触发旧事点名、路人补标或永久记忆反馈。</div></details>`;
+      const tokens=(metric,leaders)=>ROLE_ORDER.map(role=>`<span class="score-token" style="--role-color:${ROLES[role].color}" title="核心基线不记录此数值">${ROLES[role].short}<strong>${state.claims[role][metric]}</strong></span>`).join("");
+      const credibilityHelp=`<details class="mechanism-help" style="--help-color:var(--fact)"><summary aria-label="查看可信度规则">i</summary><div class="mechanism-copy"><strong>可信度 · 核心基线关闭</strong>本轮不记录数值，也不提供同等级反压、查明暗牌或其他出牌优势。</div></details>`;
+      const memoryHelp=`<details class="mechanism-help" style="--help-color:var(--spread)"><summary aria-label="查看互联网记忆规则">i</summary><div class="mechanism-copy"><strong>互联网记忆 · 核心基线关闭</strong>本轮不记录数值，也不触发旧事点名、路人补标或永久记忆反馈。</div></details>`;
       el("publicScoreboard").innerHTML=`<div class="score-rail credibility"><div class="score-rail-title"><b>可信</b>${credibilityHelp}</div>${tokens("credibility",credibilityLeaders)}</div><div class="score-rail memory"><div class="score-rail-title"><b>记忆</b>${memoryHelp}</div>${tokens("memory",memoryLeaders)}</div>`;
     }
     function renderThreadAccount(role){
@@ -1668,12 +1690,12 @@
       const gameCount=clamp(Math.round(Number(requestedCount)||500),1,10000),numericSeed=requestedSeed===null||requestedSeed===""?null:Number(requestedSeed),seed=Number.isFinite(numericSeed)?Math.round(numericSeed):null,originalRandom=Math.random,savedState=state,savedCampaign={eventNumber:campaign.eventNumber,influence:{...campaign.influence},permanentMemory:campaign.permanentMemory?{...campaign.permanentMemory}:null,activeTheme:campaign.activeTheme,nextTheme:campaign.nextTheme,storyTime:campaign.storyTime,lastGapMonths:campaign.lastGapMonths};
       if(seed!==null)Math.random=seededRandom(seed);
       const stages=CONTROVERSY_ISSUES.map(issue=>({issue:issue.title,reached:0,completed:0,averageHeatSum:0,endPressureSum:0,roundsSum:0,endHandsSum:0,roleHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))}));
-      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),objectiveHits=Object.fromEntries(ROLE_ORDER.map(role=>[role,[0,0]])),claimTotals=Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),antiMemoryLead={unique:0,tied:0},skillUsage={star:{fullRelease:0,earlyRelease:0,lost:0,expired:0},fan:{used:0},anti:{used:0,totalUses:0}},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence={activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics={baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel={reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanDiagnostics={fanDefined:0,starSafe:0,both:0,fanSeats:0,starSeats:0,voicePlays:{star:0,fan:0}},oldStory={windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}},pressureHistogram={},pressureTiming=Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,{reached:0,positionSum:0,byIssue:Array(CONTROVERSY_ISSUES.length).fill(0)}])),prototypeAggregate=createPrototypeAggregate(CONTROVERSY_ISSUES.length);let safetyStops=0;
+      const final={pressure:0,heat:0,silenced:0,complete:0,hands:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},outcomes=Object.fromEntries(ROLE_ORDER.map(role=>[role,{complete:0,partial:0,fail:0}])),objectiveHits=Object.fromEntries(ROLE_ORDER.map(role=>[role,[0,0]])),claimTotals=Object.fromEntries(ROLE_ORDER.map(role=>[role,{credibility:0,memory:0}])),antiMemoryLead={unique:0,tied:0},skillUsage={star:{fullRelease:0,earlyRelease:0,lost:0,expired:0},fan:{used:0},anti:{used:0,totalUses:0}},strategyTurns={aggressive:0,conservative:0},strategyActions={},channelWins={},ownerChannelWins={},bystander={watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence={activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture={opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics={baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel={reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanDiagnostics={fanDefined:0,starSafe:0,both:0,fanSeats:0,starSeats:0,voicePlays:{star:0,fan:0}},oldStory={windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}},pressureHistogram={},pressureTiming=Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,{reached:0,positionSum:0,byIssue:Array(CONTROVERSY_ISSUES.length).fill(0)}])),repeatWin=createRepeatWinMetrics(),firstMarkerConversion={opportunities:0,converted:0,byOwner:Object.fromEntries(ROLE_ORDER.map(role=>[role,{opportunities:0,converted:0}]))},prototypeAggregate=createPrototypeAggregate(CONTROVERSY_ISSUES.length);let safetyStops=0;
       simulationMode=true;
       try{
         for(let game=0;game<gameCount;game++){
           campaign.eventNumber=1;campaign.influence={star:0,fan:0,anti:0};campaign.permanentMemory=null;campaign.activeTheme="controversy";campaign.nextTheme=null;campaign.storyTime=CAMPAIGN_START_TIME;campaign.lastGapMonths=0;state=initialState("star");
-          state.roundStartConsensusOwner=consensusLeader();state.simulationMetrics={heatSamples:state.issues.map(()=>[]),issueEnds:[],pressureMilestones:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,null])),silenceRecoveryStartedRound:null,strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},bystander:{watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence:{activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics:{baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel:{reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanVoicePlays:{star:0,fan:0},oldStory:{windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
+          state.roundStartConsensusOwner=consensusLeader();state.simulationMetrics={heatSamples:state.issues.map(()=>[]),issueEnds:[],pressureMilestones:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>[threshold,null])),silenceRecoveryStartedRound:null,strategyTurns:{aggressive:0,conservative:0},strategyActions:{},channelWins:{},ownerChannelWins:{},repeatWin:createRepeatWinMetrics(),firstMarkerByIssue:Array(state.issues.length).fill(null),bystander:{watching:0,joined:0,cleared:0,decisive:0,offTurn:0,joined_star:0,joined_fan:0,joined_anti:0},silence:{activations:0,rescues:0,starForcedPasses:0,recoveryRoundsTotal:0,recoveryRoundsSamples:0},antiCapture:{opportunities:0,used:0,skipped:0,cardsTaken:0,utilitySum:0,bundleSizes:{},levels:{},channels:{}},antiTactics:{baitLeads:0,baitCounters:0,baitBroken:0,baitOverraised:0,tacticalWaits:0},intel:{reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),informedPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0])),discoveryPlays:Object.fromEntries(ROLE_ORDER.map(role=>[role,0]))},fanVoicePlays:{star:0,fan:0},oldStory:{windows:0,activated:0,tied:0,unformed:0,selfNominations:0,responderPlays:0,responderPasses:0,choices:{}}};state.simulationMetrics.heatSamples[0].push(state.heat);
           let steps=0;
           while(state.phase!=="ended"&&steps<600){
             if(state.phase==="round_break"){state.phase="action";continue;}
@@ -1687,7 +1709,7 @@
           });
           final.pressure+=state.pressure;final.heat+=state.heat;final.silenced+=state.silenced?1:0;final.complete+=state.seats.length===state.issues.length?1:0;ROLE_ORDER.forEach(role=>{final.hands[role]+=state.roles[role].hand.length;});
           PRESSURE_MILESTONES.forEach(threshold=>{const milestone=state.simulationMetrics.pressureMilestones[threshold];if(!milestone)return;const timing=pressureTiming[threshold];timing.reached+=1;timing.positionSum+=milestone.round/Math.max(1,state.roundsCompleted)*100;if(timing.byIssue[milestone.issueIndex]!==undefined)timing.byIssue[milestone.issueIndex]+=1;});
-          const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;checks[role].forEach((item,index)=>{if(item.ok)objectiveHits[role][index]+=1;});claimTotals[role].credibility+=state.claims[role].credibility;claimTotals[role].memory+=state.claims[role].memory;});
+          const checks=objectiveChecks();ROLE_ORDER.forEach(role=>{if(CORE_BASELINE.evaluateVictory){const completed=checks[role].filter(item=>item.ok).length;outcomes[role][completed===2?"complete":completed===1?"partial":"fail"]+=1;checks[role].forEach((item,index)=>{if(item.ok)objectiveHits[role][index]+=1;});}claimTotals[role].credibility+=state.claims[role].credibility;claimTotals[role].memory+=state.claims[role].memory;});
           const finalSeats=seatCounts();if(finalSeats.fan>=1)fanDiagnostics.fanDefined+=1;if(!state.silenced)fanDiagnostics.starSafe+=1;if(finalSeats.fan>=1&&!state.silenced)fanDiagnostics.both+=1;fanDiagnostics.fanSeats+=finalSeats.fan;fanDiagnostics.starSeats+=finalSeats.star;
           if(state.skills.star.status==="released")skillUsage.star.fullRelease+=1;else if(state.skills.star.status==="releasedEarly")skillUsage.star.earlyRelease+=1;else if(state.skills.star.status==="lost")skillUsage.star.lost+=1;else if(state.skills.star.status==="expired")skillUsage.star.expired+=1;
           if(state.skills.fan.used)skillUsage.fan.used+=1;if(state.skills.anti.used>0)skillUsage.anti.used+=1;skillUsage.anti.totalUses+=state.skills.anti.used;
@@ -1701,14 +1723,18 @@
           ROLE_ORDER.forEach(role=>{intel.reveals[role]+=state.simulationMetrics.intel.reveals[role];intel.informedPlays[role]+=state.simulationMetrics.intel.informedPlays[role];intel.discoveryPlays[role]+=state.simulationMetrics.intel.discoveryPlays[role];});
           fanDiagnostics.voicePlays.star+=state.simulationMetrics.fanVoicePlays.star;fanDiagnostics.voicePlays.fan+=state.simulationMetrics.fanVoicePlays.fan;
           const callMetric=state.simulationMetrics.oldStory;oldStory.windows+=callMetric.windows;oldStory.activated+=callMetric.activated;oldStory.tied+=callMetric.tied;oldStory.unformed+=callMetric.unformed;oldStory.selfNominations+=callMetric.selfNominations;oldStory.responderPlays+=callMetric.responderPlays;oldStory.responderPasses+=callMetric.responderPasses;Object.entries(callMetric.choices).forEach(([key,value])=>{oldStory.choices[key]=(oldStory.choices[key]||0)+value;});
+          mergeRepeatWinMetrics(repeatWin,state.simulationMetrics.repeatWin);
+          state.simulationMetrics.firstMarkerByIssue.forEach((first,index)=>{const seat=state.seats.find(item=>item.issueIndex===index);if(!first||!seat)return;const converted=seat.owner===first.owner,ownerStats=firstMarkerConversion.byOwner[first.owner];firstMarkerConversion.opportunities+=1;ownerStats.opportunities+=1;if(converted){firstMarkerConversion.converted+=1;ownerStats.converted+=1;}});
           accumulatePrototypeGame(prototypeAggregate,state.experiment,state.seats,Object.fromEntries(ROLE_ORDER.map(role=>[role,state.roles[role].hand])),state.skills.fan.used);
         }
       }finally{
         state=savedState;campaign.eventNumber=savedCampaign.eventNumber;campaign.influence=savedCampaign.influence;campaign.permanentMemory=savedCampaign.permanentMemory;campaign.activeTheme=savedCampaign.activeTheme;campaign.nextTheme=savedCampaign.nextTheme;campaign.storyTime=savedCampaign.storyTime;campaign.lastGapMonths=savedCampaign.lastGapMonths;simulationMode=false;Math.random=originalRandom;
       }
       const round=value=>Math.round(value*100)/100;
+      const rateCounter=counter=>({opportunities:counter.opportunities,repeats:counter.repeats,rate:counter.opportunities?round(counter.repeats/counter.opportunities*100):null});
+      const conversionCounter=counter=>({questions:counter.opportunities,converted:counter.converted,rate:counter.opportunities?round(counter.converted/counter.opportunities*100):null});
       return{
-        games:gameCount,seed,scenario:SIMULATION_SCENARIO,safetyStops,
+        games:gameCount,seed,scenario:SIMULATION_SCENARIO,safetyStops,victoryEvaluation:CORE_BASELINE.evaluateVictory?"active":"disabled-for-core-baseline",
         stages:stages.map(stage=>({issue:stage.issue,reachedRate:round(stage.reached/gameCount*100),completedRate:round(stage.completed/gameCount*100),averageHeat:stage.reached?round(stage.averageHeatSum/stage.reached):null,averageEndPressure:stage.completed?round(stage.endPressureSum/stage.completed):null,averageRounds:stage.completed?round(stage.roundsSum/stage.completed):null,averageRemainingCards:stage.completed?round(stage.endHandsSum/stage.completed):null,averageHands:stage.completed?Object.fromEntries(ROLE_ORDER.map(role=>[role,round(stage.roleHands[role]/stage.completed)])):null})),
         final:{completionRate:round(final.complete/gameCount*100),averagePressure:round(final.pressure/gameCount),silencedRate:round(final.silenced/gameCount*100),averageHeat:round(final.heat/gameCount),averageRemainingCards:round(ROLE_ORDER.reduce((sum,role)=>sum+final.hands[role],0)/gameCount),averageHands:Object.fromEntries(ROLE_ORDER.map(role=>[role,round(final.hands[role]/gameCount)]))},
         strategy:{turns:strategyTurns,actions:strategyActions,conservativePassRate:strategyTurns.conservative?round((strategyActions.conservative_pass||0)/strategyTurns.conservative*100):0},
@@ -1720,6 +1746,7 @@
         privateIntel:{reveals:Object.fromEntries(ROLE_ORDER.map(role=>[role,{count:intel.reveals[role],rate:round(intel.reveals[role]/gameCount*100)}])),informedPlays:intel.informedPlays,discoveryPlays:intel.discoveryPlays},
         fanDiagnostics:{fanDefined:{count:fanDiagnostics.fanDefined,rate:round(fanDiagnostics.fanDefined/gameCount*100)},starNotSilenced:{count:fanDiagnostics.starSafe,rate:round(fanDiagnostics.starSafe/gameCount*100)},both:{count:fanDiagnostics.both,rate:round(fanDiagnostics.both/gameCount*100)},averageSeats:{fan:round(fanDiagnostics.fanSeats/gameCount),star:round(fanDiagnostics.starSeats/gameCount)},voicePlays:fanDiagnostics.voicePlays},
         oldStory:{...oldStory,activationRate:oldStory.windows?round(oldStory.activated/oldStory.windows*100):0,passRate:oldStory.responderPlays+oldStory.responderPasses?round(oldStory.responderPasses/(oldStory.responderPlays+oldStory.responderPasses)*100):0},
+        snowball:{repeatWin:{overall:rateCounter(repeatWin.overall),withinIssue:rateCounter(repeatWin.withinIssue),acrossIssues:rateCounter(repeatWin.acrossIssues),byNextRound:Object.fromEntries(Object.entries(repeatWin.byNextRound).map(([key,value])=>[key,rateCounter(value)])),byPreviousController:Object.fromEntries(ROLE_ORDER.map(role=>[role,rateCounter(repeatWin.byPreviousController[role])])),repeatResourceChange:repeatWin.repeatResource.samples?{samples:repeatWin.repeatResource.samples,averageHandCountDelta:round(repeatWin.repeatResource.handCountDelta/repeatWin.repeatResource.samples),averageLevelSumDelta:round(repeatWin.repeatResource.levelSumDelta/repeatWin.repeatResource.samples),averageShapeScoreDelta:round(repeatWin.repeatResource.shapeScoreDelta/repeatWin.repeatResource.samples)}:{samples:0,averageHandCountDelta:null,averageLevelSumDelta:null,averageShapeScoreDelta:null}},firstMarkerConversion:{overall:conversionCounter(firstMarkerConversion),byOwner:Object.fromEntries(ROLE_ORDER.map(role=>[role,conversionCounter(firstMarkerConversion.byOwner[role])]))}},
         coreBaseline:finalizePrototypeAggregate(prototypeAggregate,gameCount,round),
         diagnostics:{channelWins,ownerChannelWins,bystander,silence:{...silence,rescueRate:silence.activations?round(silence.rescues/silence.activations*100):0,averageRecoveryRounds:silence.recoveryRoundsSamples?round(silence.recoveryRoundsTotal/silence.recoveryRoundsSamples):null},pressureTiming:Object.fromEntries(PRESSURE_MILESTONES.map(threshold=>{const timing=pressureTiming[threshold];return[threshold,{reached:{count:timing.reached,rate:round(timing.reached/gameCount*100)},averageEventPosition:timing.reached?round(timing.positionSum/timing.reached):null,firstReachedByIssue:Object.fromEntries(timing.byIssue.map((count,index)=>[index+1,{count,rate:timing.reached?round(count/timing.reached*100):0}]))}];})),antiCapture:{...antiCapture,useRate:antiCapture.opportunities?round(antiCapture.used/antiCapture.opportunities*100):0,averageCardsPerUse:antiCapture.used?round(antiCapture.cardsTaken/antiCapture.used):0,averageUtility:antiCapture.used?round(antiCapture.utilitySum/antiCapture.used):0},antiTactics,pressureHistogram}
       };
