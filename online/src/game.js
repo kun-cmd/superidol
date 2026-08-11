@@ -21,10 +21,10 @@ export const PATTERN_NAMES = {
 
 export const ISSUE_MARKER_TARGET = 2;
 export const ROUND_MARKER_GAIN = 1;
-export const HEAT_INTERVENTION_THRESHOLDS = [35, 55, 75];
+export const HEAT_INTERVENTION_THRESHOLDS = [35, 75];
 
 const DECK_COPIES = { 1: 3, 2: 3, 3: 3, 4: 3, 5: 1 };
-const ANTI_CAPTURE_LIMIT = 2;
+const ANTI_CAPTURE_LIMIT = 1;
 const STAR_WORK_START_LEVEL = 2;
 const STAR_WORK_RELEASE_LEVEL = 6;
 const PRESSURE_MAX = 4;
@@ -220,7 +220,7 @@ function advanceStoryTime(state, kind, intensity = 1) {
   return state.storyTime;
 }
 
-function publishBystanderComment(state, source = "response") {
+function publishBystanderComment(state, source = "response", detail = {}) {
   advanceStoryTime(state, "comment", source === "opening" ? 1 : state.heat);
   const index = (state.commentSequence + state.issueIndex * 2 + state.roundsCompleted) % BYSTANDER_COMMENTS.length;
   const nextThreshold = HEAT_INTERVENTION_THRESHOLDS.find(
@@ -230,14 +230,27 @@ function publishBystanderComment(state, source = "response") {
     ? `中央还有${state.heatInterventionTokens}枚路人介入；下一位话轮赢家将失去继承领出权`
     : nextThreshold
       ? `下一条路人介入线为Heat ${nextThreshold}`
-      : "三条路人介入线均已触发";
+      : "两条路人介入线均已触发";
+  const triggered = source === "intervention_triggered";
+  const used = source === "intervention_used";
+  const thresholds = detail.thresholds || [];
+  const text = triggered
+    ? `热度越过${thresholds.map((value) => `Heat ${value}`).join("、")}，路人开始盯着谁还想连续控场。`
+    : used
+      ? "这轮结果照算，但下一轮别再让刚赢的人继续带节奏，换下一家说。"
+      : BYSTANDER_COMMENTS[index];
+  const commentReason = triggered
+    ? `触发${thresholds.length}枚路人介入；下一位话轮赢家会失去领出权`
+    : used
+      ? `${ROLES[detail.from]?.short || "赢家"}保留定调标记，下一轮改由${ROLES[detail.to]?.short || "下一家"}领出`
+      : reason;
   state.commentSequence += 1;
   state.bystanderComments.unshift({
     id: `bystander-1-${state.commentSequence}`,
-    text: BYSTANDER_COMMENTS[index],
+    text,
     supportOwner: null,
-    status: "观望",
-    reason,
+    status: triggered ? "介入预警" : used ? "已经介入" : "观望",
+    reason: commentReason,
     createdAt: state.storyTime,
     likes: 12 + state.commentSequence * 3,
     playerLiked: false,
@@ -669,6 +682,7 @@ function resolveRound(state, reason) {
       controller: issueWinner === owner ? controller : issueWinner,
       claim: issue.claims[issueWinner],
       rounds: state.roundInIssue,
+      markers: { ...state.issueMarkers },
     });
     addLog(state, `“${issue.title}”完成定调：${issue.claims[issueWinner]}。`, issueWinner);
     state.issueIndex += 1;
@@ -697,6 +711,7 @@ function resolveRound(state, reason) {
       `路人介入被消耗：${ROLES[controller].short}保留本轮定调标记，但不能继承下一话轮领出权；按座次改由${ROLES[nextLead].short}领出。`,
       nextLead,
     );
+    publishBystanderComment(state, "intervention_used", { from: controller, to: nextLead });
   } else {
     completed.heatIntervention = { consumed: false, from: controller, to: controller, remaining: 0 };
   }
@@ -781,7 +796,7 @@ function applyPlay(state, role, command) {
     pressureText = `，粉圈越界使压力+${changePressure(state, 1)}`;
   }
   const addedHeat = playHeat(cards, pattern);
-  changeHeat(state, addedHeat, role);
+  const heatChange = changeHeat(state, addedHeat, role);
   advanceStoryTime(state, "response", addedHeat);
   state.claimOwner = owner;
   state.topPlay = {
@@ -816,7 +831,11 @@ function applyPlay(state, role, command) {
     `${ROLES[role].short}打出“${cards.map((card) => card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(state, owner)}”。影响：手牌${handText}${reachGain > 0 ? `，浏览量+${formatReachValue(reachGain)}` : ""}${pressureText}。`,
     role,
   );
-  publishBystanderComment(state, "response");
+  publishBystanderComment(
+    state,
+    heatChange.crossed.length ? "intervention_triggered" : "response",
+    { thresholds: heatChange.crossed },
+  );
   state.currentRole = nextRole(role);
 }
 
@@ -845,16 +864,15 @@ function applyCool(state, role, command) {
   assertRule(roleCanPlay(state, role), "role_silenced", "明星失声时不能再操作手牌。" );
   const card = state.roles[role].hand.find((item) => item.id === command.cardId);
   assertRule(card, "card_not_owned", "暗置的牌不在你的手牌中。" );
+  const beforeHeat = state.heat;
   state.roles[role].hand = state.roles[role].hand.filter((item) => item.id !== card.id);
   state.roles[role].hiddenDiscard.push(card);
-  changeHeat(state, -3, role);
+  changeHeat(state, -5, role);
   advanceStoryTime(state, "pause", card.level);
-  finishPassLikeAction(
+  addLog(
     state,
+    `${ROLES[role].short}弃掉1张牌降温，Heat ${beforeHeat}→${state.heat}（支付-5，最低为0）；仍可在本次行动中继续出牌或再次降温。`,
     role,
-    `${ROLES[role].short}暗置弃掉1张牌冷处理，围观降至${formatHeatReach(state.heat)}，并让出领出权。`,
-    `${ROLES[role].short}暗置弃掉1张牌冷处理，围观降至${formatHeatReach(state.heat)}，并视为过牌。`,
-    "三方连续冷处理，剩余问题无法继续定调。",
   );
 }
 

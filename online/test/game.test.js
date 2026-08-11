@@ -11,6 +11,7 @@ import {
   getLegalPlayOptions,
   runRuleChecks,
 } from "../src/game.js";
+import { GameRoom } from "../src/worker.js";
 
 function seededRandom(seed) {
   let value = seed >>> 0;
@@ -86,6 +87,26 @@ test("two passes settle a round and award one marker", () => {
   assert.equal(state.lastCompletedRound.markerGain, 1);
   assert.equal(state.currentRole, "anti");
   assert.equal(state.pressure, 1);
+});
+
+test("cooling costs one card and five Heat without ending the action", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  const card = state.roles.anti.hand[0];
+  state.heat = 20;
+  applyCommand(state, "anti", { type: "cool", cardId: card.id });
+
+  assert.equal(state.heat, 15);
+  assert.equal(state.currentRole, "anti");
+  assert.equal(state.phase, "action");
+  assert.equal(state.passes, 0);
+  assert.equal(state.topPlay, null);
+  assert.equal(state.roles.anti.hand.some((item) => item.id === card.id), false);
+  assert.equal(state.roles.anti.hiddenDiscard.at(-1).id, card.id);
+
+  const secondCard = state.roles.anti.hand[0];
+  assert.doesNotThrow(() => applyCommand(state, "anti", { type: "cool", cardId: secondCard.id }));
+  assert.equal(state.heat, 10);
+  assert.equal(state.currentRole, "anti", "cooling remains repeatable in the same action");
 });
 
 test("crossing a Heat line creates one intervention that breaks winner lead", () => {
@@ -213,6 +234,47 @@ test("server bots choose valid actions and finish a full match", () => {
   assert.equal(state.seats.length, 3);
 });
 
+test("online room schedules exactly one bot action after a two-second delay", async () => {
+  const stored = new Map();
+  const context = {
+    storage: {
+      get: async (key) => stored.get(key),
+      put: async (key, value) => stored.set(key, value),
+      setAlarm: async (value) => { context.alarmAt = value; },
+      deleteAll: async () => stored.clear(),
+    },
+    blockConcurrencyWhile(callback) { context.ready = callback(); },
+    getWebSockets() { return []; },
+  };
+  const room = new GameRoom(context, {});
+  await context.ready;
+  room.room = {
+    code: "BOT123",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    hostRole: null,
+    players: Object.fromEntries(ROLE_ORDER.map((role) => [role, { role, name: "AI", token: null, ready: true, isBot: true }])),
+    started: false,
+    version: 0,
+    game: null,
+    recentActionIds: [],
+    botTurnDueAt: null,
+  };
+
+  assert.equal(room.tryStartMatch(), true);
+  assert.equal(room.room.game.currentRole, "anti");
+  assert.equal(room.room.game.topPlay, null, "starting a room must not run the bot immediately");
+  assert.ok(room.room.botTurnDueAt - Date.now() > 1500);
+
+  room.room.botTurnDueAt = Date.now() - 1;
+  await room.alarm();
+  assert.equal(room.room.game.topPlay.role, "anti");
+  assert.equal(room.room.game.currentRole, "star", "one alarm advances exactly one bot action");
+  assert.ok(room.room.botTurnDueAt - Date.now() > 1500, "the next bot receives its own two-second delay");
+});
+
 test("server rule self-checks pass", () => {
-  assert.equal(runRuleChecks().passed, true);
+  const checks = runRuleChecks();
+  assert.equal(checks.passed, true);
+  assert.deepEqual(checks.heatInterventionThresholds, [35, 75]);
 });

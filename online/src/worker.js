@@ -9,6 +9,7 @@ import {
 
 const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
+const BOT_ACTION_DELAY_MS = 2000;
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -138,6 +139,10 @@ export class GameRoom {
     this.ctx.blockConcurrencyWhile(async () => {
       this.room = await this.ctx.storage.get("room") || null;
       this.normalizeRoom();
+      if (this.room?.botTurnDueAt) {
+        await this.ctx.storage.put("room", this.room);
+        await this.ctx.storage.setAlarm(this.room.botTurnDueAt);
+      }
     });
   }
 
@@ -167,6 +172,7 @@ export class GameRoom {
       version: 0,
       game: null,
       recentActionIds: [],
+      botTurnDueAt: null,
     };
     await this.persist();
     return json({ roomCode: this.room.code, playerToken: token, role: body.role, name: this.room.players[body.role].name }, 201);
@@ -330,7 +336,7 @@ export class GameRoom {
         return;
       }
       this.room.version += 1;
-      this.runBotTurns();
+      this.scheduleBotTurn();
       this.room.recentActionIds.push(message.actionId);
       this.room.recentActionIds = this.room.recentActionIds.slice(-100);
       this.room.updatedAt = Date.now();
@@ -384,6 +390,10 @@ export class GameRoom {
         if (this.room.players[role]?.isBot) delete this.room.players[role];
       });
     }
+    if (!Number.isFinite(this.room.botTurnDueAt)) this.room.botTurnDueAt = null;
+    if (this.room.started && this.room.game && this.room.players[this.room.game.currentRole]?.isBot && !this.room.botTurnDueAt) {
+      this.room.botTurnDueAt = Date.now() + BOT_ACTION_DELAY_MS;
+    }
   }
 
   tryStartMatch() {
@@ -396,28 +406,39 @@ export class GameRoom {
     this.room.game = createInitialState();
     this.room.started = true;
     this.room.version += 1;
-    this.runBotTurns();
+    this.scheduleBotTurn();
     return true;
   }
 
-  runBotTurns() {
-    if (!this.room.started || !this.room.game) return;
-    let steps = 0;
-    while (this.room.game.phase !== "ended" && steps < 100) {
-      const role = this.room.game.currentRole;
-      if (!this.room.players[role]?.isBot) break;
-      const command = chooseBotCommand(this.room.game, role);
-      if (!command) break;
-      try {
-        applyCommand(this.room.game, role, command);
-      } catch (error) {
-        console.error("Bot command failed", { role, command, error });
-        break;
-      }
-      this.room.version += 1;
-      steps += 1;
+  scheduleBotTurn() {
+    if (!this.room.started || !this.room.game || this.room.game.phase === "ended") {
+      this.room.botTurnDueAt = null;
+      return false;
     }
-    if (steps >= 100) console.error("Bot turn safety stop reached", { roomCode: this.room.code });
+    const role = this.room.game.currentRole;
+    if (!this.room.players[role]?.isBot) {
+      this.room.botTurnDueAt = null;
+      return false;
+    }
+    this.room.botTurnDueAt = Date.now() + BOT_ACTION_DELAY_MS;
+    return true;
+  }
+
+  runScheduledBotTurn() {
+    if (!this.room.started || !this.room.game || this.room.game.phase === "ended") return false;
+    const role = this.room.game.currentRole;
+    if (!this.room.players[role]?.isBot) return false;
+    const command = chooseBotCommand(this.room.game, role);
+    if (!command) return false;
+    try {
+      applyCommand(this.room.game, role, command);
+    } catch (error) {
+      console.error("Bot command failed", { role, command, error });
+      return false;
+    }
+    this.room.version += 1;
+    this.scheduleBotTurn();
+    return true;
   }
 
   publicRoom() {
@@ -474,17 +495,32 @@ export class GameRoom {
 
   async persist() {
     await this.ctx.storage.put("room", this.room);
-    await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
+    const ttlAlarm = Date.now() + ROOM_TTL_MS;
+    await this.ctx.storage.setAlarm(Math.min(this.room.botTurnDueAt || ttlAlarm, ttlAlarm));
   }
 
   async alarm() {
     if (!this.room) return;
+    const now = Date.now();
+    if (this.room.botTurnDueAt) {
+      if (this.room.botTurnDueAt > now) {
+        await this.ctx.storage.setAlarm(this.room.botTurnDueAt);
+        return;
+      }
+      this.room.botTurnDueAt = null;
+      if (this.runScheduledBotTurn()) {
+        this.room.updatedAt = now;
+        await this.persist();
+        await this.broadcast();
+        return;
+      }
+    }
     const hasConnections = this.ctx.getWebSockets().some((socket) => socket.readyState === WebSocket.OPEN);
-    if (!hasConnections && Date.now() - this.room.updatedAt >= ROOM_TTL_MS) {
+    if (!hasConnections && now - this.room.updatedAt >= ROOM_TTL_MS) {
       await this.ctx.storage.deleteAll();
       this.room = null;
       return;
     }
-    await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
+    await this.ctx.storage.setAlarm(now + ROOM_TTL_MS);
   }
 }

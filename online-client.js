@@ -9,6 +9,8 @@
     publishSelection,
     passTurn,
     coolSelection,
+    startCoolingSelection,
+    cancelCoolingSelection,
     investSelectedWork,
     useFanSkill,
     queueAutomaticTurn,
@@ -39,7 +41,7 @@
   if (query.get("server") && serverBase) localStorage.setItem(SERVER_KEY, serverBase);
 
   function freshLocalSelection() {
-    return { ids: [], workSelected: false, fanVoice: "star", wildChoice: null, captureAll: false, fanTarget: "fan" };
+    return { ids: [], coolingMode: false, coolingCardId: null, workSelected: false, fanVoice: "star", wildChoice: null, captureAll: false, fanTarget: "fan" };
   }
 
   function normalizeServer(value) {
@@ -386,6 +388,7 @@
   }
 
   function enterOnlineGame(serverState) {
+    const wasOnline = Boolean(window.__onlineActive);
     window.__onlineActive = true;
     document.body.classList.add("online-active");
     if (el("startDialog").open) el("startDialog").close();
@@ -393,6 +396,8 @@
     state = normalizeServerState(serverState);
     state.userRole = session.role;
     state.selectedIds = localSelection.ids.filter((id) => state.roles[session.role].hand.some((card) => card.id === id));
+    state.coolingMode = Boolean(localSelection.coolingMode);
+    state.coolingCardId = state.roles[session.role].hand.some((card) => card.id === localSelection.coolingCardId) ? localSelection.coolingCardId : null;
     state.skills.star.selected = Boolean(localSelection.workSelected && session.role === "star" && state.skills.star.status === "forging");
     state.fanVoiceChoice = localSelection.fanVoice;
     state.wildChannelChoice = localSelection.wildChoice;
@@ -411,6 +416,17 @@
       campaign.lastGapMonths = state.campaign.lastGapMonths;
     }
     if (previousState?.phase === "round_break" && state.phase === "action") localSelection = freshLocalSelection();
+    const playSignature = (value) => value?.topPlay
+      ? `${value.issueIndex}:${value.roundInIssue}:${value.topPlay.publishedAt || 0}:${value.topPlay.role}:${value.topPlay.cardIds.join("-")}`
+      : "";
+    const animatePlay = wasOnline && state.topPlay && playSignature(previousState) !== playSignature(state);
+    if (animatePlay && typeof animateSuccessfulPlay === "function") {
+      animateSuccessfulPlay(state.topPlay.role, state.topPlay.cards || [], () => {
+        render();
+        renderOnlinePhaseDialog();
+      });
+      return;
+    }
     render();
     renderOnlinePhaseDialog();
   }
@@ -541,7 +557,17 @@
 
   coolSelection = function onlineCoolSelection() {
     if (!window.__onlineActive) return original.coolSelection();
-    if (state.selectedIds.length === 1 && !state.skills.star?.selected) sendCommand({ type: "cool", cardId: state.selectedIds[0] });
+    if (state.coolingMode && state.coolingCardId) sendCommand({ type: "cool", cardId: state.coolingCardId });
+  };
+
+  startCoolingSelection = function onlineStartCoolingSelection() {
+    original.startCoolingSelection();
+    syncLocalSelection();
+  };
+
+  cancelCoolingSelection = function onlineCancelCoolingSelection() {
+    original.cancelCoolingSelection();
+    syncLocalSelection();
   };
 
   investSelectedWork = function onlineInvestSelectedWork() {
@@ -561,6 +587,8 @@
   function syncLocalSelection() {
     if (!window.__onlineActive || !state) return;
     localSelection.ids = [...state.selectedIds];
+    localSelection.coolingMode = Boolean(state.coolingMode);
+    localSelection.coolingCardId = state.coolingCardId || null;
     localSelection.workSelected = Boolean(state.skills.star.selected);
     localSelection.fanVoice = state.fanVoiceChoice;
     localSelection.wildChoice = state.wildChannelChoice;
