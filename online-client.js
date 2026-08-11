@@ -317,17 +317,31 @@
     if (!session) return;
     el("onlineLobbyCode").textContent = session.roomCode;
     const players = roomSnapshot?.players || {};
+    const isHost = roomSnapshot?.hostRole === session.role;
     el("onlinePlayerList").innerHTML = ROLE_ORDER.map((role) => {
       const player = players[role];
-      const status = !player ? "等待加入" : player.ready ? "已准备" : player.connected ? "未准备" : "已占座 · 离线";
-      return `<div class="online-player-slot" style="--role-color:${ROLE_COLORS[role]}"><div><strong>${ROLE_LABELS[role]}${player?.name ? ` · ${escapeHtml(player.name)}` : ""}</strong><small>${player ? (player.connected ? "在线" : "等待重连") : "空座位"}</small></div><em class="${player?.ready ? "ready" : ""}">${status}</em></div>`;
+      const status = !player ? "等待加入" : player.isBot ? "AI 已准备" : player.ready ? "已准备" : player.connected ? "未准备" : "已占座 · 离线";
+      const detail = !player ? "空座位" : player.isBot ? "服务器托管" : player.connected ? "在线" : "等待重连";
+      const hostLabel = player?.isHost ? " · 房主" : "";
+      const botButton = isHost && !roomSnapshot?.started && (!player || player.isBot)
+        ? `<button class="online-bot-button" type="button" data-bot-role="${role}" data-bot-enabled="${player?.isBot ? "false" : "true"}">${player?.isBot ? "移除 AI" : "加入 AI"}</button>`
+        : `<em class="${player?.ready ? "ready" : ""}">${status}</em>`;
+      return `<div class="online-player-slot${player?.isBot ? " bot" : ""}" style="--role-color:${ROLE_COLORS[role]}"><div><strong>${ROLE_LABELS[role]}${player?.name ? ` · ${escapeHtml(player.name)}` : ""}${hostLabel}</strong><small>${detail}</small></div>${botButton}</div>`;
     }).join("");
+    el("onlinePlayerList").querySelectorAll("[data-bot-role]").forEach((button) => {
+      button.onclick = () => sendSocket({
+        type: "set_bot",
+        role: button.dataset.botRole,
+        enabled: button.dataset.botEnabled === "true",
+      });
+    });
     const own = players[session.role];
     const readyButton = el("readyOnlineRoom");
     readyButton.textContent = own?.ready ? "取消准备" : "准备";
     readyButton.disabled = !own || !own.connected || roomSnapshot?.started;
     const joined = Object.values(players).filter(Boolean).length;
-    setFeedback("onlineLobbyFeedback", roomSnapshot?.started ? "对局已经开始。" : `已加入 ${joined}/3；三名玩家都准备后自动发牌。`);
+    const setupHint = isHost ? "房主可把空阵营设为 AI；真人全部准备后自动发牌。" : "等待房主配置空位；真人全部准备后自动发牌。";
+    setFeedback("onlineLobbyFeedback", roomSnapshot?.started ? "对局已经开始。" : `已加入 ${joined}/3；${setupHint}`);
   }
 
   function escapeHtml(value) {

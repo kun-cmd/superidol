@@ -5,6 +5,7 @@ import {
   GameRuleError,
   ROLE_ORDER,
   applyCommand,
+  chooseBotCommand,
   createInitialState,
   createPlayerView,
   getLegalPlayOptions,
@@ -194,6 +195,22 @@ test("a deterministic three-player session reaches a complete event", () => {
   assert.equal(state.victoryResults.star.won, false);
   assert.equal(state.victoryResults.fan.won, false);
   assert.deepEqual(state.campaign.influence, { star: 0, fan: 0, anti: 0 });
+});
+
+test("server bots choose valid actions and finish a full match", () => {
+  const state = createInitialState({ random: seededRandom(20260811) });
+  let steps = 0;
+  while (state.phase !== "ended" && steps < 500) {
+    const role = state.currentRole;
+    const command = chooseBotCommand(state, role);
+    assert.ok(command, `bot had no command during ${state.phase}`);
+    assert.doesNotThrow(() => applyCommand(state, role, command));
+    steps += 1;
+  }
+
+  assert.ok(steps < 500, "bot simulation hit its safety stop");
+  assert.equal(state.phase, "ended");
+  assert.equal(state.seats.length, 3);
 });
 
 test("server rule self-checks pass", () => {

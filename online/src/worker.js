@@ -2,6 +2,7 @@ import {
   GameRuleError,
   ROLE_ORDER,
   applyCommand,
+  chooseBotCommand,
   createInitialState,
   createPlayerView,
 } from "./game.js";
@@ -136,6 +137,7 @@ export class GameRoom {
     this.room = null;
     this.ctx.blockConcurrencyWhile(async () => {
       this.room = await this.ctx.storage.get("room") || null;
+      this.normalizeRoom();
     });
   }
 
@@ -157,8 +159,9 @@ export class GameRoom {
       code: normalizedRoomCode(body.roomCode),
       createdAt: now,
       updatedAt: now,
+      hostRole: body.role,
       players: {
-        [body.role]: { role: body.role, name: cleanPlayerName(body.name), token, ready: false },
+        [body.role]: { role: body.role, name: cleanPlayerName(body.name), token, ready: false, isBot: false },
       },
       started: false,
       version: 0,
@@ -176,7 +179,7 @@ export class GameRoom {
     if (!validRole(body.role)) return json({ error: "invalid_role", message: "请选择一个阵营。" }, 400);
     if (this.room.players[body.role]) return json({ error: "role_taken", message: "这个阵营已经有人了。" }, 409);
     const token = randomToken();
-    this.room.players[body.role] = { role: body.role, name: cleanPlayerName(body.name), token, ready: false };
+    this.room.players[body.role] = { role: body.role, name: cleanPlayerName(body.name), token, ready: false, isBot: false };
     this.room.updatedAt = Date.now();
     await this.persist();
     await this.broadcast();
@@ -209,7 +212,7 @@ export class GameRoom {
         this.sendError(socket, "authentication_required", "请先验证座位身份。");
         return;
       }
-      const player = Object.values(this.room.players).find((item) => item.token === message.playerToken);
+      const player = Object.values(this.room.players).find((item) => !item.isBot && item.token === message.playerToken);
       if (!player) {
         this.sendError(socket, "invalid_token", "重连令牌无效。");
         socket.close(4001, "Invalid player token");
@@ -228,17 +231,55 @@ export class GameRoom {
       return;
     }
 
+    if (message.type === "set_bot") {
+      if (this.room.started) {
+        this.sendError(socket, "match_started", "对局已经开始，不能再调整机器人席位。");
+        return;
+      }
+      if (this.room.hostRole !== player.role) {
+        this.sendError(socket, "host_only", "只有房主可以设置机器人。");
+        return;
+      }
+      const targetRole = message.role;
+      if (!validRole(targetRole)) {
+        this.sendError(socket, "invalid_role", "机器人阵营无效。");
+        return;
+      }
+      const current = this.room.players[targetRole];
+      if (message.enabled !== false) {
+        if (current) {
+          this.sendError(socket, "role_taken", "这个阵营已经有人或机器人了。");
+          return;
+        }
+        this.room.players[targetRole] = {
+          role: targetRole,
+          name: "AI 机器人",
+          token: null,
+          ready: true,
+          isBot: true,
+        };
+      } else {
+        if (!current?.isBot) {
+          this.sendError(socket, "bot_missing", "这个阵营不是机器人席位。");
+          return;
+        }
+        delete this.room.players[targetRole];
+      }
+      this.room.version += 1;
+      this.tryStartMatch();
+      this.room.updatedAt = Date.now();
+      await this.persist();
+      await this.broadcast();
+      return;
+    }
+
     if (message.type === "ready") {
       if (this.room.started) {
         this.sendError(socket, "match_started", "对局已经开始。");
         return;
       }
       player.ready = message.ready !== false;
-      if (ROLE_ORDER.every((role) => this.room.players[role]?.ready)) {
-        this.room.game = createInitialState();
-        this.room.started = true;
-        this.room.version += 1;
-      }
+      this.tryStartMatch();
       this.room.updatedAt = Date.now();
       await this.persist();
       await this.broadcast();
@@ -251,6 +292,7 @@ export class GameRoom {
         return;
       }
       delete this.room.players[player.role];
+      this.normalizeRoom();
       this.room.updatedAt = Date.now();
       await this.persist();
       await this.broadcast();
@@ -288,6 +330,7 @@ export class GameRoom {
         return;
       }
       this.room.version += 1;
+      this.runBotTurns();
       this.room.recentActionIds.push(message.actionId);
       this.room.recentActionIds = this.room.recentActionIds.slice(-100);
       this.room.updatedAt = Date.now();
@@ -320,15 +363,80 @@ export class GameRoom {
     return roles;
   }
 
+  normalizeRoom() {
+    if (!this.room) return;
+    if (!this.room.players || typeof this.room.players !== "object") this.room.players = {};
+    ROLE_ORDER.forEach((role) => {
+      const player = this.room.players[role];
+      if (!player) return;
+      player.isBot = Boolean(player.isBot);
+      if (player.isBot) {
+        player.ready = true;
+        player.token = null;
+      }
+    });
+    const currentHost = this.room.players[this.room.hostRole];
+    if (!currentHost || currentHost.isBot) {
+      this.room.hostRole = ROLE_ORDER.find((role) => this.room.players[role] && !this.room.players[role].isBot) || null;
+    }
+    if (!this.room.hostRole) {
+      ROLE_ORDER.forEach((role) => {
+        if (this.room.players[role]?.isBot) delete this.room.players[role];
+      });
+    }
+  }
+
+  tryStartMatch() {
+    if (this.room.started) return false;
+    const allSeatsReady = ROLE_ORDER.every((role) => {
+      const player = this.room.players[role];
+      return player && (player.isBot || player.ready);
+    });
+    if (!allSeatsReady) return false;
+    this.room.game = createInitialState();
+    this.room.started = true;
+    this.room.version += 1;
+    this.runBotTurns();
+    return true;
+  }
+
+  runBotTurns() {
+    if (!this.room.started || !this.room.game) return;
+    let steps = 0;
+    while (this.room.game.phase !== "ended" && steps < 100) {
+      const role = this.room.game.currentRole;
+      if (!this.room.players[role]?.isBot) break;
+      const command = chooseBotCommand(this.room.game, role);
+      if (!command) break;
+      try {
+        applyCommand(this.room.game, role, command);
+      } catch (error) {
+        console.error("Bot command failed", { role, command, error });
+        break;
+      }
+      this.room.version += 1;
+      steps += 1;
+    }
+    if (steps >= 100) console.error("Bot turn safety stop reached", { roomCode: this.room.code });
+  }
+
   publicRoom() {
     const connected = this.connectedRoles();
     return {
       code: this.room.code,
       started: this.room.started,
       version: this.room.version,
+      hostRole: this.room.hostRole,
       players: Object.fromEntries(ROLE_ORDER.map((role) => {
         const player = this.room.players[role];
-        return [role, player ? { role, name: player.name, ready: player.ready, connected: connected.has(role) } : null];
+        return [role, player ? {
+          role,
+          name: player.name,
+          ready: player.ready,
+          connected: player.isBot || connected.has(role),
+          isBot: player.isBot,
+          isHost: role === this.room.hostRole,
+        } : null];
       })),
     };
   }

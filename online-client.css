@@ -227,6 +227,27 @@
   background: rgba(45, 157, 90, .16);
 }
 
+.online-player-slot.bot {
+  border-color: rgba(99, 190, 214, .52);
+  background: linear-gradient(90deg, rgba(33, 104, 124, .18), #101a29 42%);
+}
+
+.online-bot-button {
+  padding: 5px 8px;
+  color: #b9f6ff;
+  background: #17394a;
+  border: 1px solid #3f8ca0;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.online-bot-button:hover {
+  color: #fff;
+  border-color: #72d7e5;
+}
+
 .online-session-chip {
   min-width: 122px;
   padding: 5px 8px;

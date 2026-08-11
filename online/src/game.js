@@ -970,6 +970,33 @@ export function getLegalPlayOptions(state, role) {
   return options;
 }
 
+export function chooseBotCommand(state, role) {
+  normalizeGameState(state);
+  if (!ROLE_ORDER.includes(role) || state.currentRole !== role || state.phase === "ended") return null;
+  if (state.phase === "round_break") return { type: "continue" };
+  if (state.phase !== "action") return null;
+
+  const options = getLegalPlayOptions(state, role).sort((left, right) => {
+    if (!state.topPlay) {
+      return right.cardIds.length - left.cardIds.length
+        || right.pattern.level - left.pattern.level
+        || left.pattern.optionKey.localeCompare(right.pattern.optionKey);
+    }
+    return left.pattern.level - right.pattern.level
+      || right.cardIds.length - left.cardIds.length
+      || left.pattern.optionKey.localeCompare(right.pattern.optionKey);
+  });
+  const option = options[0];
+  if (!option) return { type: "pass" };
+  return {
+    type: "play",
+    cardIds: option.cardIds,
+    patternOptionKey: option.pattern.optionKey,
+    fanVoice: role === "fan" ? "star" : null,
+    captureAll: false,
+  };
+}
+
 function hiddenCards(count) {
   return Array.from({ length: count }, () => ({ hidden: true }));
 }
