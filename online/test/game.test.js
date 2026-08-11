@@ -109,6 +109,21 @@ test("crossing a Heat line creates one intervention that breaks winner lead", ()
   });
 });
 
+test("legacy persisted rooms receive current Heat intervention fields", () => {
+  const state = createInitialState({ random: seededRandom(20260811) });
+  delete state.heatInterventionTriggered;
+  delete state.heatInterventionTokens;
+  delete state.heatFeedback.interventionsAdded;
+
+  const view = createPlayerView(state, "star");
+  assert.deepEqual(view.heatInterventionTriggered, []);
+  assert.equal(view.heatInterventionTokens, 0);
+  assert.equal(view.heatFeedback.interventionsAdded, 0);
+  const lead = getLegalPlayOptions(state, "anti").find((option) => option.pattern.type === "single");
+  assert.ok(lead);
+  assert.doesNotThrow(() => applyCommand(state, "anti", commandFor(lead, "anti")));
+});
+
 test("a deterministic three-player session reaches a complete event", () => {
   const state = createInitialState({ random: seededRandom(20260811) });
   let steps = 0;

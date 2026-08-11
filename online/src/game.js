@@ -919,7 +919,20 @@ function applyContinue(state, role) {
   addLog(state, `${currentIssue(state).title} · 第${state.roundInIssue}话轮开始，${ROLES[state.currentRole].short}领出。`, role);
 }
 
+export function normalizeGameState(state) {
+  if (!Array.isArray(state.heatInterventionTriggered)) state.heatInterventionTriggered = [];
+  if (!Number.isFinite(state.heatInterventionTokens)) state.heatInterventionTokens = 0;
+  if (!state.heatFeedback || typeof state.heatFeedback !== "object") {
+    state.heatFeedback = { amount: 0, sequence: 0, recordBroken: false, interventionsAdded: 0 };
+  } else {
+    state.heatFeedback.recordBroken = Boolean(state.heatFeedback.recordBroken);
+    if (!Number.isFinite(state.heatFeedback.interventionsAdded)) state.heatFeedback.interventionsAdded = 0;
+  }
+  return state;
+}
+
 export function applyCommand(state, role, command) {
+  normalizeGameState(state);
   assertRule(ROLE_ORDER.includes(role), "invalid_role", "玩家阵营无效。" );
   assertRule(command && typeof command.type === "string", "invalid_command", "行动格式无效。" );
   if (command.type === "play") applyPlay(state, role, command);
@@ -954,6 +967,7 @@ function hiddenCards(count) {
 }
 
 export function createPlayerView(state, role) {
+  normalizeGameState(state);
   assertRule(ROLE_ORDER.includes(role), "invalid_role", "玩家阵营无效。" );
   const view = clone(state);
   view.userRole = role;

@@ -334,12 +334,24 @@
     return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
   }
 
+  function normalizeServerState(serverState) {
+    if (!Array.isArray(serverState.heatInterventionTriggered)) serverState.heatInterventionTriggered = [];
+    if (!Number.isFinite(serverState.heatInterventionTokens)) serverState.heatInterventionTokens = 0;
+    if (!serverState.heatFeedback || typeof serverState.heatFeedback !== "object") {
+      serverState.heatFeedback = { amount: 0, sequence: 0, recordBroken: false, interventionsAdded: 0 };
+    } else {
+      serverState.heatFeedback.recordBroken = Boolean(serverState.heatFeedback.recordBroken);
+      if (!Number.isFinite(serverState.heatFeedback.interventionsAdded)) serverState.heatFeedback.interventionsAdded = 0;
+    }
+    return serverState;
+  }
+
   function enterOnlineGame(serverState) {
     window.__onlineActive = true;
     document.body.classList.add("online-active");
     if (el("startDialog").open) el("startDialog").close();
     const previousState = state;
-    state = serverState;
+    state = normalizeServerState(serverState);
     state.userRole = session.role;
     state.selectedIds = localSelection.ids.filter((id) => state.roles[session.role].hand.some((card) => card.id === id));
     state.skills.star.selected = Boolean(localSelection.workSelected && session.role === "star" && state.skills.star.status === "forging");
