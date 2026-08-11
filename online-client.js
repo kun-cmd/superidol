@@ -335,6 +335,31 @@
   }
 
   function normalizeServerState(serverState) {
+    const restoreCapturedCard = (card) => {
+      if (!card || typeof card !== "object") return;
+      delete card.isCapturedMemory;
+      if (typeof card.name === "string") card.name = card.name.replace(/^断章取义：/, "");
+    };
+    Object.values(serverState.roles || {}).forEach((roleState) => {
+      (roleState.hand || []).forEach(restoreCapturedCard);
+      (roleState.discard || []).forEach(restoreCapturedCard);
+    });
+    (serverState.topPlay?.cards || []).forEach(restoreCapturedCard);
+    if (serverState.topPlay?.pattern) delete serverState.topPlay.pattern.memoryConverted;
+    if (serverState.topPlay?.cards) serverState.topPlay.cardNames = serverState.topPlay.cards.map((card) => card.name);
+    if (serverState.lastCompletedRound) {
+      delete serverState.lastCompletedRound.memoryConverted;
+      if (typeof serverState.lastCompletedRound.pattern === "string") {
+        serverState.lastCompletedRound.pattern = serverState.lastCompletedRound.pattern.replace(/^金色记忆 · /, "");
+      }
+    }
+    (serverState.logs || []).forEach((log) => {
+      if (typeof log.message === "string") {
+        log.message = log.message
+          .replace(/，将它们转化为金色记忆牌/g, "")
+          .replace(/金色记忆 · /g, "");
+      }
+    });
     if (!Array.isArray(serverState.heatInterventionTriggered)) serverState.heatInterventionTriggered = [];
     if (!Number.isFinite(serverState.heatInterventionTokens)) serverState.heatInterventionTokens = 0;
     if (!serverState.heatFeedback || typeof serverState.heatFeedback !== "object") {

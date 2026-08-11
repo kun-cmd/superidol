@@ -349,18 +349,12 @@ function patternOptionKey(pattern, assignments = []) {
   return `${pattern.type}-${pattern.channel}-${pattern.level}-${pattern.low || 0}-${assignmentKey}`;
 }
 
-function decorateMemoryPattern(pattern, cards) {
-  pattern.memoryConverted = pattern.type !== "loop" && cards.some((card) => card.isCapturedMemory);
-  return pattern;
-}
-
 export function detectPatternOptions(cards) {
   if (!cards.length || cards.length > 3) return [];
   const wildIndexes = cards.map((card, index) => (card.isWild ? index : -1)).filter((index) => index >= 0);
   if (!wildIndexes.length) {
     const pattern = detectConcretePattern(cards);
     if (!pattern) return [];
-    decorateMemoryPattern(pattern, cards);
     pattern.optionKey = patternOptionKey(pattern);
     return [pattern];
   }
@@ -387,7 +381,6 @@ export function detectPatternOptions(cards) {
         const maximum = Math.max(...otherLevels);
         pattern.wildDirection = fanAssignment.level < minimum ? "low" : fanAssignment.level > maximum ? "high" : "middle";
       }
-      decorateMemoryPattern(pattern, cards);
       pattern.wildAssignments = assignments;
       pattern.optionKey = patternOptionKey(pattern, assignments);
       if (!seen.has(pattern.optionKey)) {
@@ -482,9 +475,8 @@ function applyWildAssignments(cards, pattern) {
 function patternLabel(pattern) {
   if (!pattern) return "无效组合";
   if (pattern.type === "loop") return `${pattern.level}级${PATTERN_NAMES.loop}`;
-  const prefix = pattern.memoryConverted ? "金色记忆 · " : "";
-  if (pattern.type === "run") return `${prefix}${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
-  return `${prefix}${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
+  if (pattern.type === "run") return `${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
+  return `${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
 }
 
 function resolvedCardLevel(card, pattern) {
@@ -573,8 +565,8 @@ function takeCardsFromDiscard(state, sourceRole, cardIds) {
     if (index < 0) return;
     const [card] = source.discard.splice(index, 1);
     card.role = "anti";
-    card.isCapturedMemory = true;
-    card.name = `断章取义：${card.name}`;
+    delete card.isCapturedMemory;
+    card.name = card.name.replace(/^断章取义：/, "");
     captured.push(card);
   });
   if (captured.length) state.roles.anti.hand.push(...captured);
@@ -652,7 +644,6 @@ function resolveRound(state, reason) {
     owner,
     controller,
     channel,
-    memoryConverted: Boolean(state.topPlay.pattern.memoryConverted),
     patternType: state.topPlay.pattern.type,
     pattern: patternLabel(state.topPlay.pattern),
     markerGain,
@@ -806,7 +797,6 @@ function applyPlay(state, role, command) {
       channel: card.channel,
       isWild: Boolean(card.isWild),
       isFanWild: Boolean(card.isFanWild),
-      isCapturedMemory: Boolean(card.isCapturedMemory),
     })),
     fanVoice,
     publishedAt: state.storyTime,
@@ -817,7 +807,7 @@ function applyPlay(state, role, command) {
   const voiceText = role === "fan" ? `，以“${fanVoice === "star" ? "转述本人" : "粉圈解释"}”发声` : "";
   const skillText = usesWork
     ? (pattern.isWorkRelease ? "，完整发布6点“沉淀成章”，本轮无法被反压" : `，将${pattern.level}点“沉淀成章”作为单牌打出`)
-    : captured.length ? `，并用“断章取义”拿走整组${captured.length}张被压牌，将它们转化为金色记忆牌` : "";
+    : captured.length ? `，并用“断章取义”拿走整组${captured.length}张原牌` : "";
   const reachGain = heatReach(state.heat) - heatReach(beforeHeat);
   const handDelta = captured.length - ordinaryCards.length;
   const handText = handDelta > 0 ? `+${handDelta}` : handDelta < 0 ? `${handDelta}` : "±0";
@@ -919,7 +909,25 @@ function applyContinue(state, role) {
   addLog(state, `${currentIssue(state).title} · 第${state.roundInIssue}话轮开始，${ROLES[state.currentRole].short}领出。`, role);
 }
 
+function restoreCapturedCard(card) {
+  if (!card || typeof card !== "object") return;
+  delete card.isCapturedMemory;
+  if (typeof card.name === "string") card.name = card.name.replace(/^断章取义：/, "");
+}
+
+function restoreCapturedCards(state) {
+  Object.values(state.roles || {}).forEach((roleState) => {
+    (roleState.hand || []).forEach(restoreCapturedCard);
+    (roleState.discard || []).forEach(restoreCapturedCard);
+  });
+  (state.topPlay?.cards || []).forEach(restoreCapturedCard);
+  if (state.topPlay?.pattern) delete state.topPlay.pattern.memoryConverted;
+  if (state.topPlay?.cards) state.topPlay.cardNames = state.topPlay.cards.map((card) => card.name);
+  if (state.lastCompletedRound) delete state.lastCompletedRound.memoryConverted;
+}
+
 export function normalizeGameState(state) {
+  restoreCapturedCards(state);
   if (!Array.isArray(state.heatInterventionTriggered)) state.heatInterventionTriggered = [];
   if (!Number.isFinite(state.heatInterventionTokens)) state.heatInterventionTokens = 0;
   if (!state.heatFeedback || typeof state.heatFeedback !== "object") {

@@ -227,7 +227,7 @@
     <li id="rule-bystander"><strong>路人补标 · 核心基线停用：</strong>原规则会让可信度与互联网记忆双领先者获得额外定调标记；本轮核心测试完全不触发。</li>
     <li><strong>万能应援牌：</strong>不保留原点数，使用时可自动成为1至4级、任意频道，不能成为5级。单独打出时固定为玩家选择频道的4级单张；加入对子或闭环时自动匹配缺少的点数与频道；加入连续论证时自动补位，只有同时能向大、向小时才由玩家选择方向。</li>
     <li><strong>明星技能“沉淀成章”：</strong>技能牌从游戏开始便直接放入明星手牌，初始2点、最高6点，任何点数都只能作为传播频道单牌打出，不能与普通牌组成对子、连续论证或闭环。明星可以用一次行动暗置1张普通手牌，使技能牌升1点并视为过牌。2至5点按普通单牌回应规则结算；达到6点后可直接夺取当前置顶，且无法被任何牌反压。明星一旦失声，未打出的技能牌和全部投入牌立即消失。</li>
-    <li>粉丝在手牌不多于5张时每事件一次“最后应援”；黑粉有“断章取义”2次：用组合成功压牌后，可以获得整组被压牌。收回的牌全部转化为金色记忆牌：保留原频道、等级和组牌方式，但非闭环定调时改按传播牌增加互联网记忆；若组成闭环炸弹，仍按闭环使可信度和记忆各+1。</li>
+    <li>粉丝在手牌不多于5张时每事件一次“最后应援”；黑粉有“断章取义”2次：用组合成功压牌后，可以获得整组被压牌。拿到的牌保留原本的牌名、频道和等级，之后完全按普通牌使用。</li>
     <li><strong>Heat 路人介入：</strong>Heat第一次越过35、55、75时，各在中央增加1枚路人介入；每条线整场事件只能触发一次。话轮赢家仍获得1个定调标记；若事件尚未结束且中央有介入，消耗1枚，下一话轮改由赢家座次的下一方领出。</li>
     <li><strong>降温：</strong>轮到行动时可暗置弃掉1张牌，使Heat−3并视为过牌。已经触发的介入线不会重置；降温的价值是重新拉开与下一条尚未触发介入线的安全距离。</li>
     <li><strong>永久记忆 · 核心基线停用：</strong>本轮核心测试不会形成、继承或覆盖永久记忆，也不会给下一事件初始记忆优势。</li>
@@ -240,7 +240,7 @@
     const ROLES={
       star:{name:"明星本人",short:"明星",factionLabel:"明星阵营",accountName:"林澄",handle:"@LINCHENG",avatar:"澄",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"沉淀成章：2点技能牌开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
       fan:{name:"真爱粉",short:"真爱粉",factionLabel:"真爱粉阵营",accountName:"林澄全网应援站",handle:"@LINCHENG_FANBASE",avatar:"援",verified:false,color:"var(--fan)",goal:"支持阵营合计定义2个问题且粉圈自己定义1个；明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方。"},
-      anti:{name:"黑粉",short:"黑粉",factionLabel:"黑粉阵营",accountName:"镜头外档案室",handle:"@OFFCAM_ARCHIVE",avatar:"档",verified:false,color:"var(--anti)",goal:"黑粉叙事定义至少1个问题。",skill:"断章取义（2次）：用组合成功压牌后，整组收回并转化为金色记忆牌；保留原牌型，非闭环定调改为增加记忆。"}
+      anti:{name:"黑粉",short:"黑粉",factionLabel:"黑粉阵营",accountName:"镜头外档案室",handle:"@OFFCAM_ARCHIVE",avatar:"档",verified:false,color:"var(--anti)",goal:"黑粉叙事定义至少1个问题。",skill:"断章取义（2次）：用组合成功压牌后，获得整组被压牌；牌名、频道和等级保持原样，之后按普通牌使用。"}
     };
     function accountAvatarMarkup(role){const account=ROLES[role];return`${account.avatar}${account.verified?'<span class="verified-v" aria-hidden="true">V</span>':""}`;}
     const BYSTANDER_ACCOUNT={name:"纯鹿人",handle:"@chunluren",avatar:"鹿"};
@@ -314,7 +314,6 @@
     }
     function roundMarkerGain(){return 1;}
     function patternOptionKey(pattern,assignments=[]){return`${pattern.type}-${pattern.channel}-${pattern.level}-${pattern.low||0}-${assignments.map(item=>`${item.id}:${item.channel}:${item.level}`).sort().join("|")}`;}
-    function decorateMemoryPattern(pattern,cards){pattern.memoryConverted=pattern.type!=="loop"&&cards.some(card=>card.isCapturedMemory);return pattern;}
     function describeFanWildOption(pattern){
       const assignment=pattern.wildAssignments?.find(item=>item.isFanWild);if(!assignment)return patternLabel(pattern);
       if(pattern.type==="single")return`${CHANNELS[assignment.channel].name}频道 · 4级单张`;
@@ -326,7 +325,7 @@
     function detectPatternOptions(cards){
       if(!cards.length||cards.length>3)return[];
       const wildIndexes=cards.map((card,index)=>card.isWild?index:-1).filter(index=>index>=0);
-      if(!wildIndexes.length){const pattern=detectConcretePattern(cards);if(!pattern)return[];decorateMemoryPattern(pattern,cards);pattern.optionKey=patternOptionKey(pattern);return[pattern];}
+      if(!wildIndexes.length){const pattern=detectConcretePattern(cards);if(!pattern)return[];pattern.optionKey=patternOptionKey(pattern);return[pattern];}
       const options=[],seen=new Set(),assigned=cards.map(card=>({...card}));
       function walk(index){
         if(index>=wildIndexes.length){
@@ -335,7 +334,7 @@
           if(pattern.type==="loop"&&assignments.some(item=>item.isWork))return;
           const fanAssignment=assignments.find(item=>item.isFanWild),otherLevels=assigned.filter(card=>!card.isFanWild).map(card=>card.level);
           if(pattern.type==="run"&&fanAssignment&&otherLevels.length){const min=Math.min(...otherLevels),max=Math.max(...otherLevels);pattern.wildDirection=fanAssignment.level<min?"low":fanAssignment.level>max?"high":"middle";}
-          decorateMemoryPattern(pattern,cards);pattern.wildAssignments=assignments;pattern.optionKey=patternOptionKey(pattern,assignments);
+          pattern.wildAssignments=assignments;pattern.optionKey=patternOptionKey(pattern,assignments);
           if(!seen.has(pattern.optionKey)){seen.add(pattern.optionKey);options.push(pattern);}return;
         }
         const wildIndex=wildIndexes[index],card=cards[wildIndex],levels=card.isFanWild?(cards.length===1?[4]:[1,2,3,4]):[card.level];
@@ -594,12 +593,11 @@
     function patternLabel(pattern){
       if(!pattern)return"无效组合";
       if(pattern.type==="loop")return`${pattern.level}级${PATTERN_NAMES.loop}`;
-      const prefix=pattern.memoryConverted?"金色记忆 · ":"";
-      if(pattern.type==="run")return`${prefix}${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
-      return`${prefix}${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
+      if(pattern.type==="run")return`${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
+      return`${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
     }
     function patternBadgeHtml(pattern){
-      const loop=pattern.type==="loop",converted=Boolean(pattern.memoryConverted),channel=loop?"三频道":converted?`金色记忆 · 原${CHANNELS[pattern.channel].name}`:CHANNELS[pattern.channel].name,color=loop?"var(--heat)":converted?"#9b6900":CHANNELS[pattern.channel].color;
+      const loop=pattern.type==="loop",channel=loop?"三频道":CHANNELS[pattern.channel].name,color=loop?"var(--heat)":CHANNELS[pattern.channel].color;
       const rank=pattern.type==="run"?`${pattern.low}-${pattern.level}级`:`${pattern.level}级`;
       return`<span class="pattern-badge" style="--pattern-color:${color}"><span class="pattern-channel">${channel}</span><span class="pattern-rank">${rank}</span><span class="pattern-type">${PATTERN_NAMES[pattern.type]}</span></span>`;
     }
@@ -752,9 +750,9 @@
       state.currentRole=nextRoleAfterAction(role);render();queueAutomaticTurn();
     }
     function investSelectedWork(){if(state.userRole==="star"&&state.selectedIds.length===1&&!state.skills.star.selected)investWorkCard("star",selectedCards()[0]);}
-    function takeCardsFromDiscard(sourceRole,cardIds,prefix){
+    function takeCardsFromDiscard(sourceRole,cardIds){
       const source=state.roles[sourceRole],captured=[];
-      cardIds.forEach(cardId=>{const index=source.discard.findIndex(card=>card.id===cardId);if(index<0)return;const[card]=source.discard.splice(index,1);card.role="anti";card.isCapturedMemory=true;card.name=`${prefix}：${card.name}`;captured.push(card);});
+      cardIds.forEach(cardId=>{const index=source.discard.findIndex(card=>card.id===cardId);if(index<0)return;const[card]=source.discard.splice(index,1);card.role="anti";delete card.isCapturedMemory;card.name=card.name.replace(/^断章取义：/,"");captured.push(card);});
       if(captured.length)state.roles.anti.hand.push(...captured);
       return captured;
     }
@@ -764,7 +762,7 @@
     }
     function captureOvertakenCards(armed){
       if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||!armed)return[];
-      const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds,"断章取义");
+      const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds);
       if(!captured.length)return captured;
       state.skills.anti.used+=1;
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;recordCapturedBundle(metric,captured);}
@@ -777,7 +775,7 @@
       if(!target||(!sourceElements.length&&!fallback)){commit();return;}
       const activeState=state;playAnimationActive=true;document.querySelector(".app")?.classList.add("playing-card");
       cards.slice(0,3).forEach((card,index)=>{
-        const source=(sourceElements[index]||sourceElements[0])?.getBoundingClientRect()||fallback,color=card.isCapturedMemory?"#d8a62f":card.isWork?"#e84f45":CHANNELS[card.channel]?.color||ROLES[role].color,node=document.createElement("div");
+        const source=(sourceElements[index]||sourceElements[0])?.getBoundingClientRect()||fallback,color=card.isWork?"#e84f45":CHANNELS[card.channel]?.color||ROLES[role].color,node=document.createElement("div");
         node.className="flying-response-card";node.style.setProperty("--flight-color",color);node.style.left=`${source.left+source.width/2-46}px`;node.style.top=`${source.top+source.height/2-36}px`;node.innerHTML=`<span>${card.isWork?"明星技能牌":CHANNELS[card.channel]?.name||"回应"}</span><strong>${card.name}</strong>`;document.body.appendChild(node);
         const destinationX=target.left+target.width*.5+(index-(cards.length-1)/2)*48-(source.left+source.width/2),destinationY=target.top+target.height*.45-(source.top+source.height/2),animation=node.animate([{opacity:.96,transform:"translate(0,0) scale(1.08) rotate(0deg)"},{opacity:1,offset:.86,transform:`translate(${destinationX*.84}px,${destinationY*.84-30}px) scale(.96) rotate(${(index-1)*3}deg)`},{opacity:0,transform:`translate(${destinationX}px,${destinationY}px) scale(.6) rotate(0deg)`}],{duration:760+index*55,delay:index*45,easing:"cubic-bezier(.18,.78,.25,1)",fill:"forwards"});
         animation.finished.finally(()=>node.remove());
@@ -802,9 +800,9 @@
         const pressureChange=changePressure(1);pressureText=`，粉圈越界使压力+${pressureChange}`;
       }
       changeHeat(playHeat(cards,pattern),role);advanceStoryTime("response",playHeat(cards,pattern));
-      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild),isFanWild:Boolean(card.isFanWild),isCapturedMemory:Boolean(card.isCapturedMemory)})),fanVoice:activeVoice,publishedAt:state.storyTime};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
+      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild),isFanWild:Boolean(card.isFanWild)})),fanVoice:activeVoice,publishedAt:state.storyTime};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
       const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",reachGain=heatReach(state.heat)-heatReach(beforeHeat),heatText=reachGain>0?`，浏览量+${formatReachValue(reachGain)}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
-      const skillText=usesWork?(workLevel===STAR_WORK_RELEASE_LEVEL?"，完整发布6点“沉淀成章”，本轮无法被反压":`，将${workLevel}点“沉淀成章”作为单牌打出`):captured.length?`，并用“断章取义”拿走整组${captured.length}张被压牌，将它们转化为金色记忆牌`:"",handDelta=captured.length-ordinaryCards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
+      const skillText=usesWork?(workLevel===STAR_WORK_RELEASE_LEVEL?"，完整发布6点“沉淀成章”，本轮无法被反压":`，将${workLevel}点“沉淀成章”作为单牌打出`):captured.length?`，并用“断章取义”拿走整组${captured.length}张原牌`:"",handDelta=captured.length-ordinaryCards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
       addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);publishBystanderComment(undefined,"response");
       recordOldStoryResponse(role,"responderPlays");
       if(beginOldStoryCall(role,wasResponse))return;
@@ -865,9 +863,6 @@
         if(completed.patternType==="loop"){
           state.claims[completed.owner].credibility+=1;state.claims[completed.owner].memory+=1;
           outcomes.push(`闭环定调：“${currentClaim(completed.owner)}”可信度+1、互联网记忆+1。`);
-        }else if(completed.memoryConverted){
-          const amount=channelRewardAmount();state.claims[completed.owner].memory+=amount;
-          outcomes.push(`金色记忆牌定调：“${currentClaim(completed.owner)}”按传播牌使互联网记忆+${amount}。`);
         }else if(completed.channel==="fact"){
           const amount=channelRewardAmount();state.claims[completed.owner].credibility+=amount;
           outcomes.push(`事实定调：“${currentClaim(completed.owner)}”可信度+${amount}。`);
@@ -919,7 +914,7 @@
       clearAITimer();
       const issue=currentIssue(),controller=state.topPlay.role,owner=state.claimOwner,channel=state.topPlay.pattern.channel;
       const markerGain=roundMarkerGain(),wasFirstMarker=ROLE_ORDER.every(role=>state.issueMarkers[role]===0);
-      const completed={issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,memoryConverted:Boolean(state.topPlay.pattern.memoryConverted),patternType:state.topPlay.pattern.type,pattern:patternLabel(state.topPlay.pattern),markerGain,wasFirstMarker};
+      const completed={issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,patternType:state.topPlay.pattern.type,pattern:patternLabel(state.topPlay.pattern),markerGain,wasFirstMarker};
       completed.channelOutcome=resolveChannelOutcome(completed);
       completed.prototypeRound=finishPrototypeRound(completed);
       recordSimulationRound(completed);
@@ -1000,7 +995,6 @@
     function patternMetricGain(pattern,metric){
       if(!CORE_BASELINE.positiveFeedback)return 0;
       if(pattern.type==="loop")return 1;
-      if(pattern.memoryConverted)return metric==="memory"?channelRewardAmount():0;
       if(metric==="credibility"&&pattern.channel!=="fact")return 0;
       if(metric==="memory"&&pattern.channel!=="spread")return 0;
       return channelRewardAmount();
@@ -1087,7 +1081,7 @@
     function handResourceSnapshot(role){const hand=state.roles[role].hand;return{handCount:hand.length,levelSum:hand.reduce((sum,card)=>sum+(Number(card.level)||0),0),shapeScore:handShapeScore(hand)};}
     function recordSimulationRound(completed){
       if(!simulationMode||!state.simulationMetrics)return;
-      const metrics=state.simulationMetrics,channel=completed.patternType==="loop"?"loop":completed.memoryConverted?"spread":completed.channel,ownerChannel=`${completed.owner}_${channel}`;metrics.channelWins[channel]=(metrics.channelWins[channel]||0)+1;metrics.ownerChannelWins[ownerChannel]=(metrics.ownerChannelWins[ownerChannel]||0)+1;
+      const metrics=state.simulationMetrics,channel=completed.patternType==="loop"?"loop":completed.channel,ownerChannel=`${completed.owner}_${channel}`;metrics.channelWins[channel]=(metrics.channelWins[channel]||0)+1;metrics.ownerChannelWins[ownerChannel]=(metrics.ownerChannelWins[ownerChannel]||0)+1;
       const actualLeader=completed.prototypeRound?.actualLeader;if(actualLeader){const converted=actualLeader===completed.controller;recordSuccessCounter(metrics.leadConversion.overall,converted);recordSuccessCounter(metrics.leadConversion.byLeader[actualLeader],converted);}
       const repeat=metrics.repeatWin,currentResource=handResourceSnapshot(completed.controller),previous=repeat.lastRound;
       if(previous){
@@ -1317,7 +1311,7 @@
         if(offeredValue>=7.4||targetHigh)return{action:"play",reason:"对手已经交出高价值组合，现在反压既能夺回置顶，也能把整组牌转化为下一轮资源"};
       }
       if(role==="anti"&&counts.anti<1)return{action:"play",reason:"黑粉叙事尚未定义任何问题，必须持续争夺桌面"};
-      if(role==="anti"&&uniqueLeader("memory")!=="anti"&&(choice.pattern.channel==="spread"||choice.pattern.memoryConverted))return{action:"play",reason:"互联网记忆尚未唯一领先，增加记忆的机会不能轻易放弃"};
+      if(role==="anti"&&uniqueLeader("memory")!=="anti"&&choice.pattern.channel==="spread")return{action:"play",reason:"互联网记忆尚未唯一领先，增加记忆的机会不能轻易放弃"};
       const crossedIntervention=crossedHeatInterventionThresholds(state.heat,state.heat+playHeat(choice.cards,choice.pattern));
       if(crossedIntervention.length&&!roleHasDefinitionLead(role))return{action:"play",reason:`主动把Heat推过${crossedIntervention.join("、")}介入线，让当前优势方难以连续继承领出权`};
       if(strategy.mode==="conservative"){
@@ -1380,7 +1374,6 @@
       }
       if(role==="star"&&choice.pattern.channel==="stance"&&state.pressure>=PRESSURE_HIGH)return"失声风险升高，优先用本人立场减压";
       if(CORE_BASELINE.positiveFeedback&&role==="star"&&choice.pattern.channel==="fact"&&uniqueLeader("credibility")!=="star")return"需要争取可信度第一和同级反压能力";
-      if(CORE_BASELINE.positiveFeedback&&role==="anti"&&choice.pattern.memoryConverted)return"金色记忆牌保留原牌型，同时能把本轮定调转化为互联网记忆";
       if(CORE_BASELINE.positiveFeedback&&role==="anti"&&choice.pattern.channel==="spread"&&uniqueLeader("memory")!=="anti")return"需要成为互联网记忆唯一第一";
       if(role==="anti"&&!state.silenced&&state.pressure>=PRESSURE_HIGH)return"黑粉叙事守住话轮会继续加压，逼迫支持阵营投入牌救援";
       return"建立更有利于自身公开目标的叙事位置";
@@ -1571,9 +1564,9 @@
       }
       if(!state.topPlay){const account=ROLES[state.currentRole];strip.style.setProperty("--thread-color",account.color);strip.style.setProperty("--thread-role-color",account.color);renderThreadAccount(state.currentRole);el("threadTop").textContent="等待第一条回应";meta.innerHTML=`<span class="thread-time">${formatTimelineTime(state.storyTime)} · 拥有领出权</span>`;el("threadPlayed").innerHTML=`<span class="thread-played-empty">等待出牌</span>`;el("passStatus").textContent="尚无热评";return;}
       const voice=state.topPlay.role==="fan"?` · ${fanVoiceLabel(state.topPlay.fanVoice)}`:"";
-      const pattern=state.topPlay.pattern,color=pattern.type==="loop"?"var(--heat)":pattern.memoryConverted?"#9b6900":CHANNELS[pattern.channel].color;
+      const pattern=state.topPlay.pattern,color=pattern.type==="loop"?"var(--heat)":CHANNELS[pattern.channel].color;
       const pointText=state.topPlay.cards.map(card=>resolvedCardLevel(card,pattern)).join(" + ");
-      const playedCards=state.topPlay.cards.map(card=>{const level=resolvedCardLevel(card,pattern),cardColor=card.isCapturedMemory?"#9b6900":card.id==="star-work"?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelLabel=card.isCapturedMemory?"记忆":card.id==="star-work"?"技能":card.isWild?"万能":CHANNELS[card.channel].name;return`<span class="thread-played-card" style="--played-card-color:${cardColor}"><em>${channelLabel}</em><i>${level}</i><strong>${card.name}</strong></span>`;}).join("");
+      const playedCards=state.topPlay.cards.map(card=>{const level=resolvedCardLevel(card,pattern),cardColor=card.id==="star-work"?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelLabel=card.id==="star-work"?"技能":card.isWild?"万能":CHANNELS[card.channel].name;return`<span class="thread-played-card" style="--played-card-color:${cardColor}"><em>${channelLabel}</em><i>${level}</i><strong>${card.name}</strong></span>`;}).join("");
       const account=ROLES[state.topPlay.role];renderThreadAccount(state.topPlay.role);strip.style.setProperty("--thread-color",color);strip.style.setProperty("--thread-role-color",account.color);el("threadTop").textContent=`“${currentClaim(state.claimOwner)}”`;meta.innerHTML=`<span class="thread-time">${formatTimelineTime(state.topPlay.publishedAt||state.storyTime)}${voice} · 当前热评第1</span>`;el("threadPlayed").innerHTML=`<div class="thread-played-head"><span>${patternLabel(pattern)}</span><strong>${pointText} 点</strong></div><div class="thread-played-row">${playedCards}</div>`;el("passStatus").textContent=`等待结算 ${state.passes} / 2`;
     }
     function renderActionNotice(){
@@ -1592,7 +1585,6 @@
       else if(!eligibleOwner&&projectedConsensus)bystanderText=` 这会建立双领先，但只能为下一话轮取得路人补标资格。`;
       if(pattern.isWorkRelease)bystanderText+=` 完整作品会直接夺取当前置顶，且无法被反压。`;
       if(pattern.type==="loop")return`${markerText}${pressureText}${heatText}${overreachText}${bystanderText}`;
-      if(pattern.memoryConverted)return`${markerText}${pressureText}${heatText}${overreachText}${bystanderText}`;
       if(pattern.channel==="fact")return`${markerText}${pressureText}${heatText}${overreachText}${bystanderText}`;
       if(pattern.channel==="stance")return`${markerText}${pressureText}${heatText}${overreachText}${bystanderText}`;
       return`${markerText}${pressureText}${heatText}${overreachText}${bystanderText}`;
@@ -1601,7 +1593,7 @@
       const work=state.skills.star;
       if(role==="star")return{name:"沉淀成章",description:"开局2点技能牌直接进入手牌，只能作为单牌打出；可暗置一张普通手牌升1点，最高6点，6点发布无法被反压。",status:work.status==="forging"?`${work.level}点`:work.status==="released"?"已完整发布":work.status==="releasedEarly"?"已打出":"已消失"};
       if(role==="fan")return{name:"最后应援",description:"整场1次。手牌不多于5张时，把一张1—4级普通牌转为万能牌，并交给任意一方。",status:state.skills.fan.used?"已使用":"待机"};
-      return{name:"断章取义",description:"整场2次。用组合成功反压后，可把被压整组收回并转为金色记忆牌。",status:`剩余 ${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次`};
+      return{name:"断章取义",description:"整场2次。用组合成功反压后，可把被压整组原牌收入手牌；牌名、频道和等级不变。",status:`剩余 ${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次`};
     }
     function renderConsole(){
       const box=el("actionConsole"),prompt=el("prompt"),sub=el("subprompt"),summary=el("selectionSummary"),controls=el("controlRow"),actions=el("actionButtons"),skill=roleSkillDetails(state.userRole);
@@ -1635,7 +1627,7 @@
       const fanSkillReady=state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5,fanGiftCard=fanSkillReady&&cards.length===1&&!cards[0].isWild&&cards[0].level<5?cards[0]:null;
       if(fanGiftCard)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${fanGiftCard.level}级牌变成1—4级万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton" class="fan-confirm-button">确认应援</button></div></div>`;
       else if(fanSkillReady)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援已就绪</span><div class="action-hint">选择恰好一张1—4级普通牌，再决定把万能牌交给谁。</div></div>`;
-      if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（收回后转为金色记忆牌）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备收回并转化":"收回并转化被压牌"}：${bundle}</button></div></div>`;}
+      if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（原牌直接收入手牌）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备收回原牌":"收回被压牌"}：${bundle}</button></div></div>`;}
       if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>：${response.reason}${response.legal?`<br>${previewSettlement(pattern,owner,cards)}`:""}`;}
       const canPublish=response.legal;
       let actionHtml=`<button class="primary-button" id="publishButton" ${canPublish?"":"disabled"}>${workRelease?"完整发布作品":state.topPlay?"发布回应":"领出主张"}</button>`;
@@ -1696,10 +1688,10 @@
       el("hand").style.setProperty("--hand-count",Math.max(1,sorted.length));
       el("handTitle").textContent=`${ROLES[role].name}的回应手牌${role==="star"&&state.silenced?" · 失声锁定":isTurn?" · 选择回应":""}`;el("handCount").textContent=`${hand.length}张${workAvailable?"（含技能牌）":""} · 未发 ${state.deckRemaining}张`;
       el("hand").innerHTML=sorted.length?sorted.map(card=>{
-        const selected=card.isWork?state.skills.star.selected:state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),incompatible=card.isWork?state.selectedIds.length>0:role==="star"&&state.skills.star.selected,disabled=!isTurn||(!selected&&(selectedCount>=3||incompatible)),channelColor=card.isCapturedMemory?"#9b6900":card.isWork?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isCapturedMemory?"金色记忆牌":card.isWork?"明星技能牌":card.isFanWild?"自动频道":card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`,levelText=card.isFanWild?"1—4":card.level;
-        const cardCopy=card.isCapturedMemory?`按原${CHANNELS[card.channel].name}频道组成牌型；非闭环定调按传播增加记忆，闭环仍按闭环结算。`:card.isWork?(card.level===STAR_WORK_RELEASE_LEVEL?"只能单独打出；完整发布后无法被任何牌反压。":"只能作为单牌打出；可以暗置普通手牌继续升级。"):card.isFanWild?"单张固定4级；组合自动补齐点数与频道，可参与闭环。":card.isWild?"使用时由牌型自动决定频道。":role==="star"?"本人表达。":role==="fan"?"粉丝行动。":"质疑或二创。";
-        const footLabel=card.isCapturedMemory?`原${CHANNELS[card.channel].name} · 等级 ${card.level}`:card.isWork?`技能点数 ${card.level}`:card.isFanWild?"等级 1—4":"等级 "+card.level,selectionLabel=selected?(card.isWork?"技能牌已选中":`主牌 ${state.selectedIds.indexOf(card.id)+1}`):"点击选择";
-        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${card.isCapturedMemory?"memory-card":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3>${card.name}</h3><p>${cardCopy}</p><div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
+        const selected=card.isWork?state.skills.star.selected:state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),incompatible=card.isWork?state.selectedIds.length>0:role==="star"&&state.skills.star.selected,disabled=!isTurn||(!selected&&(selectedCount>=3||incompatible)),channelColor=card.isWork?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isWork?"明星技能牌":card.isFanWild?"自动频道":card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`,levelText=card.isFanWild?"1—4":card.level;
+        const cardCopy=card.isWork?(card.level===STAR_WORK_RELEASE_LEVEL?"只能单独打出；完整发布后无法被任何牌反压。":"只能作为单牌打出；可以暗置普通手牌继续升级。"):card.isFanWild?"单张固定4级；组合自动补齐点数与频道，可参与闭环。":card.isWild?"使用时由牌型自动决定频道。":role==="star"?"本人表达。":role==="fan"?"粉丝行动。":"质疑或二创。";
+        const footLabel=card.isWork?`技能点数 ${card.level}`:card.isFanWild?"等级 1—4":"等级 "+card.level,selectionLabel=selected?(card.isWork?"技能牌已选中":`主牌 ${state.selectedIds.indexOf(card.id)+1}`):"点击选择";
+        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3>${card.name}</h3><p>${cardCopy}</p><div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
       }).join(""):`<div class="empty">手牌已经用尽。轮到你领出时，领出权会顺延给下一方。</div>`;
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }

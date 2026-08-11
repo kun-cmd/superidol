@@ -109,6 +109,48 @@ test("crossing a Heat line creates one intervention that breaks winner lead", ()
   });
 });
 
+test("anti capture keeps the original cards without memory conversion", () => {
+  const state = createInitialState({ random: seededRandom(20260811) });
+  const originalCards = [
+    { id: "original-fact-2-a", name: "核对聊天记录", channel: "fact", level: 2, role: "star" },
+    { id: "original-fact-2-b", name: "补全事件时间线", channel: "fact", level: 2, role: "star" },
+  ];
+  state.roles.star.discard = originalCards.map((card) => ({ ...card }));
+  state.roles.anti.hand = [
+    { id: "anti-fact-3-a", name: "质疑证据来源", channel: "fact", level: 3, role: "anti" },
+    { id: "anti-fact-3-b", name: "指出记录矛盾", channel: "fact", level: 3, role: "anti" },
+  ];
+  state.phase = "action";
+  state.currentRole = "anti";
+  state.claimOwner = "star";
+  state.topPlay = {
+    role: "star",
+    owner: "star",
+    pattern: { type: "pair", channel: "fact", level: 2, size: 2 },
+    cardIds: originalCards.map((card) => card.id),
+    cards: originalCards.map((card) => ({ ...card })),
+  };
+
+  const counter = getLegalPlayOptions(state, "anti").find((option) => option.pattern.type === "pair");
+  assert.ok(counter);
+  applyCommand(state, "anti", { ...commandFor(counter, "anti"), captureAll: true });
+
+  const reclaimed = state.roles.anti.hand.filter((card) => originalCards.some((original) => original.id === card.id));
+  assert.deepEqual(
+    reclaimed.map(({ id, name, channel, level }) => ({ id, name, channel, level })),
+    originalCards.map(({ id, name, channel, level }) => ({ id, name, channel, level })),
+  );
+  assert.ok(reclaimed.every((card) => card.role === "anti" && !("isCapturedMemory" in card)));
+  assert.equal(state.skills.anti.used, 1);
+
+  state.topPlay = null;
+  state.claimOwner = null;
+  state.currentRole = "anti";
+  const replay = getLegalPlayOptions(state, "anti").find((option) => option.cardIds.every((id) => originalCards.some((card) => card.id === id)));
+  assert.ok(replay);
+  assert.equal(replay.pattern.memoryConverted, undefined);
+});
+
 test("legacy persisted rooms receive current Heat intervention fields", () => {
   const state = createInitialState({ random: seededRandom(20260811) });
   delete state.heatInterventionTriggered;
