@@ -21,6 +21,7 @@ export const PATTERN_NAMES = {
 
 export const ISSUE_MARKER_TARGET = 2;
 export const ROUND_MARKER_GAIN = 1;
+export const HEAT_INTERVENTION_THRESHOLDS = [35, 55, 75];
 
 const DECK_COPIES = { 1: 3, 2: 3, 3: 3, 4: 3, 5: 1 };
 const ANTI_CAPTURE_LIMIT = 2;
@@ -222,13 +223,21 @@ function advanceStoryTime(state, kind, intensity = 1) {
 function publishBystanderComment(state, source = "response") {
   advanceStoryTime(state, "comment", source === "opening" ? 1 : state.heat);
   const index = (state.commentSequence + state.issueIndex * 2 + state.roundsCompleted) % BYSTANDER_COMMENTS.length;
+  const nextThreshold = HEAT_INTERVENTION_THRESHOLDS.find(
+    (threshold) => !state.heatInterventionTriggered.includes(threshold),
+  );
+  const reason = state.heatInterventionTokens
+    ? `中央还有${state.heatInterventionTokens}枚路人介入；下一位话轮赢家将失去继承领出权`
+    : nextThreshold
+      ? `下一条路人介入线为Heat ${nextThreshold}`
+      : "三条路人介入线均已触发";
   state.commentSequence += 1;
   state.bystanderComments.unshift({
     id: `bystander-1-${state.commentSequence}`,
     text: BYSTANDER_COMMENTS[index],
     supportOwner: null,
     status: "观望",
-    reason: "核心基线仅保留观望评论，路人补标停用",
+    reason,
     createdAt: state.storyTime,
     likes: 12 + state.commentSequence * 3,
     playerLiked: false,
@@ -267,6 +276,8 @@ export function createInitialState(options = {}) {
     memoryTarget: 0,
     inheritedMemory: null,
     heatFeedback: { amount: 0, sequence: 0, recordBroken: false },
+    heatInterventionTokens: 0,
+    heatInterventionTriggered: [],
     permanentMemory: null,
     permanentMemoryOutcome: { status: "disabled" },
     lastRoundOwner: null,
@@ -289,6 +300,7 @@ export function createInitialState(options = {}) {
     pressure: 0,
     silenced: false,
     lastCompletedRound: null,
+    victoryResults: null,
     logs: [],
     endReason: null,
     campaign: {
@@ -483,18 +495,34 @@ function playHeat(cards, pattern) {
   return cards.reduce((sum, card) => sum + resolvedCardLevel(card, pattern), 0);
 }
 
-function changeHeat(state, amount) {
-  if (!amount) return;
+function crossedHeatInterventionThresholds(state, before, after) {
+  if (after <= before) return [];
+  return HEAT_INTERVENTION_THRESHOLDS.filter(
+    (threshold) => before < threshold && after >= threshold && !state.heatInterventionTriggered.includes(threshold),
+  );
+}
+
+function changeHeat(state, amount, actor = state.currentRole) {
+  if (!amount) return { applied: 0, crossed: [] };
   const before = state.heat;
   state.heat = Math.max(0, state.heat + amount);
   const applied = state.heat - before;
+  const crossed = crossedHeatInterventionThresholds(state, before, state.heat);
+  if (crossed.length) {
+    state.heatInterventionTriggered.push(...crossed);
+    state.heatInterventionTriggered.sort((left, right) => left - right);
+    state.heatInterventionTokens += crossed.length;
+    addLog(state, `Heat越过${crossed.join("、")}路人介入线，中央增加${crossed.length}枚路人介入。`, actor);
+  }
   if (applied) {
     state.heatFeedback = {
       amount: applied,
       sequence: state.heatFeedback.sequence + 1,
       recordBroken: state.memoryTarget > 0 && before <= state.memoryTarget && state.heat > state.memoryTarget,
+      interventionsAdded: crossed.length,
     };
   }
+  return { applied, crossed };
 }
 
 function pressureSilenceState(pressure, wasSilenced = false) {
@@ -573,6 +601,26 @@ function resolveChannelOutcome(state, completed) {
   return outcomes.join(" ");
 }
 
+function binaryVictoryResults(state) {
+  const counts = Object.fromEntries(
+    ROLE_ORDER.map((role) => [role, state.seats.filter((seat) => seat.owner === role).length]),
+  );
+  const checks = {
+    star: [
+      { ok: counts.star >= 2, label: "本人主张定义2个问题" },
+      { ok: !state.silenced, label: "事件结束时明星没有失声" },
+    ],
+    fan: [
+      { ok: counts.star + counts.fan >= 2 && counts.fan >= 1, label: "支持阵营合计定义2个问题且粉圈自己定义1个" },
+      { ok: !state.silenced, label: "明星未失声" },
+    ],
+    anti: [{ ok: counts.anti >= 1, label: "黑粉叙事定义至少1个问题" }],
+  };
+  return Object.fromEntries(
+    ROLE_ORDER.map((role) => [role, { won: checks[role].every((item) => item.ok), checks: checks[role] }]),
+  );
+}
+
 function settleEvent(state, reason) {
   if (state.phase === "ended") return;
   state.phase = "ended";
@@ -586,6 +634,7 @@ function settleEvent(state, reason) {
   }
   state.permanentMemory = null;
   state.permanentMemoryOutcome = { status: "disabled", owner: state.lastCompletedRound?.owner || null };
+  state.victoryResults = binaryVictoryResults(state);
 }
 
 function resolveRound(state, reason) {
@@ -642,6 +691,24 @@ function resolveRound(state, reason) {
     settleEvent(state, "三个公共问题已经全部完成定调。");
     return;
   }
+  let nextLead = controller;
+  if (state.heatInterventionTokens > 0) {
+    state.heatInterventionTokens -= 1;
+    nextLead = nextRole(controller);
+    completed.heatIntervention = {
+      consumed: true,
+      from: controller,
+      to: nextLead,
+      remaining: state.heatInterventionTokens,
+    };
+    addLog(
+      state,
+      `路人介入被消耗：${ROLES[controller].short}保留本轮定调标记，但不能继承下一话轮领出权；按座次改由${ROLES[nextLead].short}领出。`,
+      nextLead,
+    );
+  } else {
+    completed.heatIntervention = { consumed: false, from: controller, to: controller, remaining: 0 };
+  }
   state.topPlay = null;
   state.claimOwner = null;
   state.passes = 0;
@@ -649,7 +716,7 @@ function resolveRound(state, reason) {
   state.fanVoiceThisRound = null;
   state.fanOverreachThisRound = false;
   state.skills.anti.baitPlan = null;
-  state.currentRole = controller;
+  state.currentRole = nextLead;
   state.phase = "round_break";
 }
 
@@ -723,7 +790,7 @@ function applyPlay(state, role, command) {
     pressureText = `，粉圈越界使压力+${changePressure(state, 1)}`;
   }
   const addedHeat = playHeat(cards, pattern);
-  changeHeat(state, addedHeat);
+  changeHeat(state, addedHeat, role);
   advanceStoryTime(state, "response", addedHeat);
   state.claimOwner = owner;
   state.topPlay = {
@@ -790,7 +857,7 @@ function applyCool(state, role, command) {
   assertRule(card, "card_not_owned", "暗置的牌不在你的手牌中。" );
   state.roles[role].hand = state.roles[role].hand.filter((item) => item.id !== card.id);
   state.roles[role].hiddenDiscard.push(card);
-  changeHeat(state, -3);
+  changeHeat(state, -3, role);
   advanceStoryTime(state, "pause", card.level);
   finishPassLikeAction(
     state,
@@ -905,9 +972,15 @@ export function createPlayerView(state, role) {
 
 export function runRuleChecks() {
   const markerGain = roundMarkerGain();
+  const probe = { heatInterventionTriggered: [] };
+  const crossing = crossedHeatInterventionThresholds(probe, 34, 36);
   return {
     markerTarget: ISSUE_MARKER_TARGET,
     markerGain,
-    passed: ISSUE_MARKER_TARGET === 2 && markerGain === 1,
+    heatInterventionThresholds: [...HEAT_INTERVENTION_THRESHOLDS],
+    crossing,
+    influence: "paused",
+    victory: "binary",
+    passed: ISSUE_MARKER_TARGET === 2 && markerGain === 1 && crossing.join(",") === "35",
   };
 }

@@ -376,7 +376,10 @@
         ? `问题完成定调：“${state.issues[completed.issueIndex].claims[completed.issueWinner]}”。`
         : `当前定调标记：${ROLE_ORDER.map((role) => `${ROLES[role].short} ${completed.markerSnapshot[role]}/${ISSUE_MARKER_TARGET}`).join(" · ")}。`;
       const canContinue = state.currentRole === session.role;
-      el("roundBody").innerHTML = `<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${completed.channelOutcome}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>领出。</p><div class="dialog-actions"><button class="primary-button" id="continueOnlineRound" ${canContinue ? "" : "disabled"}>${canContinue ? "继续下一话轮" : `等待${ROLES[state.currentRole].short}继续`}</button></div>`;
+      const intervention = completed.heatIntervention?.consumed
+        ? `<br><strong>路人介入：</strong>消耗1枚；${ROLES[completed.controller].short}保留标记，但下一话轮改由${ROLES[completed.heatIntervention.to].short}领出。`
+        : "";
+      el("roundBody").innerHTML = `<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${completed.channelOutcome}${intervention}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>领出。</p><div class="dialog-actions"><button class="primary-button" id="continueOnlineRound" ${canContinue ? "" : "disabled"}>${canContinue ? "继续下一话轮" : `等待${ROLES[state.currentRole].short}继续`}</button></div>`;
       if (!roundDialog.open) roundDialog.showModal();
       el("continueOnlineRound").onclick = () => sendCommand({ type: "continue" });
     }
@@ -386,7 +389,12 @@
         const seat = state.seats.find((item) => item.issueIndex === index);
         return `<li><strong>${issue.title}</strong> ${seat ? issue.claims[seat.owner] : "尚未完成定调"}</li>`;
       }).join("");
-      el("resultBody").innerHTML = `<h2>${state.silenced ? "明星在事件中失声" : "在线事件完成定调"}</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件最终热度：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<ul class="narrative-list">${narratives}</ul></div><p>本房间已经完成一局。你可以查看最终局面，或返回首页创建新房间。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button><button class="primary-button" id="newOnlineRoom">创建新房间</button></div>`;
+      const results = ROLE_ORDER.map((role) => {
+        const result = state.victoryResults?.[role] || { won: false, checks: [] };
+        const detail = result.checks.map((item) => `${item.ok ? "✓" : "✕"} ${escapeHtml(item.label)}`).join("<br>");
+        return `<div class="result-card" style="--role-color:${ROLES[role].color}"><span>${ROLES[role].name}</span><strong>${result.won ? "胜利" : "失败"}</strong><p>${detail}</p></div>`;
+      }).join("");
+      el("resultBody").innerHTML = `<h2>本事件胜负</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件最终Heat：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<br><strong>路人介入：</strong>触发${state.heatInterventionTriggered.length}条 · 剩余${state.heatInterventionTokens}枚<ul class="narrative-list">${narratives}</ul></div><div class="result-grid">${results}</div><p>影响力换算已暂停；本房间只显示各阵营胜负。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button><button class="primary-button" id="newOnlineRoom">创建新房间</button></div>`;
       if (!resultDialog.open) resultDialog.showModal();
       el("closeOnlineResult").onclick = () => resultDialog.close();
       el("newOnlineRoom").onclick = () => {

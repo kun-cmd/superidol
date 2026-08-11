@@ -87,6 +87,28 @@ test("two passes settle a round and award one marker", () => {
   assert.equal(state.pressure, 1);
 });
 
+test("crossing a Heat line creates one intervention that breaks winner lead", () => {
+  const state = createInitialState({ random: seededRandom(1234) });
+  state.heat = 34;
+  const lead = getLegalPlayOptions(state, "anti").find((option) => option.pattern.type === "single");
+  assert.ok(lead);
+  applyCommand(state, "anti", commandFor(lead, "anti"));
+  assert.deepEqual(state.heatInterventionTriggered, [35]);
+  assert.equal(state.heatInterventionTokens, 1);
+  applyCommand(state, "star", { type: "pass" });
+  applyCommand(state, "fan", { type: "pass" });
+
+  assert.equal(state.issueMarkers.anti, 1, "winner still receives the marker");
+  assert.equal(state.heatInterventionTokens, 0, "one intervention is consumed");
+  assert.equal(state.currentRole, "star", "lead rotates to the next seat instead of staying with anti");
+  assert.deepEqual(state.lastCompletedRound.heatIntervention, {
+    consumed: true,
+    from: "anti",
+    to: "star",
+    remaining: 0,
+  });
+});
+
 test("a deterministic three-player session reaches a complete event", () => {
   const state = createInitialState({ random: seededRandom(20260811) });
   let steps = 0;
@@ -111,6 +133,10 @@ test("a deterministic three-player session reaches a complete event", () => {
   assert.equal(state.phase, "ended");
   assert.equal(state.seats.length, 3);
   assert.equal(state.endReason, "三个公共问题已经全部完成定调。");
+  assert.equal(state.victoryResults.anti.won, true);
+  assert.equal(state.victoryResults.star.won, false);
+  assert.equal(state.victoryResults.fan.won, false);
+  assert.deepEqual(state.campaign.influence, { star: 0, fan: 0, anti: 0 });
 });
 
 test("server rule self-checks pass", () => {
