@@ -1,5 +1,5 @@
 (() => {
-  const DEFAULT_ONLINE_SERVER = "";
+  const DEFAULT_ONLINE_SERVER = "https://superidol-online.wce5723.workers.dev";
   const SESSION_KEY = "superidol.online.session.v1";
   const SERVER_KEY = "superidol.online.server.v1";
   const ROLE_LABELS = { anti: "黑粉", star: "明星", fan: "真爱粉" };
