@@ -70,6 +70,10 @@
 .online-role-picks button {
   min-height: 58px;
   padding: 8px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
   color: #a9b7ca;
   background: #111b29;
   border: 1px solid #34455d;
@@ -77,6 +81,38 @@
   border-radius: 7px;
   text-align: left;
   cursor: pointer;
+}
+
+.online-role-avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: block;
+  overflow: visible;
+  border: 2px solid color-mix(in srgb, var(--role-color) 55%, #fff);
+  border-radius: 50%;
+  background: #243247;
+}
+
+.online-role-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.online-role-avatar .verified-v {
+  right: -4px;
+  bottom: -4px;
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+  font-size: 5px;
+}
+
+.online-role-copy {
+  min-width: 0;
 }
 
 .online-role-picks button strong,

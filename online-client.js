@@ -120,7 +120,7 @@
   function buildRolePicks() {
     el("onlineRolePicks").innerHTML = ROLE_ORDER.map((role) => `
       <button type="button" data-online-role="${role}" class="${selectedRole === role ? "selected" : ""}" style="--role-color:${ROLE_COLORS[role]}">
-        <strong>${ROLE_LABELS[role]}</strong><small>${ROLES[role].accountName}</small>
+        <span class="online-role-avatar">${accountAvatarMarkup(role)}</span><span class="online-role-copy"><strong>${ROLE_LABELS[role]}</strong><small>${ROLES[role].accountName}</small></span>
       </button>
     `).join("");
     el("onlineRolePicks").querySelectorAll("[data-online-role]").forEach((button) => {
