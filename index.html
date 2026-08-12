@@ -172,11 +172,9 @@
     .topbar .heat-block{border-color:#dc6b31;box-shadow:0 0 0 1px rgba(255,147,70,.16),0 0 22px rgba(242,77,42,.2)}
     .topbar .heat-track{height:14px;overflow:visible;background:linear-gradient(180deg,#160f12,#311719);border-color:#b65a35;box-shadow:inset 0 2px 5px rgba(0,0,0,.55),0 0 11px rgba(255,91,45,.16)}
     .heat-fill{position:relative;overflow:hidden;background:linear-gradient(90deg,#ffb12f,#ff6a24 46%,#f12d4e 78%,#aa31ce);box-shadow:0 0 12px rgba(255,83,33,.72)}
-    .heat-fill::after{content:"";position:absolute;inset:-7px -24px;background:repeating-linear-gradient(115deg,transparent 0 10px,rgba(255,242,168,.7) 11px 14px,transparent 15px 24px);filter:blur(1px);animation:heat-fire-flow 1.15s linear infinite}
     .heat-intervention-line{top:-5px!important;width:4px!important;height:22px!important;background:#fff3b0!important;border-radius:4px;box-shadow:0 0 0 1px #6e2d18,0 0 12px #ffc24f!important;transform:translateX(-2px)!important}
     .heat-intervention-line::before{content:attr(data-threshold);position:absolute;left:6px;top:3px;color:#fff2b8;font-size:7px;font-style:normal;font-weight:1000;line-height:1;white-space:nowrap;text-shadow:0 1px 4px #2a0e08}
     .heat-intervention-line.triggered{background:#5b4a4d!important;box-shadow:0 0 0 1px #2c2024!important}.heat-intervention-line.triggered::before{color:#8f7f82;text-decoration:line-through}
-    @keyframes heat-fire-flow{from{transform:translateX(-24px)}to{transform:translateX(24px)}}
     .cooling-button{color:#b9ebff!important;border-color:#4bb6d8!important;background:rgba(25,113,151,.28)!important}
     .thread-account-name{color:var(--account-color)!important}
     .thread-faction-badge{padding:4px 9px!important;font-size:11px!important}
@@ -187,7 +185,7 @@
     @keyframes bystander-alert{0%{transform:translateX(-9px);filter:brightness(1.6)}100%{transform:none;filter:none}}
     @keyframes bystander-intervene{0%{box-shadow:0 0 0 0 rgba(39,168,215,.55)}100%{box-shadow:0 0 0 13px rgba(39,168,215,0)}}
     @media(max-width:940px){.issue-event-title{max-width:22vw;font-size:7px}.seat{gap:3px}.seat .seat-marker-row{gap:2px}.seat .seat-marker-row span{padding:1px 2px;font-size:5px}.seat-marker-row b{font-size:6px}.thread-faction-badge{padding:2px 5px!important;font-size:8px!important}.heat-intervention-line::before{font-size:6px}}
-    @media(prefers-reduced-motion:reduce){.heat-fill::after,.reaction.bystander-comments.intervention-triggered,.reaction.bystander-comments.intervention-used{animation:none}}
+    @media(prefers-reduced-motion:reduce){.reaction.bystander-comments.intervention-triggered,.reaction.bystander-comments.intervention-used{animation:none}}
     /* Forum readability pass: fixed cards, larger horizontal status, authentic topic and account grammar. */
     :root{--flame-shape:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 1c2.3 4.8-.7 6.2 1.8 8.9 1.7-1.5 2.1-3.2 1.9-5.2 3.4 2.7 5.1 6.2 4.2 10.5C19 19.8 15.9 23 12 23s-7-2.9-7.8-7.5C3.4 11.4 5.6 7.9 9 5c-.4 2.5.1 4.1 1.5 5.6C12.1 8.2 12.6 5.3 12 1Z'/%3E%3C/svg%3E")}
     .event-head{display:none!important}
@@ -206,17 +204,15 @@
     .issue-topic-metrics{display:inline-flex!important;align-items:center;gap:8px;color:#9db0c5!important;font-size:9px!important}
     .issue-topic-metrics i{font-style:normal}.issue-topic-metrics strong{display:inline!important;margin:0!important;color:#dbeaf6!important;font-size:10px!important;font-variant-numeric:tabular-nums}
     .issue-copy>small{padding-left:10px;border-left:1px solid rgba(179,202,224,.28);font-size:10px}.issue-copy>strong{font-size:20px}.issue-copy>em{font-size:9px}
-    .topbar .heat-track{position:relative;height:16px;isolation:isolate;overflow:visible;background:transparent!important;border:0!important;box-shadow:none!important}
+    .topbar .heat-track{position:relative;height:22px;align-self:start;isolation:isolate;overflow:visible;background:transparent!important;border:0!important;box-shadow:none!important}
     .topbar .heat-track::before{content:"";position:absolute;z-index:0;inset:1px 0;background:#130f13;border:1px solid #654237;clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);box-shadow:inset 0 3px 5px rgba(0,0,0,.72),inset 0 -1px 0 rgba(199,92,48,.18)}
-    .topbar .heat-block{grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"label value delta" "track track track";column-gap:9px;row-gap:2px}.topbar .heat-number{justify-self:start}.topbar .heat-delta{justify-self:end}.topbar .memory-challenge{display:none}
+    .topbar .heat-block{height:54px!important;grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"label value delta" "track track track";column-gap:9px;row-gap:2px;border-bottom:0!important;box-shadow:none!important}.topbar .heat-number{justify-self:start}.topbar .heat-delta{justify-self:end}.topbar .memory-challenge{display:none}
     .topbar .heat-block::after,.heat-fill::after{display:none!important}
-    .heat-fill{--flame-tail:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 24'%3E%3Cpath d='M0 21C14 20 20 15 30 11C27 9 31 6 44 1C39 7 43 11 52 13C43 15 39 19 52 22H0Z'/%3E%3C/svg%3E");position:absolute;z-index:2;left:0;top:1px;height:14px;overflow:visible;background:transparent!important;border-radius:0;box-shadow:none;transition:width 380ms cubic-bezier(.2,.8,.2,1)}
+    .heat-fill{--flame-ribbon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 112 28'%3E%3Cpath d='M0 28V19C13 22 19 16 31 8C28 14 36 18 49 14C61 10 67 3 82 1C76 9 87 16 112 11V28Z'/%3E%3C/svg%3E");position:absolute;z-index:2;left:0;top:1px;height:20px;overflow:visible;background:transparent!important;border-radius:0;box-shadow:none;transition:width 380ms cubic-bezier(.2,.8,.2,1)}
     .heat-flame{position:absolute;display:block;pointer-events:none}
-    .heat-flame-back{z-index:1;inset:0;background:#85211d;clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);box-shadow:inset 0 -2px 0 rgba(255,112,42,.24)}
-    .heat-flame-mid{z-index:2;left:3px;right:2px;bottom:2px;height:9px;background:#d64a23;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 50%,calc(100% - 4px) 100%,4px 100%,0 50%)}
-    .heat-flame-front{z-index:3;left:6px;right:7px;bottom:3px;height:4px;background:#ff9a38;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 50%,calc(100% - 3px) 100%,3px 100%,0 50%)}
-    .heat-flame-tail{z-index:4;right:-8px;bottom:1px;width:15px;height:12px;background:#e65322;-webkit-mask:var(--flame-tail) center/contain no-repeat;mask:var(--flame-tail) center/contain no-repeat;filter:drop-shadow(0 0 3px rgba(255,82,28,.5));transform-origin:left center;animation:heat-tip-breathe 1.28s ease-in-out infinite alternate}
-    .heat-flame-tail-core{z-index:5;right:-5px;bottom:3px;width:10px;height:7px;background:#ffb13f;-webkit-mask:var(--flame-tail) center/contain no-repeat;mask:var(--flame-tail) center/contain no-repeat;transform-origin:left center;animation:heat-tip-core 1.02s ease-in-out infinite alternate}
+    .heat-flame-back{z-index:1;left:0;right:-5px;bottom:0;height:20px;background:#8c211c;-webkit-mask:var(--flame-ribbon) 0 bottom/112px 20px repeat-x;mask:var(--flame-ribbon) 0 bottom/112px 20px repeat-x;animation:heat-flame-back-flow 4.8s linear infinite}
+    .heat-flame-mid{z-index:2;left:1px;right:-5px;bottom:0;height:16px;background:#df4e23;-webkit-mask:var(--flame-ribbon) 20px bottom/86px 16px repeat-x;mask:var(--flame-ribbon) 20px bottom/86px 16px repeat-x;animation:heat-flame-mid-flow 3.5s linear infinite reverse}
+    .heat-flame-front{z-index:3;left:3px;right:-4px;bottom:0;height:10px;background:#ff9f35;-webkit-mask:var(--flame-ribbon) 7px bottom/64px 10px repeat-x;mask:var(--flame-ribbon) 7px bottom/64px 10px repeat-x;animation:heat-flame-front-flow 2.6s linear infinite}
     .heat-intervention-node{position:absolute;z-index:7;top:50%;width:18px;height:18px;display:grid;place-items:center;color:#817b83;background:#17151a;border:1px solid #5d555e;border-radius:6px;box-shadow:0 0 0 2px #130f13;transform:translate(-50%,-50%);font-style:normal}
     .heat-intervention-node::after{content:attr(data-threshold);position:absolute;left:50%;top:-10px;color:#a9a0a0;font-size:6px;font-weight:1000;line-height:1;transform:translateX(-50%);text-shadow:0 1px 3px #09070a}
     .heat-node-icon{position:relative;width:10px;height:8px;border:1.5px solid currentColor;border-radius:4px}
@@ -229,8 +225,9 @@
     .heat-intervention-node.consumed .heat-node-icon{width:auto;height:auto;border:0;font-size:10px;font-weight:1000}
     .heat-intervention-node.consumed .heat-node-icon::before{content:"✓"}.heat-intervention-node.consumed .heat-node-icon::after{display:none}
     .heat-intervention-node.just-triggered{animation:heat-node-trigger 560ms ease-out}
-    @keyframes heat-tip-breathe{from{opacity:.82;transform:scale(.94,.92)}to{opacity:1;transform:scale(1.04,1.04)}}
-    @keyframes heat-tip-core{from{opacity:.78;transform:scale(.92,.88)}to{opacity:1;transform:scale(1.03,1)}}
+    @keyframes heat-flame-back-flow{from{-webkit-mask-position:0 bottom;mask-position:0 bottom}to{-webkit-mask-position:112px bottom;mask-position:112px bottom}}
+    @keyframes heat-flame-mid-flow{from{-webkit-mask-position:20px bottom;mask-position:20px bottom}to{-webkit-mask-position:106px bottom;mask-position:106px bottom}}
+    @keyframes heat-flame-front-flow{from{-webkit-mask-position:7px bottom;mask-position:7px bottom}to{-webkit-mask-position:71px bottom;mask-position:71px bottom}}
     @keyframes heat-node-trigger{0%{box-shadow:0 0 0 2px #130f13,0 0 0 0 rgba(92,211,232,.66)}100%{box-shadow:0 0 0 2px #130f13,0 0 0 12px rgba(92,211,232,0)}}
     .thread-column{grid-template-rows:minmax(0,1fr) 68px}
     .thread-strip{grid-template-columns:58px minmax(280px,1.12fr) minmax(280px,.88fr);column-gap:14px;padding:15px 18px;background:#f7f8fa;border-left-width:6px}
@@ -256,7 +253,7 @@
     .card{width:100%;min-width:0;overflow:hidden;flex:none}
     .playfield{grid-template-rows:minmax(0,1fr) 98px}.action-console{height:98px}
     @media(max-width:940px){
-      .topbar .heat-block{grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"label value delta" "track track track";column-gap:6px}.topbar .heat-track{width:100%}.workspace{grid-template-rows:68px minmax(0,1fr) 78px 205px}.issue-strip{min-height:68px}.seat{min-height:68px;grid-template-columns:minmax(64px,1fr) auto;padding:7px 6px}.seat-copy small{font-size:9px}.seat-copy strong{font-size:12px}.seat .seat-marker-row span{padding:2px 3px;font-size:10px}.seat-marker-row b{font-size:12px}
+      .topbar .heat-block{height:50px!important;grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"label value delta" "track track track";column-gap:6px}.topbar .heat-track{width:100%}.workspace{grid-template-rows:68px minmax(0,1fr) 78px 205px}.issue-strip{min-height:68px}.seat{min-height:68px;grid-template-columns:minmax(64px,1fr) auto;padding:7px 6px}.seat-copy small{font-size:9px}.seat-copy strong{font-size:12px}.seat .seat-marker-row span{padding:2px 3px;font-size:10px}.seat-marker-row b{font-size:12px}
       .issue-event-title{max-width:20vw;font-size:10px}.issue-topic-metrics{gap:5px;font-size:8px!important}.issue-topic-metrics strong{font-size:9px!important}.issue-copy>small{font-size:9px}.issue-copy>strong{font-size:17px}.issue-copy>em{display:none}
       .thread-column{grid-template-rows:minmax(0,1fr) 60px}.thread-strip{grid-template-columns:48px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;padding:12px 14px;gap:5px 10px}.thread-avatar{width:44px;height:44px;grid-row:1/3}.thread-main{grid-column:2;grid-row:1}.thread-played{grid-column:2;grid-row:2;padding:6px 0 0;border:0;border-top:1px solid #d5dde5}.thread-footer{grid-column:2;grid-row:3}.thread-account-name{font-size:14px!important}.thread-official{font-size:9px}.thread-main>strong{font-size:20px}.thread-faction-badge{padding:3px 6px!important;font-size:9px!important}
       .reaction.bystander-comments{min-height:60px;max-height:60px;padding:5px 7px;grid-template-columns:86px minmax(0,1fr) auto}.bystander-hot-label strong{font-size:10px}.bystander-hot-label::before{width:17px;height:21px}.bystander-entry{grid-template-columns:32px minmax(0,1fr);gap:6px}.bystander-avatar{width:30px;height:30px;font-size:10px}.bystander-entry-head strong{font-size:10px}.bystander-state,.bystander-reason{font-size:7px!important}.bystander-author-meta{font-size:7px}.bystander-entry p{font-size:9px}.bystander-entry-actions{font-size:6px}
@@ -269,13 +266,13 @@
     @media(max-width:620px){.role-title,.role-title strong{font-size:12px}.role-title span{display:none}.role-meta{font-size:9px}.role-skill>strong{font-size:10px}.role-skill-status{display:block;font-size:9px}}
     @media(prefers-reduced-motion:reduce){.heat-fill{transition:none}.heat-flame,.heat-intervention-node{animation:none}}
   </style>
-  <link rel="stylesheet" href="online-client.css?v=heat-intervention-20260812">
+  <link rel="stylesheet" href="online-client.css?v=event-bible-20260812">
 </head>
 <body>
   <div class="app">
     <header class="topbar">
       <div class="brand game-logo" aria-label="superidol.feed"><span class="logo-sigil" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><path class="logo-s-line" d="M51 12H29c-9 0-14 5-14 12s5 12 14 12h9c8 0 13 4 13 10s-5 10-13 10H20l-9 6V47"/><circle class="logo-s-dot" cx="55" cy="10" r="5"/></svg></span><span class="logo-word"><b>superidol</b><i>.</i><small>feed</small></span></div>
-      <div class="status-block heat-block" id="heatBlock"><div class="status-label">全网热度 · 舆论强度</div><div class="heat-readout"><strong class="heat-number" id="heatStatus">3</strong><span class="heat-delta" id="heatDelta">争议出现</span></div><div class="heat-track" id="heatTrack" aria-label="当前热度3"><span class="heat-fill" style="width:3%"><i class="heat-flame heat-flame-back"></i><i class="heat-flame heat-flame-mid"></i><i class="heat-flame heat-flame-front"></i><i class="heat-flame heat-flame-tail"></i><i class="heat-flame heat-flame-tail-core"></i></span></div><div class="memory-challenge" id="memoryChallenge">本事件尚无旧永久记忆纪录</div></div>
+      <div class="status-block heat-block" id="heatBlock"><div class="status-label">全网热度 · 舆论强度</div><div class="heat-readout"><strong class="heat-number" id="heatStatus">3</strong><span class="heat-delta" id="heatDelta">争议出现</span></div><div class="heat-track" id="heatTrack" aria-label="当前热度3"><span class="heat-fill" style="width:3%"><i class="heat-flame heat-flame-back"></i><i class="heat-flame heat-flame-mid"></i><i class="heat-flame heat-flame-front"></i></span></div><div class="memory-challenge" id="memoryChallenge">本事件尚无旧永久记忆纪录</div></div>
       <div class="turn-cluster"><span class="turn-chip">进程<strong id="roundStatus">问题1 · 话轮1</strong></span><span class="turn-chip">回应<strong id="turnStatus">等待开始</strong></span><div class="top-actions"><button class="icon-button" id="rulesButton" title="查看完整规则">规则</button><button class="icon-button" id="restartButton" title="重新开始">R</button></div></div>
     </header>
     <details class="played-tracker" id="playedTracker">
@@ -346,27 +343,39 @@
   <script>
     const ROLE_ORDER=["anti","star","fan"];
     const ROLES={
-      star:{name:"明星本人",short:"明星",factionLabel:"明星阵营",accountName:"林澄",handle:"@LINCHENG",avatar:"澄",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"沉淀成章：2点技能牌开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
-      fan:{name:"真爱粉",short:"真爱粉",factionLabel:"真爱粉阵营",accountName:"林澄全网应援站",handle:"@LINCHENG_FANBASE",avatar:"援",verified:false,color:"var(--fan)",goal:"支持阵营合计定义2个问题且粉圈自己定义1个；明星未失声。",skill:"最后应援（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方。"},
-      anti:{name:"黑粉",short:"黑粉",factionLabel:"黑粉阵营",accountName:"镜头外档案室",handle:"@OFFCAM_ARCHIVE",avatar:"档",verified:false,color:"var(--anti)",goal:"黑粉叙事定义至少1个问题。",skill:"断章取义（1次）：用组合成功压牌后，获得整组被压牌；牌名、频道和等级保持原样，之后按普通牌使用。"}
+      star:{name:"明星本人 · Eli",short:"Eli",factionLabel:"Star",accountName:"Eli Mercer",handle:"@elimercer",avatar:"E",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"The Record Takes Shape：2点作品卡开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
+      fan:{name:"真爱粉 · Maya",short:"Maya",factionLabel:"Supporter",accountName:"Maya Reed",handle:"@mayareed",avatar:"M",verified:false,color:"var(--fan)",goal:"支持阵营合计定义2个问题且Maya自己定义1个；明星未失声。",skill:"Last Push（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方；它仍是Maya写的说法。"},
+      anti:{name:"黑粉 · Ben",short:"Ben",factionLabel:"Skeptic",accountName:"Ben Carter",handle:"@bencarter",avatar:"B",verified:false,color:"var(--anti)",goal:"Ben的质疑叙事定义至少1个问题。",skill:"Out of Context（1次）：用组合成功压牌后，获得整组被压牌；牌名、原作者、频道和等级保持原样。"}
     };
     function accountAvatarMarkup(role){const account=ROLES[role];return`${account.avatar}${account.verified?'<span class="verified-v" aria-hidden="true">V</span>':""}`;}
-    const BYSTANDER_ACCOUNT={name:"纯鹿人",handle:"@chunluren",avatar:"鹿"};
-    const CONTROVERSY_ISSUES=[
-      {title:"发生了什么？",prompt:"爆料、截图与回应之间，公众最终会把哪一种版本当成事件事实？",claims:{star:"等待完整事实",fan:"现有爆料并不完整",anti:"沉默就是默认"}},
-      {title:"这说明他是谁？",prompt:"讨论从事件本身滑向人格判断，谁能定义这位明星的公共身份？",claims:{star:"作品与私生活应被分开",fan:"他仍然值得被理解",anti:"这暴露了真实的他"}},
-      {title:"接下来该怎么办？",prompt:"舆论开始决定职业命运：等待、保护、追问，还是让迷因继续传播？",claims:{star:"用后续行动回应",fan:"先保护再等待作品",anti:"继续追问并留下记录"}}
+    const BYSTANDER_ACCOUNT={name:"Jamie Cole",handle:"@jamiecole",avatar:"J"};
+    const SERVE_ISSUES=[
+      {title:"What are people actually watching?",claims:{star:"It's a cropped mistake from when I was seventeen.",fan:"He was already experimenting. The crop hides how much talent was there.",anti:"The crop works because the full performance is still awkward."}},
+      {title:"Who owns the joke?",claims:{star:"I don't need protection from a joke. I need my team to stop threatening people.",fan:"This stopped being a joke when millions used it to humiliate him.",anti:"A megastar does not get to decide when remix culture stops."}},
+      {title:"What survives after the trend dies?",claims:{star:"Let my next work speak in a voice I chose.",fan:"The real Eli is the hardworking person we have always known.",anti:"The meme is more honest than the brand."}}
     ];
-    const WORK_ISSUES=[
-      {title:"这部新作值得关注吗？",prompt:"作品发布把公众拉回舞台，讨论会围绕完成度、情感还是宣发声量展开？",claims:{star:"作品本身值得被看见",fan:"这是沉淀后的真诚回应",anti:"作品不能替代问题答案"}},
-      {title:"新作改变了公众印象吗？",prompt:"一次成功发布能够重塑身份，还是只会让旧争议换一种方式重新出现？",claims:{star:"职业表现重新定义了我",fan:"他用行动兑现了等待",anti:"热度回归不等于可信"}},
-      {title:"接下来由什么定义他？",prompt:"公众要把注意力留给作品、粉圈维护，还是继续用旧记录审视明星？",claims:{star:"让下一部作品继续回答",fan:"保护创作空间与长期陪伴",anti:"作品与旧账都应被记录"}}
+    const VOICE_NOTE_ISSUES=[
+      {title:"What has actually been established?",claims:{star:"We had a relationship. I paid medical costs. I will not publish her private details.",fan:"He paid because he took responsibility, not because he was guilty.",anti:"The admission confirms the core timeline, not the coercion claim."}},
+      {title:"What does his silence mean?",claims:{star:"I waited because the other person is not public.",fan:"He stayed silent to protect her, even while everyone attacked him.",anti:"Silence gives the more powerful party time to coordinate."}},
+      {title:"What would accountability look like?",claims:{star:"I was selfish and avoidant. I can own that without confirming false claims.",fan:"One private mistake should not erase years of good character.",anti:"A polished admission still avoids who held the power."}}
+    ];
+    const COMEBACK_ISSUES=[
+      {title:"Was the performance fake?",claims:{star:"The live stem is there. Using a backing track was my choice.",fan:"He was protecting his voice after everything he survived.",anti:"A comeback sold as raw honesty should not hide behind a track."}},
+      {title:"Whose comeback is this?",claims:{star:"I rewrote and produced this with a team. I will not call it solo work.",fan:"Everyone collaborates. It still sounds like Eli because only he could finish it.",anti:"The unknown demo shows how much of the artist was assembled."}},
+      {title:"Should the industry put him back at center stage?",claims:{star:"I am asking to be judged by what I do next, not declared redeemed.",fan:"He has suffered enough and deserves his place back.",anti:"Missing the spotlight is not a consequence."}}
+    ];
+    const ROOM_TONE_ISSUES=[
+      {title:"Is ROOM TONE a real artistic leap?",claims:{star:"Hear the record before turning it into a redemption story.",fan:"This proves the person we defended was always a real artist.",anti:"Better music can still be strategic image repair."}},
+      {title:"Is he honest—or better at telling the story?",claims:{star:"I wrote about my choices. I refused to turn someone else into a character.",fan:"Every lyric is his hidden truth finally coming out.",anti:"Ambiguity lets him monetize confession without being specific."}},
+      {title:"What defines Eli Mercer now?",claims:{star:"I want to be known by the work I freely chose, not by someone else's defense.",fan:"We knew this was the real Eli all along.",anti:"The album joins the record. It does not replace it."}}
     ];
     const EVENT_THEMES={
-      controversy:{eyebrow:"事实未明",title:"私人关系爆料突然出现",copy:"三方不会重演一个固定答案，而是在三个连续问题中共同制造公众故事。最终可信结论、议题定义和互联网记忆可能互相矛盾。",issues:CONTROVERSY_ISSUES},
-      work:{eyebrow:"作品发布 / 时间线转向",title:"沉淀已久的新作品突然发布",copy:"明星试图让作品成为新的公共事件；支持、质疑与旧记忆会共同决定，这次发布究竟改写时间线，还是让旧争议再次回流。",issues:WORK_ISSUES}
+      sevenSecondServe:{eyebrow:"OLD CLIP / NEW MEME",title:"The Seven-Second Serve",copy:"A seven-year-old audition clip is cut into a seven-second racket dance. An automated copyright takedown and a hardline team statement turn a small joke into a feed-wide event.",issues:SERVE_ISSUES,fragmentTitle:"Afterimage",bystander:{watching:"I want the full clip before I join either side.",warning:{35:"This stopped being a joke and became a fight over who controls the feed.",75:"The joke is everywhere, but the same side still controls what it means."},intervention:["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.","The other side gets the opening this time. No one account owns the meme."],reset:["New thread. Show context, not another victory lap.","I have seen the clip. Now I am watching what each side does with it."]}},
+      voiceNote:{eyebrow:"PRIVATE CLAIM / PUBLIC TRIAL",title:"The 2:17 Voice Note",copy:"A private relationship, medical payments, an unsigned NDA and an eighteen-second voice note arrive together. Eli admits the relationship and payment, denies coercion, and refuses to publish Riley's private details.",issues:VOICE_NOTE_ISSUES,fragmentTitle:"Low Signal",bystander:{watching:"What is admitted, what is alleged, and what is still private? Keep those separate.",warning:{35:"This is moving faster than the evidence, and one side is controlling every reply.",75:"The feed is rewarding certainty before anyone has the full record."},intervention:["[Winner] keeps the result. [Next speaker] gets the next opening so this does not become a one-sided trial.","The side that has not been heard gets the first post now. The winner does not get another automatic microphone."],reset:["I am listening again. Do not turn another person's privacy into filler.","No verdict from me yet. I am watching who distinguishes responsibility from rumor."]}},
+      comeback:{eyebrow:"COMEBACK / AUTHENTICITY TEST",title:"The Comeback Rehearsal",copy:"A rehearsal leaks for twenty-six seconds and the vocal continues after Eli lowers the microphone. The full mix contains live lead vocals and prerecorded backing; the old demo writer is credited, while Eli rewrote and produced with a team.",issues:COMEBACK_ISSUES,bystander:{watching:"Let us hear the full mix before calling it live or fake.",warning:{35:"The clip is deciding the comeback before the performance is even public.",75:"The comeback has become another contest to own the headline."},intervention:["[Winner] keeps the round. [Next speaker] gets the first response to the full audio.","The side still buried under the winning narrative gets the next opening."],reset:["Now compare the recording, the credits, and what the campaign promised.","I am not choosing redemption or cancellation. I am watching the work."]}},
+      roomTone:{eyebrow:"ALBUM BRANCH UNLOCKED",title:"ROOM TONE",copy:"A ten-track album arrives without warning. Eli produced eight tracks, keeps imperfect vocals and live instruments, credits collaborators prominently, and refuses to turn Riley into a character. The music advances; the archive remains.",issues:ROOM_TONE_ISSUES,bystander:{watching:"I can like the album without pretending it answers every old question.",warning:{35:"Reviews are turning into a morality vote, and one side is swallowing the music.",75:"The album is becoming proof of whatever people believed before pressing play."},intervention:["[Winner] keeps the round. [Next speaker] gets the first listen on the next question.","The side that has not controlled the album story gets the next opening."],reset:["New track, new thread. Talk about what is actually on the record.","The record stays. So does the archive. I am watching what he does after both."]}}
     };
-    const CHANNELS={fact:{name:"事实",color:"var(--fact)"},stance:{name:"立场",color:"var(--stance)"},spread:{name:"传播",color:"var(--spread)"}};
+    const CHANNELS={fact:{name:"Evidence",color:"var(--fact)"},stance:{name:"Position",color:"var(--stance)"},spread:{name:"Reach",color:"var(--spread)"}};
     const PATTERN_NAMES={single:"单张",pair:"同调对子",run:"连续论证",loop:"闭环叙事"};
     const ISSUE_MARKER_TARGET=2;
     const DECK_COPIES={1:3,2:3,3:3,4:3,5:1};
@@ -383,9 +392,9 @@
     const AI_ACTION_DELAY=2000;
     const CORE_BASELINE={id:"heat-intervention-prototype",label:"Heat 路人介入实验",positiveFeedback:false,evaluateVictory:true,influence:false,heatIntervention:true};
     const CARD_NAMES={
-      star:{fact:["核对原始记录","整理事件时间线","公开可验证细节","提交完整证据","第三方事实证明"],stance:["暂不作出定性","说明本人立场","承认表达瑕疵","划清责任边界","正面承担回应"],spread:["简短公开回应","工作室声明","完整采访回应","公开直播说明","全平台同步发声"]},
-      fan:{fact:["核对爆料出处","整理公开资料","制作澄清时间线","补充交叉证据","发布完整档案"],stance:["等待本人回应","保持克制支持","承认合理质疑","守住支持立场","共同承担声援"],spread:["转发本人原话","澄清帖扩散","评论区集中说明","反黑长文联动","全站应援动员"]},
-      anti:{fact:["询问信息来源","核验截图时间","追问证据缺口","拆解声明矛盾","公布完整调查"],stance:["保留合理怀疑","拒绝仓促洗白","质疑公关回避","批评流量权力","坚持追究责任"],spread:["转发爆料截图","截取回应片段","循环剪辑传播","制造事件新梗","推向全网热榜"]}
+      star:{fact:["Here Is the Original","My Timeline","What I Can Confirm","The Full Record","Independent Verification"],stance:["I'm Not Ready to Label This","This Is What I Meant","I Handled This Badly","This Part Is Mine","I Will Answer for It"],spread:["A Short Personal Note","My Statement","The Full Interview","Live, Without a Script","Say It Everywhere"]},
+      fan:{fact:["The Clip Leaves This Out","Receipts From Public Posts","The Timeline That Makes Sense","Everything We Found","The Case for His Side"],stance:["Give Him Time","He Was Trying to Protect Someone","You Are Reading Him in Bad Faith","We Know What Kind of Person He Is","We Stand by the Eli We Believe In"],spread:["Share the Part They Cut","Our Explanation Thread","Keep the Context on Top","Everyone Post the Same Timeline","Make His Side Impossible to Ignore"]},
+      anti:{fact:["Where Did This Come From?","The Timestamps Don't Match","What the Statement Skipped","The Contradictions, Side by Side","The Full Investigation"],stance:["I Still Have Questions","Don't Call This Cleared Up","That Answer Avoids the Point","Fame Changes the Balance of Power","Accountability Before Comeback"],spread:["Repost the Screenshot","Clip the Weak Part","Turn It Into a Format","Keep the Question Trending","Put It on Every Feed"]}
     };
     const BYSTANDER_COMMENTS={
       watching:["先看看后面还有没有更完整的回应。","信息还没对齐，暂时不急着站队。","热度很高，但热度本身不能当结论。","这条说法先留着，等下一方拿证据回应。","继续围观，谁能把事实和逻辑说完整？","先不转发，等这轮回应结束再判断。"],
@@ -398,7 +407,7 @@
     const shuffle=items=>{const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;};
     const SIMULATION_SCENARIO=new URLSearchParams(location.search).get("scenario")||"heat-intervention-prototype";
     const CAMPAIGN_START_TIME=Date.UTC(2026,3,18,9,20);
-    const campaign={eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"controversy",nextTheme:null,storyTime:CAMPAIGN_START_TIME,lastGapMonths:0};
+    const campaign={eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"sevenSecondServe",nextTheme:null,albumFragments:[],storyTime:CAMPAIGN_START_TIME,lastGapMonths:0};
     let state=null,aiTimer=null,generatedCardId=0,animatedHeatState=null,animatedHeatSequence=0,heatMotionTimer=null,eventIntroTimer=null,animatedWorkState=null,animatedWorkSequence=0,workMotionTimer=null,animatedBystanderState=null,animatedBystanderSequence=0,bystanderMotionTimer=null,animatedEngagementState=null,animatedEngagement={views:0,likes:0,reposts:0},engagementFrames={},milestoneTimer=null,renderedThreadState=null,renderedTopSignature="",threadMotionTimer=null,likedThreadState=null,likedTopSignature="",currentTopLiked=false,playAnimationActive=false,playAnimationTimer=null,simulationMode=false;
 
     function makeDeck(){
@@ -594,7 +603,7 @@
         themeKey:campaign.activeTheme,theme,issues:theme.issues,claims,seats:[],issueIndex:0,issueMarkers:emptyMarkers(),roundInIssue:1,roundsCompleted:0,
         heat:initialHeat,initialHeat,memoryTarget:CORE_BASELINE.positiveFeedback?campaign.permanentMemory?.strength||0:0,inheritedMemory:CORE_BASELINE.positiveFeedback&&campaign.permanentMemory?{...campaign.permanentMemory}:null,heatFeedback:{amount:0,sequence:0,interventionsAdded:0},heatInterventionTokens:0,heatInterventionTriggered:[],permanentMemory:null,permanentMemoryOutcome:null,lastRoundOwner:null,bystanderJoinedThisIssue:false,bystanderOwner:null,roundStartConsensusOwner:null,bystanderFeedback:{owner:null,sequence:0},
         aiModes:Object.fromEntries(ROLE_ORDER.map(role=>[role,"aggressive"])),simulationMetrics:null,experiment:createPrototypeExperiment(deal.hands,theme.issues.length),oldStoryCall:null,
-        currentRole:"anti",topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],coolingMode:false,coolingCardId:null,fanVoiceChoice:"star",fanVoiceThisRound:null,fanOverreachThisRound:false,wildChannelChoice:null,
+        currentRole:"anti",topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],coolingMode:false,coolingCardId:null,fanVoiceChoice:"fan",fanVoiceThisRound:null,fanOverreachThisRound:false,wildChannelChoice:null,
         skills:{star:{level:STAR_WORK_START_LEVEL,invested:[],selected:false,status:"forging",feedbackSequence:0},fan:{used:false,target:"fan"},anti:{used:0,captureArmed:false,baitPlan:null}},
         pressure:0,silenced:false,lastCompletedRound:null,victoryResults:null,logs:[]
       };
@@ -635,7 +644,7 @@
       render();queueAutomaticTurn();
     }
     function recordOldStoryResponse(role,action){const call=state.oldStoryCall;if(simulationMode&&state.simulationMetrics&&call?.active&&role!==call.leader)state.simulationMetrics.oldStory[action]+=1;}
-    function fanVoiceLabel(value){return value==="star"?"转述本人":"粉圈解释";}
+    function fanVoiceLabel(){return"Maya's explanation";}
     function startGame(role){
       clearAITimer();clearPlayAnimation();state=initialState(role);el("startDialog").close();
       state.roundStartConsensusOwner=consensusLeader();
@@ -674,7 +683,7 @@
       if(pattern.type==="loop")return{legal:true,mode:"respond",reason:"闭环叙事可以压过任何普通牌型。"};
       const ordinary=ordinaryResponseConstraint(pattern,top);return ordinary.legal?{legal:true,mode:"respond",reason:ordinary.reason}:ordinary;
     }
-    function currentWorkCard(){const work=state.skills.star;return{id:"star-work",role:"star",name:work.level===STAR_WORK_RELEASE_LEVEL?"沉淀成章 · 完整发布":"沉淀成章",level:work.level,channel:"spread",isWild:false,isWork:true};}
+    function currentWorkCard(){const work=state.skills.star,releaseTitle=state.theme.fragmentTitle||"The Record";return{id:"star-work",role:"star",name:work.level===STAR_WORK_RELEASE_LEVEL?`${releaseTitle} · Full Release`:"The Record Takes Shape",level:work.level,channel:"spread",isWild:false,isWork:true};}
     function selectedCards(){const hand=state.roles[state.userRole].hand,cards=state.selectedIds.map(id=>hand.find(card=>card.id===id)).filter(Boolean);if(state.userRole==="star"&&state.skills.star.selected)cards.push(currentWorkCard());return cards;}
     function selectedPatternOptions(cards){
       const work=cards.find(card=>card.isWork);if(!work)return detectPatternOptions(cards);
@@ -698,10 +707,7 @@
       const work=state.skills.star;if(work.status!=="forging")return;
       if(!work.selected&&state.selectedIds.length)return;work.selected=!work.selected;render();
     }
-    function setFanVoice(value){
-      if(state.userRole!=="fan"||state.fanVoiceThisRound||!["star","fan"].includes(value))return;
-      state.fanVoiceChoice=value;render();
-    }
+    function setFanVoice(){if(state.userRole!=="fan")return;state.fanVoiceChoice="fan";render();}
     function patternLabel(pattern){
       if(!pattern)return"无效组合";
       if(pattern.type==="loop")return`${pattern.level}级${PATTERN_NAMES.loop}`;
@@ -837,10 +843,7 @@
       }
       return state.pressure-before;
     }
-    function narrativeOwner(role,fanVoice){
-      if(role!=="fan")return role;
-      return fanVoice==="star"?"star":"fan";
-    }
+    function narrativeOwner(role){return role;}
     function consumeStarWork(status){
       const work=state.skills.star;if(work.status!=="forging")return;
       if(work.invested.length)state.roles.star.hiddenDiscard.push(...work.invested);
@@ -909,16 +912,16 @@
       applyWildAssignments(cards,pattern);
       roleState.hand=roleState.hand.filter(card=>!spent.includes(card.id));roleState.discard.push(...ordinaryCards);
       if(usesWork){consumeStarWork(workLevel===STAR_WORK_RELEASE_LEVEL?"released":"releasedEarly");if(workLevel===STAR_WORK_RELEASE_LEVEL)campaign.nextTheme="work";}
-      if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound=fanVoice||state.fanVoiceChoice;
+      if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound="fan";
       const activeVoice=role==="fan"?state.fanVoiceThisRound:null,owner=narrativeOwner(role,activeVoice);
       let pressureText="";
-      if(role==="fan"&&activeVoice==="fan"&&!state.fanOverreachThisRound){
+      if(role==="fan"&&!state.fanOverreachThisRound){
         state.fanOverreachThisRound=true;
         const pressureChange=changePressure(1);pressureText=`，粉圈越界使压力+${pressureChange}`;
       }
       const heatChange=changeHeat(playHeat(cards,pattern),role);advanceStoryTime("response",playHeat(cards,pattern));
       state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,level:card.level,channel:card.channel,isWild:Boolean(card.isWild),isFanWild:Boolean(card.isFanWild)})),fanVoice:activeVoice,publishedAt:state.storyTime};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
-      const voiceText=role==="fan"?`，以“${fanVoiceLabel(activeVoice)}”发声`:"",reachGain=heatReach(state.heat)-heatReach(beforeHeat),heatText=reachGain>0?`，浏览量+${formatReachValue(reachGain)}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
+      const voiceText=role==="fan"?`，以“${fanVoiceLabel()}”发声`:"",reachGain=heatReach(state.heat)-heatReach(beforeHeat),heatText=reachGain>0?`，浏览量+${formatReachValue(reachGain)}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
       const skillText=usesWork?(workLevel===STAR_WORK_RELEASE_LEVEL?"，完整发布6点“沉淀成章”，本轮无法被反压":`，将${workLevel}点“沉淀成章”作为单牌打出`):captured.length?`，并用“断章取义”拿走整组${captured.length}张原牌`:"",handDelta=captured.length-ordinaryCards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
       addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);publishBystanderComment(undefined,heatChange.crossed.length?"intervention_triggered":"response",{thresholds:heatChange.crossed});
       recordOldStoryResponse(role,"responderPlays");
@@ -1055,7 +1058,7 @@
         if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.heatIntervention;metric.consumed+=1;metric.disruptedByWinner[controller]+=1;}
       }else completed.heatIntervention={consumed:false,from:controller,to:controller,remaining:0};
       if(completed.issueWon){state.bystanderJoinedThisIssue=false;state.bystanderOwner=null;}
-      state.topPlay=null;state.claimOwner=null;state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.fanVoiceChoice="star";state.fanVoiceThisRound=null;state.fanOverreachThisRound=false;state.wildChannelChoice=null;state.skills.star.selected=false;state.skills.anti.captureArmed=false;state.oldStoryCall=null;
+      state.topPlay=null;state.claimOwner=null;state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.fanVoiceChoice="fan";state.fanVoiceThisRound=null;state.fanOverreachThisRound=false;state.wildChannelChoice=null;state.skills.star.selected=false;state.skills.anti.captureArmed=false;state.oldStoryCall=null;
       state.skills.anti.baitPlan=null;state.currentRole=nextLead;state.roundStartConsensusOwner=consensusLeader();beginPrototypeRound(nextLead);state.phase="round_break";render();if(!simulationMode)showRoundSummary(completed);
     }
     function markerSnapshotText(markers){
@@ -1266,36 +1269,26 @@
         if(counts.fan>=1)score-=2;
         if(markers.star>0&&supportSeats<2)score-=1.5;
         if(!state.fanOverreachThisRound)score+=state.pressure>=PRESSURE_CRITICAL?(needsOwn&&openIssues===1?-4.5:-8):state.pressure>=PRESSURE_HIGH?-1.5:state.pressure>=PRESSURE_WATCH?-.4:0;
-      }else{
-        if(supportSeats<2)score+=2;
-        if(starFinishes)score+=4.2;
-        if(counts.fan>=1)score+=2;
-        if(needsOwn&&openIssues===1)score-=6;
-        if(state.pressure>=PRESSURE_CRITICAL)score+=2.5;
       }
-      if(antiThreat&&((voice==="fan"&&markers.fan>0)||(voice==="star"&&markers.star>0)))score+=2;
-      if(choice.pattern.channel==="stance"&&voice==="star")score+=state.pressure>=PRESSURE_CRITICAL?5.5:state.pressure>=PRESSURE_HIGH?2.8:.5;
+      if(antiThreat&&markers.fan>0)score+=2;
       if(state.topPlay&&state.claimOwner==="star"&&voice==="fan"&&needsOwn)score+=state.issueIndex===2?3.5:1;
       if(state.topPlay&&state.claimOwner==="fan"&&voice==="fan")score+=1.5;
-      if(state.silenced)score+=voice==="star"&&choice.pattern.channel==="stance"?18:voice==="star"?-6:-16;
+      if(state.silenced)score-=16;
       return score;
     }
     function fanPlanReason(voice,choice){
       const counts=seatCounts(),openIssues=state.issues.length-state.seats.length;
-      if(state.silenced&&voice==="star"&&choice.pattern.channel==="stance")return`明星已经失声，必须用转述本人的立场定调把压力降回${PRESSURE_RECOVERY}`;
       if(voice==="fan"){
         if(playWouldFinishIssue("fan",choice.pattern))return"粉圈已有1个定调标记，这次出牌可以完成自己的定义";
         if(counts.fan===0&&openIssues===1)return"只剩最后一个问题，必须冒险争取粉圈自己的定义";
         if(state.pressure>=PRESSURE_CRITICAL)return"压力已经很高，但粉圈仍需要自己的公开定义";
         return"争取粉圈自己的定义，并承担越界解释带来的压力";
       }
-      if(choice.pattern.channel==="stance"&&state.pressure>=PRESSURE_HIGH)return"明星压力偏高，优先忠实转述并争取减压";
-      if(playWouldFinishIssue("star",choice.pattern))return"本人主张已有1个定调标记，这次出牌可以完成支持阵营定调";
       if(state.topPlay&&state.claimOwner==="anti"&&topWouldFinishIssue())return"黑粉叙事已有1个定调标记，先替本人阻断";
-      return"当前更需要帮助本人主张建立支持阵营优势";
+      return"Maya只能用自己的解释争取支持阵营优势，不能替Eli完成本人定调";
     }
     function chooseFanPlan(){
-      const voices=state.fanVoiceThisRound?[state.fanVoiceThisRound]:["star","fan"];
+      const voices=["fan"];
       return voices.map(voice=>{
         const choice=aiChoosePlay("fan",voice);if(!choice)return null;
         return{voice,choice,score:choice.score+fanVoiceStrategyScore(voice,choice),reason:fanPlanReason(voice,choice)};
@@ -1334,10 +1327,7 @@
         const baitReserve=role==="anti"?antiBaitReserve(options,option):null,usesBaitPlan=role==="anti"&&followsAntiBaitPlan(option);
         const intel=aiIntelAssessment(role,option.pattern,fanVoice);
         let score=handShapeScore(remaining)*.42-cardHeat*.11+Math.random()*.18+aiGoalScore(role,option,fanVoice)+antiBaitScore(option,baitReserve)+(usesBaitPlan?12:0)+intel.total+heatInterventionPlayScore(role,cardHeat);
-        if(role==="fan"&&!state.silenced&&state.pressure>=PRESSURE_HIGH){
-          const hadRescue=hand.some(card=>card.channel==="stance"||card.isWild),keepsRescue=remaining.some(card=>card.channel==="stance"||card.isWild),reducesPressureNow=fanVoice==="star"&&option.pattern.channel==="stance";
-          if(hadRescue&&!keepsRescue&&!reducesPressureNow)score-=state.pressure>=PRESSURE_CRITICAL?10:3.5;
-        }
+        if(role==="fan"&&!state.silenced&&state.pressure>=PRESSURE_HIGH&&!state.fanOverreachThisRound)score-=state.pressure>=PRESSURE_CRITICAL?4:1.5;
         if(strategy.mode==="aggressive")score+=cardHeat*.2+option.pattern.level*.28+(option.pattern.size-1)*.62;
         else score-=cardHeat*.24+(option.pattern.size-1)*.75-(option.pattern.type==="single"?.55:0);
         if(!state.topPlay)score+=(6-option.pattern.level)*.42-(option.pattern.size-1)*.18;else score+=.8;
@@ -1406,7 +1396,7 @@
       if(!state.topPlay)return{action:"play",reason:"拥有领出权，需要建立自己的叙事"};
       const owner=state.claimOwner,futureOwner=narrativeOwner(role,fanVoice),counts=seatCounts(),threat=topWouldFinishIssue(),ownFinish=playWouldFinishIssue(futureOwner,choice.pattern),lastChance=roleNeedsLastIssue(role)&&!claimHelpful(role,owner),strategy=aiStrategy(role);
       const fanMustTakeDefinition=role==="fan"&&owner==="star"&&futureOwner==="fan"&&counts.fan<1&&(roleNeedsLastIssue("fan")||playWouldFinishIssue("fan",choice.pattern));
-      const rescuesSilencedStar=role==="fan"&&state.silenced&&futureOwner==="star"&&choice.pattern.channel==="stance";
+      const rescuesSilencedStar=false;
       if(shouldCoolAgainstPermanentMemory(role))return{action:"cool",reason:`无法接受${ROLES[state.claimOwner].short}以当前热度覆盖旧永久记忆，先暗置弃牌削弱纪录`};
       if(rescuesSilencedStar)return{action:"play",reason:"明星已经失声，必须让转述本人的立场牌守到定调才能恢复出牌"};
       if(claimHelpful(role,owner)&&!fanMustTakeDefinition){if(shouldCoolForHeatIntervention(role))return{action:"cool",reason:`当前叙事已经对自己有利，顺势弃一张差牌降温，拉开与Heat ${nextHeatInterventionThreshold()}介入线的距离`};return{action:"pass",reason:`当前“${currentClaim(owner)}”本来就在推进自己的目标，没必要浪费好牌`};}
@@ -1523,7 +1513,7 @@
       }
       if(role==="star"&&state.silenced){
         recordSimulationStrategy(strategy.mode,"pass");if(simulationMode&&state.simulationMetrics)state.simulationMetrics.silence.starForcedPasses+=1;
-        passTurn(role,true,`压力达到${PRESSURE_MAX}，明星无法出牌，只能等待真爱粉以“转述本人”的立场定调救援`);return;
+        passTurn(role,true,`压力达到${PRESSURE_MAX}，明星无法出牌；Maya的解释不能替Eli恢复本人发声权`);return;
       }
       if(!state.roles[role].hand.length){recordSimulationStrategy(strategy.mode,"pass");passTurn(role,true);return;}
       if(role==="fan")maybeUseAIFanSkill();
@@ -1621,7 +1611,7 @@
       const challenge=el("memoryChallenge"),target=state.memoryTarget,nextIntervention=nextHeatInterventionThreshold();if(CORE_BASELINE.heatIntervention){challenge.textContent=state.heatInterventionTokens?`路人介入 ${state.heatInterventionTokens}枚 · 下一位话轮赢家将失去领出权`:nextIntervention?`路人介入 0枚 · 下一条 Heat ${nextIntervention}`:"两条介入线均已触发 · 当前无待用介入";challenge.classList.toggle("ready",state.heatInterventionTokens>0);}else if(!CORE_BASELINE.positiveFeedback){challenge.textContent="核心基线 · 永久记忆反馈停用";challenge.classList.remove("ready");}else if(!target){challenge.textContent="本事件尚无旧永久记忆纪录";challenge.classList.remove("ready");}else if(state.heat>target){challenge.textContent=`已超过旧纪录 ${formatHeatReach(target)} · 仍需最终热评与可信、记忆双第一`;challenge.classList.add("ready");}else{challenge.textContent=`旧纪录 ${formatHeatReach(target)} · 还需超过${formatHeatReach(target)}`;challenge.classList.remove("ready");}
       track.setAttribute("aria-label",`当前热度${state.heat}`);
       const waitingThresholds=new Set(state.heatInterventionTriggered.slice(-state.heatInterventionTokens)),nodeMarkup=HEAT_INTERVENTION_THRESHOLDS.map(threshold=>{const triggered=state.heatInterventionTriggered.includes(threshold),waiting=waitingThresholds.has(threshold),status=waiting?"waiting":triggered?"consumed":state.heat>=threshold-5?"near":"pending",justTriggered=changed&&feedback.interventionsAdded>0&&waiting;return`<i class="heat-intervention-node ${status} ${justTriggered?"just-triggered":""}" data-threshold="${threshold}" data-state="${status}" style="left:${threshold}%" title="Heat ${threshold} · ${waiting?"已生成1次待用路人介入":triggered?"路人介入已使用":"首次越线生成1次路人介入"}"><span class="heat-node-icon" aria-hidden="true"></span><b class="heat-node-count">1</b></i>`;}).join("");
-      let fill=track.querySelector(".heat-fill");if(!fill){track.innerHTML=`<span class="heat-fill" style="width:${Math.min(100,state.heat)}%"><i class="heat-flame heat-flame-back"></i><i class="heat-flame heat-flame-mid"></i><i class="heat-flame heat-flame-front"></i><i class="heat-flame heat-flame-tail"></i><i class="heat-flame heat-flame-tail-core"></i></span>${nodeMarkup}`;}else{fill.style.width=`${Math.min(100,state.heat)}%`;track.querySelectorAll(".heat-intervention-node,.heat-intervention-line").forEach(node=>node.remove());track.insertAdjacentHTML("beforeend",nodeMarkup);}
+      let fill=track.querySelector(".heat-fill");if(!fill){track.innerHTML=`<span class="heat-fill" style="width:${Math.min(100,state.heat)}%"><i class="heat-flame heat-flame-back"></i><i class="heat-flame heat-flame-mid"></i><i class="heat-flame heat-flame-front"></i></span>${nodeMarkup}`;}else{fill.style.width=`${Math.min(100,state.heat)}%`;track.querySelectorAll(".heat-intervention-node,.heat-intervention-line").forEach(node=>node.remove());track.insertAdjacentHTML("beforeend",nodeMarkup);}
       if(!changed)return;
       animatedHeatSequence=feedback.sequence;clearTimeout(heatMotionTimer);block.classList.remove("rising","falling","record-broken");void block.offsetWidth;
       const direction=feedback.amount>0?"rising":"falling";block.classList.add(direction);delta.textContent=`${feedback.amount>0?"+":"−"}${Math.abs(feedback.amount)}热度`;
