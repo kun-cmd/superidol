@@ -162,8 +162,8 @@ test("Maya's response always remains Maya's explanation", () => {
 
   assert.equal(state.claimOwner, "fan");
   assert.equal(state.topPlay.owner, "fan");
-  assert.equal(state.topPlay.fanVoice, "fan", "legacy clients cannot turn Maya into Eli's first-person voice");
-  assert.equal(state.pressure, 1, "Maya's first explanation in a round still adds pressure to Eli");
+  assert.equal(state.topPlay.fanVoice, "fan", "legacy clients cannot turn Maya into Haru's first-person voice");
+  assert.equal(state.pressure, 1, "Maya's first explanation in a round still adds pressure to Haru");
 });
 
 test("a Heat intervention gives the weaker non-winner the next opening", () => {
@@ -316,7 +316,7 @@ test("server bots choose valid actions and finish a full match", () => {
   assert.equal(state.seats.length, 3);
 });
 
-test("a server-controlled Eli invests toward an album fragment", () => {
+test("a server-controlled Haru invests toward an album fragment", () => {
   const state = createInitialState({ random: seededRandom(20260812) });
   state.currentRole = "star";
   const command = chooseBotCommand(state, "star");

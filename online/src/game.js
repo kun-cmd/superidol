@@ -1,7 +1,7 @@
 export const ROLE_ORDER = ["anti", "star", "fan"];
 
 export const ROLES = {
-  star: { name: "明星本人 · Eli", short: "Eli" },
+  star: { name: "明星本人 · Haru", short: "Haru" },
   fan: { name: "真爱粉 · Maya", short: "Maya" },
   anti: { name: "黑粉 · Ben", short: "Ben" },
 };
@@ -39,7 +39,7 @@ const CARD_NAMES = {
   },
   fan: {
     fact: ["The Clip Leaves This Out", "Receipts From Public Posts", "The Timeline That Makes Sense", "Everything We Found", "The Case for His Side"],
-    stance: ["Give Him Time", "He Was Trying to Protect Someone", "You Are Reading Him in Bad Faith", "We Know What Kind of Person He Is", "We Stand by the Eli We Believe In"],
+    stance: ["Give Him Time", "He Was Trying to Protect Someone", "You Are Reading Him in Bad Faith", "We Know What Kind of Person He Is", "We Stand by Haru"],
     spread: ["Share the Part They Cut", "Our Explanation Thread", "Keep the Context on Top", "Everyone Post the Same Timeline", "Make His Side Impossible to Ignore"],
   },
   anti: {
@@ -56,8 +56,8 @@ const CARD_DISPLAY_NAMES = {
     spread: ["Quick Note", "My Statement", "Full Interview", "Live, No Script", "Post It All"],
   },
   fan: {
-    fact: ["Missing Context", "Public Receipts", "Our Timeline", "What We Found", "Eli's Side"],
-    stance: ["Give Him Time", "He Meant Well", "Bad Faith Read", "We Know Him", "We Still Back Eli"],
+    fact: ["Missing Context", "Public Receipts", "Our Timeline", "What We Found", "Haru's Side"],
+    stance: ["Give Him Time", "He Meant Well", "Bad Faith Read", "We Know Him", "We Still Back Haru"],
     spread: ["Share the Cut", "Our Thread", "Pin the Context", "Post One Timeline", "Keep His Side Up"],
   },
   anti: {
@@ -71,7 +71,7 @@ const EVENT_THEMES = {
   sevenSecondServe: { eyebrow: "OLD CLIP / NEW MEME", title: "The Seven-Second Serve", copy: "A seven-year-old audition clip becomes a fight over who owns the joke.", fragmentTitle: "Afterimage", issues: [
     { title: "What are people actually watching?", claims: { star: "It's a cropped mistake from when I was seventeen.", fan: "He was already experimenting. The crop hides how much talent was there.", anti: "The crop works because the full performance is still awkward." }, bystander: "Show the uncut clip before telling us what it proves." },
     { title: "Who owns the joke?", claims: { star: "I don't need protection from a joke. I need my team to stop threatening people.", fan: "This stopped being a joke when millions used it to humiliate him.", anti: "A megastar does not get to decide when remix culture stops." }, bystander: "The takedown made this feel bigger than the clip." },
-    { title: "What survives after the trend dies?", claims: { star: "Let my next work speak in a voice I chose.", fan: "The real Eli is the hardworking person we have always known.", anti: "The meme is more honest than the brand." }, bystander: "How he responds now may matter more than seven old seconds." },
+    { title: "What survives after the trend dies?", claims: { star: "Let my next work speak in a voice I chose.", fan: "The real Haru is the hardworking person we have always known.", anti: "The meme is more honest than the brand." }, bystander: "How he responds now may matter more than seven old seconds." },
   ], bystander: { watching: "I want the full clip before I join either side.", warning: { 35: "This stopped being a joke and became a fight over who controls the feed.", 75: "The joke is everywhere, but the same side still controls what it means." }, intervention: ["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.", "The other side gets the opening this time. No one account owns the meme."], reset: ["New thread. Show context, not another victory lap.", "I have seen the clip. Now I am watching what each side does with it."] } },
   voiceNote: { eyebrow: "PRIVATE CLAIM / PUBLIC TRIAL", title: "The 2:17 Voice Note", copy: "A relationship, payments, an unsigned NDA and an eighteen-second voice note arrive together.", fragmentTitle: "Low Signal", issues: [
     { title: "What has actually been established?", claims: { star: "We had a relationship. I paid medical costs. I will not publish her private details.", fan: "He paid because he took responsibility, not because he was guilty.", anti: "The admission confirms the core timeline, not the coercion claim." }, bystander: "Separate what he admitted from what the thread alleged." },
@@ -80,13 +80,13 @@ const EVENT_THEMES = {
   ], bystander: { watching: "What is admitted, what is alleged, and what is still private? Keep those separate.", warning: { 35: "This is moving faster than the evidence, and one side is controlling every reply.", 75: "The feed is rewarding certainty before anyone has the full record." }, intervention: ["[Winner] keeps the result. [Next speaker] gets the next opening so this does not become a one-sided trial.", "The side that has not been heard gets the first post now. The winner does not get another automatic microphone."], reset: ["I am listening again. Do not turn another person's privacy into filler.", "No verdict from me yet. I am watching who distinguishes responsibility from rumor."] } },
   comeback: { eyebrow: "COMEBACK / AUTHENTICITY TEST", title: "The Comeback Rehearsal", copy: "A rehearsal leak turns the comeback into a trial of live vocals, credit and authenticity.", issues: [
     { title: "Was the performance fake?", claims: { star: "The live stem is there. Using a backing track was my choice.", fan: "He was protecting his voice after everything he survived.", anti: "A comeback sold as raw honesty should not hide behind a track." }, bystander: "Release the full mix. Twenty-six seconds cannot settle it." },
-    { title: "Whose comeback is this?", claims: { star: "I rewrote and produced this with a team. I will not call it solo work.", fan: "Everyone collaborates. It still sounds like Eli because only he could finish it.", anti: "The unknown demo shows how much of the artist was assembled." }, bystander: "Credit matters more than the myth of the lone genius." },
+    { title: "Whose comeback is this?", claims: { star: "I rewrote and produced this with a team. I will not call it solo work.", fan: "Everyone collaborates. It still sounds like Haru because only he could finish it.", anti: "The unknown demo shows how much of the artist was assembled." }, bystander: "Credit matters more than the myth of the lone genius." },
     { title: "Should the industry put him back at center stage?", claims: { star: "I am asking to be judged by what I do next, not declared redeemed.", fan: "He has suffered enough and deserves his place back.", anti: "Missing the spotlight is not a consequence." }, bystander: "A return is not forgiveness. It is another chance to be observed." },
   ], bystander: { watching: "Let us hear the full mix before calling it live or fake.", warning: { 35: "The clip is deciding the comeback before the performance is even public.", 75: "The comeback has become another contest to own the headline." }, intervention: ["[Winner] keeps the round. [Next speaker] gets the first response to the full audio.", "The side still buried under the winning narrative gets the next opening."], reset: ["Now compare the recording, the credits, and what the campaign promised.", "I am not choosing redemption or cancellation. I am watching the work."] } },
   roomTone: { eyebrow: "ALBUM BRANCH UNLOCKED", title: "ROOM TONE", copy: "A ten-track album advances the music without erasing the archive.", issues: [
     { title: "Is ROOM TONE a real artistic leap?", claims: { star: "Hear the record before turning it into a redemption story.", fan: "This proves the person we defended was always a real artist.", anti: "Better music can still be strategic image repair." }, bystander: "The music can improve even if the moral questions remain." },
     { title: "Is he honest—or better at telling the story?", claims: { star: "I wrote about my choices. I refused to turn someone else into a character.", fan: "Every lyric is his hidden truth finally coming out.", anti: "Ambiguity lets him monetize confession without being specific." }, bystander: "Art can reveal feeling without functioning as testimony." },
-    { title: "What defines Eli Mercer now?", claims: { star: "I want to be known by the work I freely chose, not by someone else's defense.", fan: "We knew this was the real Eli all along.", anti: "The album joins the record. It does not replace it." }, bystander: "Growth changes the present, not the archive." },
+    { title: "What defines HARU VENN now?", claims: { star: "I want to be known by the work I freely chose, not by someone else's defense.", fan: "We knew this was the real Haru all along.", anti: "The album joins the record. It does not replace it." }, bystander: "Growth changes the present, not the archive." },
   ], bystander: { watching: "I can like the album without pretending it answers every old question.", warning: { 35: "Reviews are turning into a morality vote, and one side is swallowing the music.", 75: "The album is becoming proof of whatever people believed before pressing play." }, intervention: ["[Winner] keeps the round. [Next speaker] gets the first listen on the next question.", "The side that has not controlled the album story gets the next opening."], reset: ["New track, new thread. Talk about what is actually on the record.", "The record stays. So does the archive. I am watching what he does after both."] } },
 };
 
@@ -905,7 +905,7 @@ function applyPass(state, role) {
   }
   advanceStoryTime(state, "pause", 1);
   const leadText = role === "star" && state.silenced
-    ? "Eli因失声无法领出，只能让出领出权；Maya仍可支持他，但不能替代他的第一人称解释。"
+    ? "Haru因失声无法领出，只能让出领出权；Maya仍可支持他，但不能替代他的第一人称解释。"
     : `${ROLES[role].short}已经没有手牌，领出权顺延。`;
   finishPassLikeAction(
     state,

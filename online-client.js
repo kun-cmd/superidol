@@ -2,7 +2,7 @@
   const DEFAULT_ONLINE_SERVER = "https://superidol-online.wce5723.workers.dev";
   const SESSION_KEY = "superidol.online.session.v1";
   const SERVER_KEY = "superidol.online.server.v1";
-  const ROLE_LABELS = { anti: "Ben · 黑粉", star: "Eli · 明星", fan: "Maya · 真爱粉" };
+  const ROLE_LABELS = { anti: "Ben · 黑粉", star: "Haru · 明星", fan: "Maya · 真爱粉" };
   const ROLE_COLORS = { anti: "var(--anti)", star: "var(--star)", fan: "var(--fan)" };
 
   const original = {
@@ -473,7 +473,7 @@
       const primaryButton = canAdvance
         ? '<button class="primary-button" id="continueOnlineCampaign">进入下一事件</button>'
         : '<button class="primary-button" id="newOnlineRoom">创建新房间</button>';
-      el("resultBody").innerHTML = `<h2>${eventNumber >= 3 ? "三事件结局" : `事件 ${eventNumber} / 3 胜负`}</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件：</strong>${escapeHtml(state.theme?.title || "Unknown Event")}<br><strong>事件最终Heat：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<br><strong>路人介入：</strong>触发${state.heatInterventionTriggered.length}条 · 剩余${state.heatInterventionTokens}枚${fragmentLine}<ul class="narrative-list">${narratives}</ul></div><div class="result-grid">${results}</div><p>Maya的解释始终属于Maya；只有Eli的出牌才算本人回应。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button>${primaryButton}</div>`;
+      el("resultBody").innerHTML = `<h2>${eventNumber >= 3 ? "三事件结局" : `事件 ${eventNumber} / 3 胜负`}</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件：</strong>${escapeHtml(state.theme?.title || "Unknown Event")}<br><strong>事件最终Heat：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<br><strong>路人介入：</strong>触发${state.heatInterventionTriggered.length}条 · 剩余${state.heatInterventionTokens}枚${fragmentLine}<ul class="narrative-list">${narratives}</ul></div><div class="result-grid">${results}</div><p>Maya的解释始终属于Maya；只有Haru的出牌才算本人回应。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button>${primaryButton}</div>`;
       if (!resultDialog.open) resultDialog.showModal();
       el("closeOnlineResult").onclick = () => resultDialog.close();
       if (canAdvance) {
