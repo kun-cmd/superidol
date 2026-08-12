@@ -348,11 +348,11 @@
   <script>
     const ROLE_ORDER=["anti","star","fan"];
     const ROLES={
-      star:{name:"明星本人 · Eli",short:"Eli",factionLabel:"Star",accountName:"Eli Mercer",handle:"@elimercer",avatar:"E",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"The Record Takes Shape：2点作品卡开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
+      star:{name:"明星本人 · Eli",short:"Eli",factionLabel:"Star",accountName:"Eli Mercer",handle:"@elimercer",avatar:"E",avatarSrc:"assets/eli-mercer-avatar-20260812.webp",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"The Record Takes Shape：2点作品卡开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
       fan:{name:"真爱粉 · Maya",short:"Maya",factionLabel:"Supporter",accountName:"Maya Reed",handle:"@mayareed",avatar:"M",verified:false,color:"var(--fan)",goal:"支持阵营合计定义2个问题且Maya自己定义1个；明星未失声。",skill:"Last Push（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方；它仍是Maya写的说法。"},
       anti:{name:"黑粉 · Ben",short:"Ben",factionLabel:"Skeptic",accountName:"Ben Carter",handle:"@bencarter",avatar:"B",verified:false,color:"var(--anti)",goal:"Ben的质疑叙事定义至少1个问题。",skill:"Out of Context（1次）：用组合成功压牌后，获得整组被压牌；牌名、原作者、频道和等级保持原样。"}
     };
-    function accountAvatarMarkup(role){const account=ROLES[role];return`${account.avatar}${account.verified?'<span class="verified-v" aria-hidden="true">V</span>':""}`;}
+    function accountAvatarMarkup(role){const account=ROLES[role],avatar=account.avatarSrc?`<img src="${account.avatarSrc}" alt="" draggable="false">`:account.avatar;return`${avatar}${account.verified?'<span class="verified-v" aria-hidden="true">V</span>':""}`;}
     const BYSTANDER_ACCOUNT={name:"Jamie Cole",handle:"@jamiecole",avatar:"J"};
     const SERVE_ISSUES=[
       {title:"What are people actually watching?",claims:{star:"It's a cropped mistake from when I was seventeen.",fan:"He was already experimenting. The crop hides how much talent was there.",anti:"The crop works because the full performance is still awkward."}},
@@ -1673,7 +1673,7 @@
     }
     function renderThreadAccount(role,publishedAt=state.storyTime){
       const account=ROLES[role],avatar=el("threadAvatar"),head=el("threadAccountHead");
-      avatar.textContent=account.avatar;avatar.setAttribute("aria-label",`${account.accountName}头像，蓝V认证账号`);
+      avatar.innerHTML=accountAvatarMarkup(role);avatar.setAttribute("aria-label",`${account.accountName}头像，蓝V认证账号`);
       head.style.setProperty("--account-color",account.color);head.innerHTML=`<div class="thread-account-identity"><div class="thread-account-primary"><strong class="thread-actor thread-account-name">${account.accountName}</strong><span class="forum-verified" aria-label="蓝V认证">✓</span></div><span class="thread-official">${account.handle} · Official · ${formatTimelineTime(publishedAt)}</span></div><span class="thread-faction-badge">${account.factionLabel}</span>`;
     }
     function renderThread(){
