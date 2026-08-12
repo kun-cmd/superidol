@@ -1042,6 +1042,12 @@ export function normalizeGameState(state) {
   if (!Number.isFinite(state.campaign.eventNumber)) state.campaign.eventNumber = 1;
   if (!Array.isArray(state.campaign.albumFragments)) state.campaign.albumFragments = [];
   if (!state.campaign.activeTheme) state.campaign.activeTheme = state.themeKey || "sevenSecondServe";
+  const currentTheme = EVENT_THEMES[state.campaign.activeTheme] || EVENT_THEMES[state.themeKey];
+  if (currentTheme) {
+    state.themeKey = state.campaign.activeTheme;
+    state.theme = clone(currentTheme);
+    state.issues = clone(currentTheme.issues);
+  }
   if (!state.heatFeedback || typeof state.heatFeedback !== "object") {
     state.heatFeedback = { amount: 0, sequence: 0, recordBroken: false, interventionsAdded: 0 };
   } else {
