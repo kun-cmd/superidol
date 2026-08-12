@@ -230,6 +230,12 @@ function advanceStoryTime(state, kind, intensity = 1) {
 }
 
 function publishBystanderComment(state, source = "response", detail = {}) {
+  const visibleComment = state.bystanderComments[0];
+  const interventionStillPinned = source === "pause"
+    && visibleComment?.holdUntilTopPlayEnds
+    && state.topPlay
+    && visibleComment.topPlayPublishedAt === state.topPlay.publishedAt;
+  if (interventionStillPinned) return;
   advanceStoryTime(state, "comment", source === "opening" ? 1 : state.heat);
   const voice = state.theme.bystander || {};
   const nextThreshold = HEAT_INTERVENTION_THRESHOLDS.find(
@@ -272,6 +278,8 @@ function publishBystanderComment(state, source = "response", detail = {}) {
     likes: 12 + state.commentSequence * 3,
     playerLiked: false,
     source,
+    holdUntilTopPlayEnds: triggered,
+    topPlayPublishedAt: triggered ? state.topPlay?.publishedAt ?? null : null,
   });
   state.bystanderComments = state.bystanderComments.slice(0, 18);
 }

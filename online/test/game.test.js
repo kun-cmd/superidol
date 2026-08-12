@@ -125,8 +125,20 @@ test("crossing a Heat line creates one intervention that breaks winner lead", ()
   applyCommand(state, "anti", commandFor(lead, "anti"));
   assert.deepEqual(state.heatInterventionTriggered, [35]);
   assert.equal(state.heatInterventionTokens, 1);
+  const interventionComment = state.bystanderComments[0];
+  assert.equal(interventionComment.source, "intervention_triggered");
   applyCommand(state, "star", { type: "pass" });
+  assert.equal(
+    state.bystanderComments[0].id,
+    interventionComment.id,
+    "the intervention comment stays visible while its triggering play remains pinned",
+  );
   applyCommand(state, "fan", { type: "pass" });
+  assert.notEqual(
+    state.bystanderComments[0].id,
+    interventionComment.id,
+    "the intervention comment may change after the pinned play is settled",
+  );
 
   assert.equal(state.issueMarkers.anti, 1, "winner still receives the marker");
   assert.equal(state.heatInterventionTokens, 0, "one intervention is consumed");

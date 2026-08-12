@@ -788,6 +788,8 @@
     }
     function publishBystanderComment(forcedOwner,source="response",detail={}){
       if(!state||simulationMode)return;
+      const visibleComment=state.bystanderComments[0],interventionStillPinned=source==="pause"&&visibleComment?.holdUntilTopPlayEnds&&state.topPlay&&visibleComment.topPlayPublishedAt===state.topPlay.publishedAt;
+      if(interventionStillPinned)return;
       const{supportOwner,reason}=bystanderContext(forcedOwner);advanceStoryTime("comment",source==="opening"?1:state.heat);
       const themeVoice=state.theme.bystander||{},pool=BYSTANDER_COMMENTS[supportOwner||"watching"],index=(state.commentSequence+state.issueIndex*2+state.roundsCompleted)%pool.length,stats=engagementStats(state.heat),supportBoost=supportOwner?0.012:0.005;
       const likes=Math.max(0,Math.round(stats.likes*(0.014+supportBoost)+stats.reposts*.028+state.commentSequence*2));
@@ -795,7 +797,7 @@
       const threshold=thresholds[0],interventionIndex=Math.max(0,(detail.useNumber||state.bystanderInterventionsUsed)-1),questionLine=BYSTANDER_QUESTION_LINES[state.themeKey]?.[Math.min(state.issueIndex,state.issues.length-1)],commentText=triggered?(themeVoice.warning?.[threshold]||"This is getting too hot for the same account to keep setting the next question."):used?(themeVoice.intervention?.[interventionIndex]||"[Winner] keeps the point. Let [Next speaker] speak first.").replaceAll("[Winner]",ROLES[detail.from]?.short||"The winner").replaceAll("[Next speaker]",ROLES[detail.to]?.short||"the weaker side"):source==="settlement"&&detail.reset?(themeVoice.reset?.[Math.max(0,state.bystanderInterventionsUsed-1)]||themeVoice.watching||pool[index]):source==="opening"?themeVoice.watching||pool[index]:questionLine||themeVoice.watching||pool[index];
       const commentReason=triggered?`触发${thresholds.length}枚路人介入；下一位话轮赢家会失去领出权`:used?`${ROLES[detail.from]?.short||"赢家"}保留定调标记，下一轮改由${ROLES[detail.to]?.short||"下一家"}领出`:reason;
       const status=triggered?"介入预警":used?"已经介入":supportOwner?`支持 · ${ROLES[supportOwner].short}`:"观望";
-      state.commentSequence+=1;state.bystanderComments.unshift({id:`bystander-${campaign.eventNumber}-${state.commentSequence}`,text:commentText,supportOwner:triggered||used?null:supportOwner||null,status,reason:commentReason,createdAt:state.storyTime,likes,playerLiked:false,source});state.bystanderComments=state.bystanderComments.slice(0,18);
+      state.commentSequence+=1;state.bystanderComments.unshift({id:`bystander-${campaign.eventNumber}-${state.commentSequence}`,text:commentText,supportOwner:triggered||used?null:supportOwner||null,status,reason:commentReason,createdAt:state.storyTime,likes,playerLiked:false,source,holdUntilTopPlayEnds:triggered,topPlayPublishedAt:triggered?state.topPlay?.publishedAt??null:null});state.bystanderComments=state.bystanderComments.slice(0,18);
     }
 
     function toggleBystanderLike(commentId){
