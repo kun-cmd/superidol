@@ -2,7 +2,7 @@
   const DEFAULT_ONLINE_SERVER = "https://superidol-online.wce5723.workers.dev";
   const SESSION_KEY = "superidol.online.session.v1";
   const SERVER_KEY = "superidol.online.server.v1";
-  const ROLE_LABELS = { anti: "黑粉", star: "明星", fan: "真爱粉" };
+  const ROLE_LABELS = { anti: "Ben · 黑粉", star: "Eli · 明星", fan: "Maya · 真爱粉" };
   const ROLE_COLORS = { anti: "var(--anti)", star: "var(--star)", fan: "var(--fan)" };
 
   const original = {
@@ -41,7 +41,7 @@
   if (query.get("server") && serverBase) localStorage.setItem(SERVER_KEY, serverBase);
 
   function freshLocalSelection() {
-    return { ids: [], coolingMode: false, coolingCardId: null, workSelected: false, fanVoice: "star", wildChoice: null, captureAll: false, fanTarget: "fan" };
+    return { ids: [], coolingMode: false, coolingCardId: null, workSelected: false, fanVoice: "fan", wildChoice: null, captureAll: false, fanTarget: "fan" };
   }
 
   function normalizeServer(value) {
@@ -412,6 +412,7 @@
       campaign.permanentMemory = state.campaign.permanentMemory;
       campaign.activeTheme = state.campaign.activeTheme;
       campaign.nextTheme = state.campaign.nextTheme;
+      campaign.albumFragments = (state.campaign.albumFragments || []).map((item) => ({ ...item }));
       campaign.storyTime = state.campaign.storyTime;
       campaign.lastGapMonths = state.campaign.lastGapMonths;
     }
@@ -436,6 +437,7 @@
     const roundDialog = el("roundDialog");
     const resultDialog = el("resultDialog");
     if (state.phase !== "round_break" && roundDialog.open) roundDialog.close();
+    if (state.phase !== "ended" && resultDialog.open) resultDialog.close();
     if (state.phase === "round_break" && roundDialogVersion !== roomSnapshot.version) {
       roundDialogVersion = roomSnapshot.version;
       const completed = state.lastCompletedRound;
@@ -461,15 +463,29 @@
         const detail = result.checks.map((item) => `${item.ok ? "✓" : "✕"} ${escapeHtml(item.label)}`).join("<br>");
         return `<div class="result-card" style="--role-color:${ROLES[role].color}"><span>${ROLES[role].name}</span><strong>${result.won ? "胜利" : "失败"}</strong><p>${detail}</p></div>`;
       }).join("");
-      el("resultBody").innerHTML = `<h2>本事件胜负</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件最终Heat：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<br><strong>路人介入：</strong>触发${state.heatInterventionTriggered.length}条 · 剩余${state.heatInterventionTokens}枚<ul class="narrative-list">${narratives}</ul></div><div class="result-grid">${results}</div><p>影响力换算已暂停；本房间只显示各阵营胜负。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button><button class="primary-button" id="newOnlineRoom">创建新房间</button></div>`;
+      const eventNumber = state.campaign?.eventNumber || 1;
+      const fragments = state.campaign?.albumFragments || [];
+      const fragment = fragments.find((item) => item.eventNumber === eventNumber);
+      const fragmentLine = eventNumber <= 2
+        ? `<br><strong>Album Fragment：</strong>${fragment ? `${escapeHtml(fragment.title)} · ${fragment.level}级作品已记录` : "本事件没有打出5—6级作品"}${eventNumber === 2 && fragments.length >= 2 ? "；第三事件解锁 ROOM TONE" : ""}`
+        : "";
+      const canAdvance = eventNumber < 3;
+      const primaryButton = canAdvance
+        ? '<button class="primary-button" id="continueOnlineCampaign">进入下一事件</button>'
+        : '<button class="primary-button" id="newOnlineRoom">创建新房间</button>';
+      el("resultBody").innerHTML = `<h2>${eventNumber >= 3 ? "三事件结局" : `事件 ${eventNumber} / 3 胜负`}</h2><p>${state.endReason || "牌局已经结束。"}</p><div class="outcome"><strong>事件：</strong>${escapeHtml(state.theme?.title || "Unknown Event")}<br><strong>事件最终Heat：</strong>${state.heat}<br><strong>明星压力：</strong>${state.pressure}/${PRESSURE_MAX}<br><strong>路人介入：</strong>触发${state.heatInterventionTriggered.length}条 · 剩余${state.heatInterventionTokens}枚${fragmentLine}<ul class="narrative-list">${narratives}</ul></div><div class="result-grid">${results}</div><p>Maya的解释始终属于Maya；只有Eli的出牌才算本人回应。</p><div class="dialog-actions"><button class="plain-button" id="closeOnlineResult">查看最终局面</button>${primaryButton}</div>`;
       if (!resultDialog.open) resultDialog.showModal();
       el("closeOnlineResult").onclick = () => resultDialog.close();
-      el("newOnlineRoom").onclick = () => {
-        resultDialog.close();
-        disconnectRoom({ keepSession: false });
-        setStartMode("online");
-        el("startDialog").showModal();
-      };
+      if (canAdvance) {
+        el("continueOnlineCampaign").onclick = () => sendCommand({ type: "next_event" });
+      } else {
+        el("newOnlineRoom").onclick = () => {
+          resultDialog.close();
+          disconnectRoom({ keepSession: false });
+          setStartMode("online");
+          el("startDialog").showModal();
+        };
+      }
     }
   }
 

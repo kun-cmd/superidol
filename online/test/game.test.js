@@ -28,7 +28,7 @@ function commandFor(option, role) {
     type: "play",
     cardIds: option.cardIds,
     patternOptionKey: option.pattern.optionKey,
-    fanVoice: role === "fan" ? "star" : null,
+    fanVoice: role === "fan" ? "fan" : null,
     captureAll: false,
   };
 }
@@ -42,6 +42,14 @@ test("deals twelve private cards to every faction and leaves three undealt", () 
   assert.equal(state.deckRemaining, 3);
   assert.equal(state.undealtCards.length, 3);
   assert.equal(new Set(ROLE_ORDER.flatMap((role) => state.roles[role].hand.map((card) => card.id))).size, 36);
+});
+
+test("response cards expose compact display labels", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  const cards = ROLE_ORDER.flatMap((role) => state.roles[role].hand);
+  assert.ok(cards.every((card) => card.displayName && card.displayName.length <= 21));
+  assert.ok(cards.every((card) => card.displayName.split(/\s+/).every((word) => word.replace(/[^A-Za-z]/g, "").length <= 10)));
+  assert.ok(cards.every((card) => !card.displayName.toLowerCase().includes("contradiction")));
 });
 
 test("player views contain only the requesting player's hidden hand", () => {
@@ -128,7 +136,69 @@ test("crossing a Heat line creates one intervention that breaks winner lead", ()
     from: "anti",
     to: "star",
     remaining: 0,
+    useNumber: 1,
   });
+});
+
+test("Maya's response always remains Maya's explanation", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  state.currentRole = "fan";
+  const lead = getLegalPlayOptions(state, "fan").find((option) => option.pattern.type === "single");
+  assert.ok(lead);
+
+  applyCommand(state, "fan", { ...commandFor(lead, "fan"), fanVoice: "star" });
+
+  assert.equal(state.claimOwner, "fan");
+  assert.equal(state.topPlay.owner, "fan");
+  assert.equal(state.topPlay.fanVoice, "fan", "legacy clients cannot turn Maya into Eli's first-person voice");
+  assert.equal(state.pressure, 1, "Maya's first explanation in a round still adds pressure to Eli");
+});
+
+test("a Heat intervention gives the weaker non-winner the next opening", () => {
+  const state = createInitialState({ random: seededRandom(1234) });
+  state.issueMarkers = { anti: 0, star: 1, fan: 0 };
+  state.heatInterventionTokens = 1;
+  state.heatInterventionTriggered = [35];
+  const lead = getLegalPlayOptions(state, "anti").find((option) => option.pattern.type === "single");
+  assert.ok(lead);
+  applyCommand(state, "anti", commandFor(lead, "anti"));
+  applyCommand(state, "star", { type: "pass" });
+  applyCommand(state, "fan", { type: "pass" });
+
+  assert.equal(state.currentRole, "fan", "fan had fewer markers than star and receives the opening");
+  assert.equal(state.lastCompletedRound.heatIntervention.to, "fan");
+});
+
+test("two level-five album fragments unlock ROOM TONE as event three", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  for (const expectedEvent of [1, 2]) {
+    state.currentRole = "star";
+    state.skills.star.level = 5;
+    const work = getLegalPlayOptions(state, "star").find((option) => option.cardIds.length === 1 && option.cardIds[0] === "star-work");
+    assert.ok(work);
+    applyCommand(state, "star", commandFor(work, "star"));
+    assert.equal(state.campaign.albumFragments.at(-1).eventNumber, expectedEvent);
+    assert.equal(state.campaign.albumFragments.at(-1).level, 5);
+    state.phase = "ended";
+    applyCommand(state, "anti", { type: "next_event" });
+  }
+
+  assert.equal(state.campaign.eventNumber, 3);
+  assert.equal(state.themeKey, "roomTone");
+  assert.equal(state.theme.title, "ROOM TONE");
+  assert.equal(state.campaign.albumFragments.length, 2);
+});
+
+test("event three uses the normal comeback when either fragment is missing", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  state.phase = "ended";
+  applyCommand(state, "anti", { type: "next_event" });
+  state.phase = "ended";
+  applyCommand(state, "star", { type: "next_event" });
+
+  assert.equal(state.campaign.eventNumber, 3);
+  assert.equal(state.themeKey, "comeback");
+  assert.equal(state.theme.title, "The Comeback Rehearsal");
 });
 
 test("anti capture keeps the original cards without memory conversion", () => {
@@ -232,6 +302,17 @@ test("server bots choose valid actions and finish a full match", () => {
   assert.ok(steps < 500, "bot simulation hit its safety stop");
   assert.equal(state.phase, "ended");
   assert.equal(state.seats.length, 3);
+});
+
+test("a server-controlled Eli invests toward an album fragment", () => {
+  const state = createInitialState({ random: seededRandom(20260812) });
+  state.currentRole = "star";
+  const command = chooseBotCommand(state, "star");
+
+  assert.equal(command.type, "invest");
+  assert.ok(state.roles.star.hand.some((card) => card.id === command.cardId));
+  applyCommand(state, "star", command);
+  assert.equal(state.skills.star.level, 3);
 });
 
 test("online room schedules exactly one bot action after a two-second delay", async () => {

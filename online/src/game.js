@@ -1,15 +1,15 @@
 export const ROLE_ORDER = ["anti", "star", "fan"];
 
 export const ROLES = {
-  star: { name: "明星本人", short: "明星" },
-  fan: { name: "真爱粉", short: "真爱粉" },
-  anti: { name: "黑粉", short: "黑粉" },
+  star: { name: "明星本人 · Eli", short: "Eli" },
+  fan: { name: "真爱粉 · Maya", short: "Maya" },
+  anti: { name: "黑粉 · Ben", short: "Ben" },
 };
 
 export const CHANNELS = {
-  fact: { name: "事实" },
-  stance: { name: "立场" },
-  spread: { name: "传播" },
+  fact: { name: "Evidence" },
+  stance: { name: "Position" },
+  spread: { name: "Reach" },
 };
 
 export const PATTERN_NAMES = {
@@ -33,55 +33,62 @@ const CAMPAIGN_START_TIME = Date.UTC(2026, 3, 18, 9, 20);
 
 const CARD_NAMES = {
   star: {
-    fact: ["核对原始记录", "整理事件时间线", "公开可验证细节", "提交完整证据", "第三方事实证明"],
-    stance: ["暂不作出定性", "说明本人立场", "承认表达瑕疵", "划清责任边界", "正面承担回应"],
-    spread: ["简短公开回应", "工作室声明", "完整采访回应", "公开直播说明", "全平台同步发声"],
+    fact: ["Here Is the Original", "My Timeline", "What I Can Confirm", "The Full Record", "Independent Verification"],
+    stance: ["I'm Not Ready to Label This", "This Is What I Meant", "I Handled This Badly", "This Part Is Mine", "I Will Answer for It"],
+    spread: ["A Short Personal Note", "My Statement", "The Full Interview", "Live, Without a Script", "Say It Everywhere"],
   },
   fan: {
-    fact: ["核对爆料出处", "整理公开资料", "制作澄清时间线", "补充交叉证据", "发布完整档案"],
-    stance: ["等待本人回应", "保持克制支持", "承认合理质疑", "守住支持立场", "共同承担声援"],
-    spread: ["转发本人原话", "澄清帖扩散", "评论区集中说明", "反黑长文联动", "全站应援动员"],
+    fact: ["The Clip Leaves This Out", "Receipts From Public Posts", "The Timeline That Makes Sense", "Everything We Found", "The Case for His Side"],
+    stance: ["Give Him Time", "He Was Trying to Protect Someone", "You Are Reading Him in Bad Faith", "We Know What Kind of Person He Is", "We Stand by the Eli We Believe In"],
+    spread: ["Share the Part They Cut", "Our Explanation Thread", "Keep the Context on Top", "Everyone Post the Same Timeline", "Make His Side Impossible to Ignore"],
   },
   anti: {
-    fact: ["询问信息来源", "核验截图时间", "追问证据缺口", "拆解声明矛盾", "公布完整调查"],
-    stance: ["保留合理怀疑", "拒绝仓促洗白", "质疑公关回避", "批评流量权力", "坚持追究责任"],
-    spread: ["转发爆料截图", "截取回应片段", "循环剪辑传播", "制造事件新梗", "推向全网热榜"],
+    fact: ["Where Did This Come From?", "The Timestamps Don't Match", "What the Statement Skipped", "The Contradictions, Side by Side", "The Full Investigation"],
+    stance: ["I Still Have Questions", "Don't Call This Cleared Up", "That Answer Avoids the Point", "Fame Changes the Balance of Power", "Accountability Before Comeback"],
+    spread: ["Repost the Screenshot", "Clip the Weak Part", "Turn It Into a Format", "Keep the Question Trending", "Put It on Every Feed"],
   },
 };
 
-const CONTROVERSY_ISSUES = [
-  {
-    title: "发生了什么？",
-    prompt: "爆料、截图与回应之间，公众最终会把哪一种版本当成事件事实？",
-    claims: { star: "等待完整事实", fan: "现有爆料并不完整", anti: "沉默就是默认" },
+const CARD_DISPLAY_NAMES = {
+  star: {
+    fact: ["Full Clip", "My Timeline", "What I Know", "Full Record", "Outside Proof"],
+    stance: ["No Label Yet", "What I Meant", "I Got This Wrong", "This Part Is Mine", "I Will Answer"],
+    spread: ["Quick Note", "My Statement", "Full Interview", "Live, No Script", "Post It All"],
   },
-  {
-    title: "这说明他是谁？",
-    prompt: "讨论从事件本身滑向人格判断，谁能定义这位明星的公共身份？",
-    claims: { star: "作品与私生活应被分开", fan: "他仍然值得被理解", anti: "这暴露了真实的他" },
+  fan: {
+    fact: ["Missing Context", "Public Receipts", "Our Timeline", "What We Found", "Eli's Side"],
+    stance: ["Give Him Time", "He Meant Well", "Bad Faith Read", "We Know Him", "We Still Back Eli"],
+    spread: ["Share the Cut", "Our Thread", "Pin the Context", "Post One Timeline", "Keep His Side Up"],
   },
-  {
-    title: "接下来该怎么办？",
-    prompt: "舆论开始决定职业命运：等待、保护、追问，还是让迷因继续传播？",
-    claims: { star: "用后续行动回应", fan: "先保护再等待作品", anti: "继续追问并留下记录" },
+  anti: {
+    fact: ["Who Posted This?", "The Time Is Off", "What Was Left Out", "The Facts Clash", "Full Case File"],
+    stance: ["Still Have Questions", "Not Cleared Up", "Answer the Point", "Fame Has Power", "Answer Before Return"],
+    spread: ["Share the Shot", "Clip the Weak Part", "Make It a Meme", "Keep It Trending", "Post It Everywhere"],
   },
-];
-
-const EVENT_THEME = {
-  eyebrow: "事实未明",
-  title: "私人关系爆料突然出现",
-  copy: "三方不会重演一个固定答案，而是在三个连续问题中共同制造公众故事。最终可信结论、议题定义和互联网记忆可能互相矛盾。",
-  issues: CONTROVERSY_ISSUES,
 };
 
-const BYSTANDER_COMMENTS = [
-  "先看看后面还有没有更完整的回应。",
-  "信息还没对齐，暂时不急着站队。",
-  "热度很高，但热度本身不能当结论。",
-  "这条说法先留着，等下一方拿证据回应。",
-  "继续围观，谁能把事实和逻辑说完整？",
-  "先不转发，等这轮回应结束再判断。",
-];
+const EVENT_THEMES = {
+  sevenSecondServe: { eyebrow: "OLD CLIP / NEW MEME", title: "The Seven-Second Serve", copy: "A seven-year-old audition clip becomes a fight over who owns the joke.", fragmentTitle: "Afterimage", issues: [
+    { title: "What are people actually watching?", claims: { star: "It's a cropped mistake from when I was seventeen.", fan: "He was already experimenting. The crop hides how much talent was there.", anti: "The crop works because the full performance is still awkward." }, bystander: "Show the uncut clip before telling us what it proves." },
+    { title: "Who owns the joke?", claims: { star: "I don't need protection from a joke. I need my team to stop threatening people.", fan: "This stopped being a joke when millions used it to humiliate him.", anti: "A megastar does not get to decide when remix culture stops." }, bystander: "The takedown made this feel bigger than the clip." },
+    { title: "What survives after the trend dies?", claims: { star: "Let my next work speak in a voice I chose.", fan: "The real Eli is the hardworking person we have always known.", anti: "The meme is more honest than the brand." }, bystander: "How he responds now may matter more than seven old seconds." },
+  ], bystander: { watching: "I want the full clip before I join either side.", warning: { 35: "This stopped being a joke and became a fight over who controls the feed.", 75: "The joke is everywhere, but the same side still controls what it means." }, intervention: ["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.", "The other side gets the opening this time. No one account owns the meme."], reset: ["New thread. Show context, not another victory lap.", "I have seen the clip. Now I am watching what each side does with it."] } },
+  voiceNote: { eyebrow: "PRIVATE CLAIM / PUBLIC TRIAL", title: "The 2:17 Voice Note", copy: "A relationship, payments, an unsigned NDA and an eighteen-second voice note arrive together.", fragmentTitle: "Low Signal", issues: [
+    { title: "What has actually been established?", claims: { star: "We had a relationship. I paid medical costs. I will not publish her private details.", fan: "He paid because he took responsibility, not because he was guilty.", anti: "The admission confirms the core timeline, not the coercion claim." }, bystander: "Separate what he admitted from what the thread alleged." },
+    { title: "What does his silence mean?", claims: { star: "I waited because the other person is not public.", fan: "He stayed silent to protect her, even while everyone attacked him.", anti: "Silence gives the more powerful party time to coordinate." }, bystander: "Delay can be restraint or control. The missing context matters." },
+    { title: "What would accountability look like?", claims: { star: "I was selfish and avoidant. I can own that without confirming false claims.", fan: "One private mistake should not erase years of good character.", anti: "A polished admission still avoids who held the power." }, bystander: "Accountability should name harm without demanding public spectacle." },
+  ], bystander: { watching: "What is admitted, what is alleged, and what is still private? Keep those separate.", warning: { 35: "This is moving faster than the evidence, and one side is controlling every reply.", 75: "The feed is rewarding certainty before anyone has the full record." }, intervention: ["[Winner] keeps the result. [Next speaker] gets the next opening so this does not become a one-sided trial.", "The side that has not been heard gets the first post now. The winner does not get another automatic microphone."], reset: ["I am listening again. Do not turn another person's privacy into filler.", "No verdict from me yet. I am watching who distinguishes responsibility from rumor."] } },
+  comeback: { eyebrow: "COMEBACK / AUTHENTICITY TEST", title: "The Comeback Rehearsal", copy: "A rehearsal leak turns the comeback into a trial of live vocals, credit and authenticity.", issues: [
+    { title: "Was the performance fake?", claims: { star: "The live stem is there. Using a backing track was my choice.", fan: "He was protecting his voice after everything he survived.", anti: "A comeback sold as raw honesty should not hide behind a track." }, bystander: "Release the full mix. Twenty-six seconds cannot settle it." },
+    { title: "Whose comeback is this?", claims: { star: "I rewrote and produced this with a team. I will not call it solo work.", fan: "Everyone collaborates. It still sounds like Eli because only he could finish it.", anti: "The unknown demo shows how much of the artist was assembled." }, bystander: "Credit matters more than the myth of the lone genius." },
+    { title: "Should the industry put him back at center stage?", claims: { star: "I am asking to be judged by what I do next, not declared redeemed.", fan: "He has suffered enough and deserves his place back.", anti: "Missing the spotlight is not a consequence." }, bystander: "A return is not forgiveness. It is another chance to be observed." },
+  ], bystander: { watching: "Let us hear the full mix before calling it live or fake.", warning: { 35: "The clip is deciding the comeback before the performance is even public.", 75: "The comeback has become another contest to own the headline." }, intervention: ["[Winner] keeps the round. [Next speaker] gets the first response to the full audio.", "The side still buried under the winning narrative gets the next opening."], reset: ["Now compare the recording, the credits, and what the campaign promised.", "I am not choosing redemption or cancellation. I am watching the work."] } },
+  roomTone: { eyebrow: "ALBUM BRANCH UNLOCKED", title: "ROOM TONE", copy: "A ten-track album advances the music without erasing the archive.", issues: [
+    { title: "Is ROOM TONE a real artistic leap?", claims: { star: "Hear the record before turning it into a redemption story.", fan: "This proves the person we defended was always a real artist.", anti: "Better music can still be strategic image repair." }, bystander: "The music can improve even if the moral questions remain." },
+    { title: "Is he honest—or better at telling the story?", claims: { star: "I wrote about my choices. I refused to turn someone else into a character.", fan: "Every lyric is his hidden truth finally coming out.", anti: "Ambiguity lets him monetize confession without being specific." }, bystander: "Art can reveal feeling without functioning as testimony." },
+    { title: "What defines Eli Mercer now?", claims: { star: "I want to be known by the work I freely chose, not by someone else's defense.", fan: "We knew this was the real Eli all along.", anti: "The album joins the record. It does not replace it." }, bystander: "Growth changes the present, not the archive." },
+  ], bystander: { watching: "I can like the album without pretending it answers every old question.", warning: { 35: "Reviews are turning into a morality vote, and one side is swallowing the music.", 75: "The album is becoming proof of whatever people believed before pressing play." }, intervention: ["[Winner] keeps the round. [Next speaker] gets the first listen on the next question.", "The side that has not controlled the album story gets the next opening."], reset: ["New track, new thread. Talk about what is actually on the record.", "The record stays. So does the archive. I am watching what he does after both."] } },
+};
 
 export class GameRuleError extends Error {
   constructor(code, message) {
@@ -148,7 +155,9 @@ function personalizeCards(cards, role) {
     ...card,
     id: `${role}-${card.id}`,
     role,
+    originalAuthor: role,
     name: CARD_NAMES[role][card.channel][card.level - 1],
+    displayName: CARD_DISPLAY_NAMES[role][card.channel][card.level - 1],
   }));
 }
 
@@ -222,7 +231,7 @@ function advanceStoryTime(state, kind, intensity = 1) {
 
 function publishBystanderComment(state, source = "response", detail = {}) {
   advanceStoryTime(state, "comment", source === "opening" ? 1 : state.heat);
-  const index = (state.commentSequence + state.issueIndex * 2 + state.roundsCompleted) % BYSTANDER_COMMENTS.length;
+  const voice = state.theme.bystander || {};
   const nextThreshold = HEAT_INTERVENTION_THRESHOLDS.find(
     (threshold) => !state.heatInterventionTriggered.includes(threshold),
   );
@@ -234,11 +243,19 @@ function publishBystanderComment(state, source = "response", detail = {}) {
   const triggered = source === "intervention_triggered";
   const used = source === "intervention_used";
   const thresholds = detail.thresholds || [];
+  const threshold = thresholds[0];
+  const interventionIndex = Math.max(0, (detail.useNumber || state.bystanderInterventionsUsed) - 1);
   const text = triggered
-    ? `热度越过${thresholds.map((value) => `Heat ${value}`).join("、")}，路人开始盯着谁还想连续控场。`
+    ? voice.warning?.[threshold] || "This is getting too hot for the same account to keep setting the next question."
     : used
-      ? "这轮结果照算，但下一轮别再让刚赢的人继续带节奏，换下一家说。"
-      : BYSTANDER_COMMENTS[index];
+      ? (voice.intervention?.[interventionIndex] || "[Winner] keeps the point. Let [Next speaker] speak first.")
+        .replaceAll("[Winner]", ROLES[detail.from]?.short || "The winner")
+        .replaceAll("[Next speaker]", ROLES[detail.to]?.short || "the weaker side")
+      : source === "reset"
+        ? voice.reset?.[Math.max(0, state.bystanderInterventionsUsed - 1)] || voice.watching
+        : source === "opening"
+          ? voice.watching
+          : currentIssue(state).bystander || voice.watching;
   const commentReason = triggered
     ? `触发${thresholds.length}枚路人介入；下一位话轮赢家会失去领出权`
     : used
@@ -263,6 +280,10 @@ export function createInitialState(options = {}) {
   const random = options.random || secureRandom;
   const startedAt = Number.isFinite(options.startedAt) ? options.startedAt : CAMPAIGN_START_TIME;
   const deal = dealHands(random);
+  const campaignInput = options.campaign || {};
+  const eventNumber = Number.isFinite(campaignInput.eventNumber) ? campaignInput.eventNumber : 1;
+  const activeTheme = campaignInput.activeTheme || "sevenSecondServe";
+  const eventTheme = EVENT_THEMES[activeTheme] || EVENT_THEMES.sevenSecondServe;
   const state = {
     phase: "action",
     roles: Object.fromEntries(
@@ -275,9 +296,9 @@ export function createInitialState(options = {}) {
     eventStartedAt: startedAt,
     bystanderComments: [],
     commentSequence: 0,
-    themeKey: "controversy",
-    theme: clone(EVENT_THEME),
-    issues: clone(CONTROVERSY_ISSUES),
+    themeKey: activeTheme,
+    theme: clone(eventTheme),
+    issues: clone(eventTheme.issues),
     claims: Object.fromEntries(ROLE_ORDER.map((role) => [role, { credibility: 0, memory: 0 }])),
     seats: [],
     issueIndex: 0,
@@ -291,6 +312,8 @@ export function createInitialState(options = {}) {
     heatFeedback: { amount: 0, sequence: 0, recordBroken: false },
     heatInterventionTokens: 0,
     heatInterventionTriggered: [],
+    bystanderInterventionsUsed: 0,
+    bystanderLeadRecipientsThisIssue: [],
     permanentMemory: null,
     permanentMemoryOutcome: { status: "disabled" },
     lastRoundOwner: null,
@@ -317,11 +340,12 @@ export function createInitialState(options = {}) {
     logs: [],
     endReason: null,
     campaign: {
-      eventNumber: 1,
-      influence: { star: 0, fan: 0, anti: 0 },
-      permanentMemory: null,
-      activeTheme: "controversy",
+      eventNumber,
+      influence: clone(campaignInput.influence || { star: 0, fan: 0, anti: 0 }),
+      permanentMemory: campaignInput.permanentMemory ? clone(campaignInput.permanentMemory) : null,
+      activeTheme,
       nextTheme: null,
+      albumFragments: clone(campaignInput.albumFragments || []),
       storyTime: startedAt,
       lastGapMonths: 0,
     },
@@ -464,10 +488,12 @@ function responseMode(state, pattern, role, options = {}) {
 
 function currentWorkCard(state) {
   const work = state.skills.star;
+  const releaseTitle = state.theme.fragmentTitle || "The Record";
   return {
     id: "star-work",
     role: "star",
-    name: work.level === STAR_WORK_RELEASE_LEVEL ? "沉淀成章 · 完整发布" : "沉淀成章",
+    name: work.level === STAR_WORK_RELEASE_LEVEL ? `${releaseTitle} · Full Release` : "The Record Takes Shape",
+    displayName: work.level === STAR_WORK_RELEASE_LEVEL ? releaseTitle : "Work in Progress",
     level: work.level,
     channel: "spread",
     isWild: false,
@@ -561,9 +587,17 @@ function changePressure(state, amount) {
   return state.pressure - before;
 }
 
-function narrativeOwner(role, fanVoice) {
-  if (role !== "fan") return role;
-  return fanVoice === "star" ? "star" : "fan";
+function narrativeOwner(role) { return role; }
+
+function chooseWeakSideLead(state, controller, markers = state.issueMarkers) {
+  const candidates = ROLE_ORDER.filter((role) => role !== controller);
+  const minimum = Math.min(...candidates.map((role) => markers?.[role] || 0));
+  const weakest = candidates.filter((role) => (markers?.[role] || 0) === minimum);
+  const unused = weakest.filter((role) => !state.bystanderLeadRecipientsThisIssue.includes(role));
+  const pool = unused.length ? unused : weakest;
+  let role = nextRole(controller);
+  while (!pool.includes(role)) role = nextRole(role);
+  return role;
 }
 
 function roundMarkerGain() {
@@ -699,22 +733,30 @@ function resolveRound(state, reason) {
   let nextLead = controller;
   if (state.heatInterventionTokens > 0) {
     state.heatInterventionTokens -= 1;
-    nextLead = nextRole(controller);
+    state.bystanderInterventionsUsed += 1;
+    nextLead = chooseWeakSideLead(state, controller, completed.markerSnapshot);
+    state.bystanderLeadRecipientsThisIssue.push(nextLead);
     completed.heatIntervention = {
       consumed: true,
       from: controller,
       to: nextLead,
       remaining: state.heatInterventionTokens,
+      useNumber: state.bystanderInterventionsUsed,
     };
     addLog(
       state,
       `路人介入被消耗：${ROLES[controller].short}保留本轮定调标记，但不能继承下一话轮领出权；按座次改由${ROLES[nextLead].short}领出。`,
       nextLead,
     );
-    publishBystanderComment(state, "intervention_used", { from: controller, to: nextLead });
+    publishBystanderComment(state, "intervention_used", {
+      from: controller,
+      to: nextLead,
+      useNumber: state.bystanderInterventionsUsed,
+    });
   } else {
     completed.heatIntervention = { consumed: false, from: controller, to: controller, remaining: 0 };
   }
+  if (completed.issueWon) state.bystanderLeadRecipientsThisIssue = [];
   state.topPlay = null;
   state.claimOwner = null;
   state.passes = 0;
@@ -778,15 +820,22 @@ function applyPlay(state, role, command) {
   if (usesWork) {
     const workLevel = state.skills.star.level;
     consumeStarWork(state, workLevel === STAR_WORK_RELEASE_LEVEL ? "released" : "releasedEarly");
-    if (workLevel === STAR_WORK_RELEASE_LEVEL) state.campaign.nextTheme = "work";
+    if (
+      workLevel >= 5
+      && state.campaign.eventNumber <= 2
+      && !state.campaign.albumFragments.some((fragment) => fragment.eventNumber === state.campaign.eventNumber)
+    ) {
+      state.campaign.albumFragments.push({
+        eventNumber: state.campaign.eventNumber,
+        title: state.theme.fragmentTitle || `Work ${state.campaign.eventNumber}`,
+        level: workLevel,
+      });
+    }
   }
 
   let fanVoice = null;
   if (role === "fan") {
-    if (!state.fanVoiceThisRound) {
-      assertRule(["star", "fan"].includes(command.fanVoice), "fan_voice_required", "真爱粉首次入场必须选择发声方式。" );
-      state.fanVoiceThisRound = command.fanVoice;
-    }
+    if (!state.fanVoiceThisRound) state.fanVoiceThisRound = "fan";
     fanVoice = state.fanVoiceThisRound;
   }
   const owner = narrativeOwner(role, fanVoice);
@@ -808,6 +857,7 @@ function applyPlay(state, role, command) {
     cards: cards.map((card) => ({
       id: card.id,
       name: card.name,
+      displayName: card.displayName,
       level: card.level,
       channel: card.channel,
       isWild: Boolean(card.isWild),
@@ -819,7 +869,7 @@ function applyPlay(state, role, command) {
   state.passes = 0;
   state.leadSkips = 0;
   state.skills.anti.captureArmed = false;
-  const voiceText = role === "fan" ? `，以“${fanVoice === "star" ? "转述本人" : "粉圈解释"}”发声` : "";
+  const voiceText = role === "fan" ? "，以“Maya自己的解释”发声" : "";
   const skillText = usesWork
     ? (pattern.isWorkRelease ? "，完整发布6点“沉淀成章”，本轮无法被反压" : `，将${pattern.level}点“沉淀成章”作为单牌打出`)
     : captured.length ? `，并用“断章取义”拿走整组${captured.length}张原牌` : "";
@@ -847,7 +897,7 @@ function applyPass(state, role) {
   }
   advanceStoryTime(state, "pause", 1);
   const leadText = role === "star" && state.silenced
-    ? "明星因失声无法领出，只能让出领出权，等待真爱粉用“转述本人”的立场定调救援。"
+    ? "Eli因失声无法领出，只能让出领出权；Maya仍可支持他，但不能替代他的第一人称解释。"
     : `${ROLES[role].short}已经没有手牌，领出权顺延。`;
   finishPassLikeAction(
     state,
@@ -906,12 +956,15 @@ function applyFanGift(state, role, command) {
   const card = state.roles.fan.hand.find((item) => item.id === command.cardId);
   assertRule(card && card.level < 5 && !card.isWild, "invalid_gift_card", "只能选择1至4级普通牌进行应援。" );
   state.roles.fan.hand = state.roles.fan.hand.filter((item) => item.id !== card.id);
+  card.originalAuthor = card.originalAuthor || "fan";
   card.isWild = true;
   card.isFanWild = true;
   card.originalChannel = card.channel;
   card.originalLevel = card.level;
   card.role = command.targetRole;
-  card.name = `万能应援：${card.name}`;
+  const shortName = card.displayName || card.name;
+  card.name = `Maya's Wildcard: ${card.name}`;
+  card.displayName = `Maya: ${shortName}`;
   state.roles[command.targetRole].hand.push(card);
   state.skills.fan.used = true;
   state.skills.fan.target = command.targetRole;
@@ -924,7 +977,33 @@ function applyContinue(state, role) {
   assertRule(state.phase === "round_break", "not_round_break", "当前没有等待继续的话轮。" );
   assertRule(state.currentRole === role, "not_round_leader", "由下一话轮领出者继续游戏。" );
   state.phase = "action";
+  if (state.lastCompletedRound?.heatIntervention?.consumed) publishBystanderComment(state, "reset");
   addLog(state, `${currentIssue(state).title} · 第${state.roundInIssue}话轮开始，${ROLES[state.currentRole].short}领出。`, role);
+}
+
+function nextCampaignTheme(state) {
+  if (state.campaign.eventNumber === 1) return "voiceNote";
+  if (state.campaign.eventNumber === 2) return state.campaign.albumFragments.length >= 2 ? "roomTone" : "comeback";
+  return state.campaign.activeTheme;
+}
+
+function applyNextEvent(state) {
+  assertRule(state.phase === "ended", "event_not_ended", "当前事件尚未结束。" );
+  assertRule(state.campaign.eventNumber < 3, "campaign_complete", "三事件已经全部结束。" );
+  const gapMonths = state.heat >= 90 ? 1 : 2;
+  const startedAt = state.storyTime + gapMonths * 30 * 24 * 60 * 60 * 1000;
+  const campaign = {
+    ...state.campaign,
+    eventNumber: state.campaign.eventNumber + 1,
+    activeTheme: nextCampaignTheme(state),
+    nextTheme: null,
+    albumFragments: clone(state.campaign.albumFragments),
+    storyTime: startedAt,
+    lastGapMonths: gapMonths,
+  };
+  const nextState = createInitialState({ startedAt, campaign });
+  Object.keys(state).forEach((key) => delete state[key]);
+  Object.assign(state, nextState);
 }
 
 function restoreCapturedCard(card) {
@@ -948,6 +1027,13 @@ export function normalizeGameState(state) {
   restoreCapturedCards(state);
   if (!Array.isArray(state.heatInterventionTriggered)) state.heatInterventionTriggered = [];
   if (!Number.isFinite(state.heatInterventionTokens)) state.heatInterventionTokens = 0;
+  if (!Number.isFinite(state.bystanderInterventionsUsed)) state.bystanderInterventionsUsed = 0;
+  if (!Array.isArray(state.bystanderLeadRecipientsThisIssue)) state.bystanderLeadRecipientsThisIssue = [];
+  if (state.fanVoiceThisRound && state.fanVoiceThisRound !== "fan") state.fanVoiceThisRound = "fan";
+  if (!state.campaign || typeof state.campaign !== "object") state.campaign = {};
+  if (!Number.isFinite(state.campaign.eventNumber)) state.campaign.eventNumber = 1;
+  if (!Array.isArray(state.campaign.albumFragments)) state.campaign.albumFragments = [];
+  if (!state.campaign.activeTheme) state.campaign.activeTheme = state.themeKey || "sevenSecondServe";
   if (!state.heatFeedback || typeof state.heatFeedback !== "object") {
     state.heatFeedback = { amount: 0, sequence: 0, recordBroken: false, interventionsAdded: 0 };
   } else {
@@ -961,7 +1047,8 @@ export function applyCommand(state, role, command) {
   normalizeGameState(state);
   assertRule(ROLE_ORDER.includes(role), "invalid_role", "玩家阵营无效。" );
   assertRule(command && typeof command.type === "string", "invalid_command", "行动格式无效。" );
-  if (command.type === "play") applyPlay(state, role, command);
+  if (command.type === "next_event") applyNextEvent(state);
+  else if (command.type === "play") applyPlay(state, role, command);
   else if (command.type === "pass") applyPass(state, role);
   else if (command.type === "cool") applyCool(state, role, command);
   else if (command.type === "invest") applyInvest(state, role, command);
@@ -1004,13 +1091,31 @@ export function chooseBotCommand(state, role) {
       || right.cardIds.length - left.cardIds.length
       || left.pattern.optionKey.localeCompare(right.pattern.optionKey);
   });
+  if (role === "star" && state.skills.star.status === "forging") {
+    const workOption = options.find((candidate) => candidate.cardIds.length === 1 && candidate.cardIds[0] === "star-work");
+    if (state.skills.star.level >= 5 && workOption) {
+      return {
+        type: "play",
+        cardIds: workOption.cardIds,
+        patternOptionKey: workOption.pattern.optionKey,
+        fanVoice: null,
+        captureAll: false,
+      };
+    }
+    if (state.skills.star.level < 5) {
+      const investment = state.roles.star.hand
+        .filter((card) => !card.isWild)
+        .sort((left, right) => left.level - right.level || left.id.localeCompare(right.id))[0];
+      if (investment) return { type: "invest", cardId: investment.id };
+    }
+  }
   const option = options[0];
   if (!option) return { type: "pass" };
   return {
     type: "play",
     cardIds: option.cardIds,
     patternOptionKey: option.pattern.optionKey,
-    fanVoice: role === "fan" ? "star" : null,
+    fanVoice: role === "fan" ? "fan" : null,
     captureAll: false,
   };
 }
@@ -1025,7 +1130,7 @@ export function createPlayerView(state, role) {
   const view = clone(state);
   view.userRole = role;
   view.selectedIds = [];
-  view.fanVoiceChoice = "star";
+  view.fanVoiceChoice = "fan";
   view.wildChannelChoice = null;
   view.undealtCards = [];
   view.knownUndealt = { star: false, fan: false, anti: false };
