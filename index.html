@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
+  <script src="i18n.js?v=english-20260827"></script>
   <style>
     :root {
       --paper:#fff; --page:#eef0f3; --ink:#1d232c; --muted:#68717e; --line:#cfd4db;
@@ -12,7 +13,7 @@
       --fact:#2475a8; --stance:#8a4e9f; --spread:#d27a1d; --heat:#e29325; --danger:#b52e36;
       --info:#526a87; --memory:#7256a3; --bystander:#a96f12;
     }
-    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;color:var(--ink);background:var(--page);font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;letter-spacing:0}
+    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;color:var(--ink);background:var(--page);font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;letter-spacing:0}html[lang="en"] body{font-family:"Segoe UI",Inter,Arial,sans-serif}html[lang="en"] .seat.filled small::after{content:" · Defined"}html[lang="en"] .sidebar .log-state h3::after{content:"BY ROUND"}html[lang="en"] .console-tools .control-row:empty::after{content:"Select cards to see skill releases and extra choices"}html[lang="en"] .bystander-reason::before{content:"STANCE SHIFT · "}.dialog-body>h2{padding-right:54px}.dialog-language-button{position:absolute;z-index:3;top:9px;right:10px;min-width:46px;height:30px;padding:0 9px;color:#fff;background:#26364d;border:1px solid #60748f;border-radius:5px;font:800 11px/1 ui-monospace,"Cascadia Mono",monospace;cursor:pointer}.dialog-language-button:hover{background:#344a69}
     button{font:inherit;color:inherit}.app{min-height:100vh;display:flex;flex-direction:column}
     .topbar{min-height:58px;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#fff;background:#20262f;border-bottom:4px solid var(--heat)}
     .brand{display:flex;align-items:baseline;gap:12px}.brand strong{font-size:20px}.brand span{color:#c9ced5;font-size:12px}.top-actions{display:flex;gap:7px}
@@ -274,6 +275,8 @@
     @media(max-width:620px){.role-title,.role-title strong{font-size:12px}.role-title span{display:none}.role-meta{font-size:9px}.role-skill>strong{font-size:10px}.role-skill-status{display:block;font-size:9px}}
     .verified-v{display:flex!important;align-items:center;justify-content:center;padding:0;color:#fff!important;-webkit-text-fill-color:#fff;text-align:center;line-height:1!important}
     @media(min-width:941px){.role-summary[data-role="star"]{padding-left:7px;padding-right:36px;column-gap:3px}.role-summary[data-role="star"] .pressure-help{right:8px}}
+    .skill-overview-copy strong{font-size:11px}.skill-overview-copy span{font-size:10px;line-height:1.5}.skill-overview-status{font-size:8px}
+    @media(max-width:940px){.skill-overview-copy strong{font-size:10px}.skill-overview-copy span{font-size:9px}.skill-overview-status{font-size:8px}}
     @media(prefers-reduced-motion:reduce){.heat-fill{transition:none}.heat-flame::before,.heat-flame::after,.heat-embers,.heat-intervention-node{animation:none}}
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
@@ -1981,6 +1984,6 @@
     }
     setup();
   </script>
-  <script src="online-client.js?v=avatars-20260812"></script>
+  <script src="online-client.js?v=english-20260827"></script>
 </body>
 </html>

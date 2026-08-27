@@ -649,6 +649,7 @@
 
   function setupOnlineUi() {
     window.__onlineActive = false;
+    if (!el("onlinePlayerName")) return;
     el("onlinePlayerName").value = localStorage.getItem("superidol.online.name") || "";
     buildRolePicks();
     updateResumeButton();
@@ -678,7 +679,8 @@
     el("leaveOnlineRoom").onclick = leaveLobby;
     el("restartButton").onclick = () => {
       if (!window.__onlineActive) return original.restart();
-      if (!confirm("暂时离开在线牌局？你的座位会保留，刷新或点击恢复房间即可重连。")) return;
+      const leaveMessage = "暂时离开在线牌局？你的座位会保留，刷新或点击恢复房间即可重连。";
+      if (!confirm(window.SuperidolI18n?.translateText(leaveMessage) || leaveMessage)) return;
       disconnectRoom({ keepSession: true });
       setStartMode("online");
       el("startDialog").showModal();
