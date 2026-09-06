@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202420"><link rel="icon" href="data:,">
+  <title>最后留下的那句话 · SUPERIDOL</title>
+  <link rel="stylesheet" href="perspective.css?v=20260906">
+</head>
+<body>
+  <header><a class="wordmark" href="perspective.html">SUPERIDOL<span>最后留下的那句话</span></a><nav><button id="rulesButton">玩法</button><button id="restartButton">重开</button><a href="index.html?classic=1">原版联机 ↗</a></nav></header>
+  <main id="game" hidden>
+    <section id="issues" class="issues" aria-label="三个争议问题"></section>
+    <div class="table-layout">
+      <section class="debate">
+        <section class="source"><div class="kicker">共同看到的事实</div><h1 id="issueTitle"></h1><p id="fact"></p></section>
+        <section id="top" class="top" aria-live="polite"></section>
+        <div id="notice" class="notice" aria-live="polite"></div>
+        <section id="decision" class="decision"></section>
+      </section>
+      <aside><div class="kicker">三个人 · 三种在意</div><section id="goals" class="goals"></section><details class="history"><summary>回看已经发生的争执</summary><ol id="history"></ol></details></aside>
+    </div>
+    <section class="hand-area"><div class="hand-heading"><div><span class="kicker" id="handLabel"></span><strong id="handCount"></strong></div><span>三题共用这些牌 · 没有补牌</span></div><div id="hand" class="hand"></div><div id="actions" class="actions"></div><p id="feedback" role="status"></p></section>
+  </main>
+  <dialog id="startDialog"><div class="dialog-inner"><div class="kicker">一个事件 / 三种立场 / 隐藏手牌</div><h1>你希望大家<br>最后记住哪一句？</h1><p>七年前的一段失误被剪成了梗。你们都看到了相同的事实，但你们想保住的东西不同。</p><p>选择一句说法，用手牌争取让它留下。别人说的话有时也能帮你达成目标——但可能会抹掉你在意的另一部分。</p><fieldset class="mode"><legend>怎么玩</legend><label><input type="radio" name="mode" value="solo" checked> AI 陪玩</label><label><input type="radio" name="mode" value="local"> 同设备三人轮流玩</label></fieldset><div id="rolePicks" class="role-picks"></div><p class="fine">本版聚焦叙事选择。单张、对子、顺子与闭环沿用原型；作品养成、失声、热度与三事件分支暂不进入本局。</p><a href="index.html?classic=1">进入原有在线三人房 ↗</a></div></dialog>
+  <dialog id="rulesDialog"><div class="dialog-inner"><div class="kicker">出牌简单，犹豫留给立场</div><h2>让哪句话留下？</h2><ol class="rules-list"><li><strong>每题选一次说法。</strong>你第一次出牌时，从两句回应中选一句。本题此后都为它争取定调；两句旁边会写明谁的诉求得到保留，以及淡化了什么。</li><li><strong>用牌争取置顶。</strong>单张；同频道同级的对子；同频道连续三级的三张；三个频道同级各一张组成闭环。回应要同牌型、更高等级，可以跨频道。闭环压过普通牌型，更高闭环可继续反压。</li><li><strong>两人过牌，置顶者得一标；两标定调。</strong>同一人先拿两标，他选定的那句话就成为本题留下的版本。牌的等级表示争取置顶的力度，不证明说法为真。</li><li><strong>过牌可以是让步。</strong>如果别人又出了牌，你可以重新加入。每题还可一次「让步整理」：弃掉一张高牌，换回自己此前打出的低牌，并退出当前话轮。置顶中的牌不能收回，弃掉的高牌彻底耗尽。</li><li><strong>各方目标分别判断。</strong>每人都要至少亲自定调一题。Haru还要在最后一题保住改变的空间；Maya要两题保住尊重；Ben要两题保住质疑权。别人留下的说法也可能帮你，允许多人达成目标。</li><li><strong>十二张牌，打完三题。</strong>不补牌，三張未发牌保持未知。全部手牌耗尽仍未定调的问题保持悬而未决。</li></ol><button id="closeRules" class="primary">回到争论</button></div></dialog>
+  <dialog id="handoffDialog"><div class="dialog-inner"><div class="kicker">手牌已遮住</div><h2 id="handoffTitle"></h2><p>把设备交给这位玩家，再查看自己的手牌。</p><button id="revealHand" class="primary">我已接过设备</button></div></dialog>
+  <dialog id="resultDialog"><div class="dialog-inner" id="resultBody"></div></dialog>
+  <script type="module" src="perspective.mjs?v=20260906"></script>
+</body>
+</html>
