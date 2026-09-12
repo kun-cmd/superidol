@@ -442,13 +442,13 @@
       roundDialogVersion = roomSnapshot.version;
       const completed = state.lastCompletedRound;
       const progress = completed.issueWon
-        ? `问题完成定调：“${state.issues[completed.issueIndex].claims[completed.issueWinner]}”。`
+        ? `问题完成定调：“${completed.speech ? speechMarkup(completed.speech) : state.issues[completed.issueIndex].claims[completed.issueWinner]}”。`
         : `当前定调标记：${ROLE_ORDER.map((role) => `${ROLES[role].short} ${completed.markerSnapshot[role]}/${ISSUE_MARKER_TARGET}`).join(" · ")}。`;
       const canContinue = state.currentRole === session.role;
       const intervention = completed.heatIntervention?.consumed
         ? `<br><strong>路人介入：</strong>消耗1枚；${ROLES[completed.controller].short}保留标记，但下一话轮改由${ROLES[completed.heatIntervention.to].short}领出。`
         : "";
-      el("roundBody").innerHTML = `<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${completed.channelOutcome}${intervention}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>领出。</p><div class="dialog-actions"><button class="primary-button" id="continueOnlineRound" ${canContinue ? "" : "disabled"}>${canContinue ? "继续下一话轮" : `等待${ROLES[state.currentRole].short}继续`}</button></div>`;
+      el("roundBody").innerHTML = `<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${completed.speech ? speechMarkup(completed.speech) : state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${completed.channelOutcome}${intervention}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>领出。</p><div class="dialog-actions"><button class="primary-button" id="continueOnlineRound" ${canContinue ? "" : "disabled"}>${canContinue ? "继续下一话轮" : `等待${ROLES[state.currentRole].short}继续`}</button></div>`;
       if (!roundDialog.open) roundDialog.showModal();
       el("continueOnlineRound").onclick = () => sendCommand({ type: "continue" });
     }
@@ -456,7 +456,7 @@
       resultDialogVersion = roomSnapshot.version;
       const narratives = state.issues.map((issue, index) => {
         const seat = state.seats.find((item) => item.issueIndex === index);
-        return `<li><strong>${issue.title}</strong> ${seat ? issue.claims[seat.owner] : "尚未完成定调"}</li>`;
+        return `<li><strong>${issue.title}</strong> ${seat ? (seat.speech ? speechMarkup(seat.speech) : issue.claims[seat.owner]) : "尚未完成定调"}</li>`;
       }).join("");
       const results = ROLE_ORDER.map((role) => {
         const result = state.victoryResults?.[role] || { won: false, checks: [] };

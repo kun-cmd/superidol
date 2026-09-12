@@ -1,3 +1,5 @@
+import "../../speech.js";
+const Speech = globalThis.SuperidolSpeech;
 export const ROLE_ORDER = ["anti", "star", "fan"];
 
 export const ROLES = {
@@ -631,7 +633,7 @@ function takeCardsFromDiscard(state, sourceRole, cardIds) {
 function captureOvertakenCards(state, armed) {
   if (!state.topPlay || state.skills.anti.used >= ANTI_CAPTURE_LIMIT || !armed) return [];
   const captured = takeCardsFromDiscard(state, state.topPlay.role, state.topPlay.cardIds);
-  if (captured.length) state.skills.anti.used += 1;
+  if (captured.length) { Speech.capture(captured, state.topPlay, state); state.skills.anti.used += 1; }
   return captured;
 }
 
@@ -692,6 +694,7 @@ function resolveRound(state, reason) {
   const channel = state.topPlay.pattern.channel;
   const markerGain = roundMarkerGain();
   const completed = {
+    speech: state.topPlay.speech,
     issueIndex: state.issueIndex,
     issueTitle: issue.title,
     roundInIssue: state.roundInIssue,
@@ -723,6 +726,7 @@ function resolveRound(state, reason) {
       owner: issueWinner,
       controller: issueWinner === owner ? controller : issueWinner,
       claim: issue.claims[issueWinner],
+      speech: issueWinner === owner ? completed.speech : null,
       rounds: state.roundInIssue,
       markers: { ...state.issueMarkers },
     });
@@ -862,15 +866,8 @@ function applyPlay(state, role, command) {
     pattern: { ...pattern },
     cardNames: cards.map((card) => card.name),
     cardIds: cards.map((card) => card.id),
-    cards: cards.map((card) => ({
-      id: card.id,
-      name: card.name,
-      displayName: card.displayName,
-      level: card.level,
-      channel: card.channel,
-      isWild: Boolean(card.isWild),
-      isFanWild: Boolean(card.isFanWild),
-    })),
+    cards: Speech.freezeCards(cards, state, pattern),
+    speech: Speech.compose(cards, state, pattern),
     fanVoice,
     publishedAt: state.storyTime,
   };
@@ -886,9 +883,10 @@ function applyPlay(state, role, command) {
   const handText = handDelta > 0 ? `+${handDelta}` : handDelta < 0 ? `${handDelta}` : "±0";
   addLog(
     state,
-    `${ROLES[role].short}打出“${cards.map((card) => card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(state, owner)}”。影响：手牌${handText}${reachGain > 0 ? `，浏览量+${formatReachValue(reachGain)}` : ""}${pressureText}。`,
+    `${ROLES[role].short}打出“${cards.map((card) => card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}。影响：手牌${handText}${reachGain > 0 ? `，浏览量+${formatReachValue(reachGain)}` : ""}${pressureText}。`,
     role,
   );
+  state.logs[0].speech = state.topPlay.speech;
   publishBystanderComment(
     state,
     heatChange.crossed.length ? "intervention_triggered" : "response",

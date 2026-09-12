@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
+  <script src="speech.js?v=speech-20260912"></script>
   <script src="i18n.js?v=english-20260827"></script>
   <style>
     :root {
@@ -278,6 +279,20 @@
     .skill-overview-copy strong{font-size:11px}.skill-overview-copy span{font-size:10px;line-height:1.5}.skill-overview-status{font-size:8px}
     @media(max-width:940px){.skill-overview-copy strong{font-size:10px}.skill-overview-copy span{font-size:9px}.skill-overview-status{font-size:8px}}
     @media(prefers-reduced-motion:reduce){.heat-fill{transition:none}.heat-flame::before,.heat-flame::after,.heat-embers,.heat-intervention-node{animation:none}}
+
+    /* Authored speech remains readable in both languages, including short screens. */
+    html[lang="en"] .speech-zh,html:not([lang="en"]) .speech-en{display:none!important}
+    .card h3.card-speech{display:block;max-height:calc(100% - 52px);min-height:0;overflow:auto;font-size:11px;line-height:1.45;padding:4px;margin:5px 0;background:transparent;-webkit-line-clamp:unset;white-space:pre-line}
+    .speech-source{display:block;color:#ffc581;font-size:9px;line-height:1.3}
+    .card:has(.speech-source) h3.card-speech{max-height:calc(100% - 78px)}
+    .speech-preview{font-size:13px;line-height:1.5;color:#fff;white-space:pre-line;margin-bottom:5px;max-height:105px;overflow:auto}
+    .selection-summary{max-height:145px;overflow:auto}
+    .thread-main>strong#threadTop{white-space:pre-line;font-size:17px;line-height:1.45;max-height:180px;overflow:auto;display:block}
+    .action-console{overflow:auto}
+    .thread-strip{overflow:auto}
+    .thread-main{overflow:visible}
+    @media(max-width:940px){.thread-strip{grid-template-rows:auto auto auto;align-content:start}.thread-footer{position:static}.thread-main{padding-bottom:0}}
+    @media(max-width:940px){.hand{grid-template-columns:repeat(var(--hand-count,1),150px)!important;overflow-x:auto}.card h3.card-speech{font-size:11px}.thread-main>strong#threadTop{font-size:14px;max-height:130px}}
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
 </head>
@@ -675,6 +690,12 @@
     }
     function clearAITimer(){if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}}
     function currentIssue(){return state.issues[Math.min(state.issueIndex,state.issues.length-1)];}
+    function speechMarkup(text){
+      if(!text)return "";
+      const escape=value=>String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      return `<span data-i18n-skip><span class="speech-zh">${escape(text.zh)}</span><span class="speech-en">${escape(text.en)}</span></span>`;
+    }
+    function sourceMarkup(card){const source=card.capturedFrom;return source?`<span class="speech-source" data-i18n-skip>${speechMarkup({zh:`引用自 ${ROLES[source.role].short} · 问题${source.issueIndex+1}`,en:`Quoted from ${ROLES[source.role].short} · Topic ${source.issueIndex+1}`})}</span>`:"";}
     function currentClaim(role){return currentIssue().claims[role];}
     function seatCounts(){return Object.fromEntries(ROLE_ORDER.map(role=>[role,state.seats.filter(seat=>seat.owner===role).length]));}
     function nextRole(role){return ROLE_ORDER[(ROLE_ORDER.indexOf(role)+1)%ROLE_ORDER.length];}
@@ -955,6 +976,7 @@
       if(!state.topPlay||state.skills.anti.used>=ANTI_CAPTURE_LIMIT||!armed)return[];
       const captured=takeCardsFromDiscard(state.topPlay.role,state.topPlay.cardIds);
       if(!captured.length)return captured;
+      SuperidolSpeech.capture(captured,state.topPlay,state);
       state.skills.anti.used+=1;
       if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.antiCapture;metric.used+=1;recordCapturedBundle(metric,captured);}
       return captured;
@@ -994,10 +1016,10 @@
         const pressureChange=changePressure(1);pressureText=`，粉圈越界使压力+${pressureChange}`;
       }
       const heatChange=changeHeat(playHeat(cards,pattern),role);advanceStoryTime("response",playHeat(cards,pattern));
-      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:cards.map(card=>({id:card.id,name:card.name,displayName:card.displayName,level:card.level,channel:card.channel,isWild:Boolean(card.isWild),isFanWild:Boolean(card.isFanWild)})),fanVoice:activeVoice,publishedAt:state.storyTime};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
+      state.claimOwner=owner;state.topPlay={role,owner,pattern:{...pattern},cardNames:cards.map(card=>card.name),cardIds:cards.map(card=>card.id),cards:SuperidolSpeech.freezeCards(cards,state,pattern),speech:SuperidolSpeech.compose(cards,state,pattern),fanVoice:activeVoice,publishedAt:state.storyTime};state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.wildChannelChoice=null;state.skills.anti.captureArmed=false;
       const voiceText=role==="fan"?`，以“${fanVoiceLabel()}”发声`:"",reachGain=heatReach(state.heat)-heatReach(beforeHeat),heatText=reachGain>0?`，浏览量+${formatReachValue(reachGain)}`:"",decisionText=decisionNote?` 判断：${decisionNote}。`:"";
       const skillText=usesWork?(workLevel===STAR_WORK_RELEASE_LEVEL?"，完整发布6点“沉淀成章”，本轮无法被反压":`，将${workLevel}点“沉淀成章”作为单牌打出`):captured.length?`，并用“断章取义”拿走整组${captured.length}张原牌`:"",handDelta=captured.length-ordinaryCards.length,handText=handDelta>0?`+${handDelta}`:handDelta<0?`${handDelta}`:"±0";
-      addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}；主张改为“${currentClaim(owner)}”。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);publishBystanderComment(undefined,heatChange.crossed.length?"intervention_triggered":"response",{thresholds:heatChange.crossed});
+      addLog(`${ROLES[role].short}打出“${cards.map(card=>card.name).join("、")}”${voiceText}${skillText}，置顶${patternLabel(pattern)}。${decisionText}影响：手牌${handText}${heatText}${pressureText}。`,role);state.logs[0].speech=state.topPlay.speech;publishBystanderComment(undefined,heatChange.crossed.length?"intervention_triggered":"response",{thresholds:heatChange.crossed});
       recordOldStoryResponse(role,"responderPlays");
       if(beginOldStoryCall(role,wasResponse))return;
       state.currentRole=nextRoleAfterAction(role);render();queueAutomaticTurn();
@@ -1101,7 +1123,7 @@
       clearAITimer();
       const issue=currentIssue(),controller=state.topPlay.role,owner=state.claimOwner,channel=state.topPlay.pattern.channel;
       const markerGain=roundMarkerGain(),wasFirstMarker=ROLE_ORDER.every(role=>state.issueMarkers[role]===0);
-      const completed={issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,patternType:state.topPlay.pattern.type,pattern:patternLabel(state.topPlay.pattern),markerGain,wasFirstMarker};
+      const completed={speech:state.topPlay.speech,issueIndex:state.issueIndex,issueTitle:issue.title,roundInIssue:state.roundInIssue,reason,owner,controller,channel,patternType:state.topPlay.pattern.type,pattern:patternLabel(state.topPlay.pattern),markerGain,wasFirstMarker};
       completed.channelOutcome=resolveChannelOutcome(completed);
       completed.prototypeRound=finishPrototypeRound(completed);
       recordSimulationRound(completed);
@@ -1112,7 +1134,7 @@
       completed.markerSnapshot={...state.issueMarkers};completed.issueWinner=ROLE_ORDER.find(role=>state.issueMarkers[role]>=ISSUE_MARKER_TARGET)||null;completed.issueWon=Boolean(completed.issueWinner);
       if(completed.issueWon){
         const issueWinner=completed.issueWinner,seatController=issueWinner===owner?controller:issueWinner;
-        state.seats.push({issueIndex:state.issueIndex,title:issue.title,owner:issueWinner,controller:seatController,claim:issue.claims[issueWinner],rounds:state.roundInIssue,markers:{...state.issueMarkers}});
+        state.seats.push({issueIndex:state.issueIndex,title:issue.title,owner:issueWinner,controller:seatController,claim:issue.claims[issueWinner],speech:issueWinner===owner?completed.speech:null,rounds:state.roundInIssue,markers:{...state.issueMarkers}});
         recordPrototypeIssueEnd(completed.issueIndex);
         recordSimulationIssueEnd(completed.issueIndex);
         addLog(`“${issue.title}”完成定调：${issue.claims[issueWinner]}。`,issueWinner);
@@ -1142,10 +1164,10 @@
       const notes=[completed.channelOutcome];
       if(completed.bystanderOutcome){const label=completed.bystanderOutcome.status==="joined"?"路人补标":completed.bystanderOutcome.status==="watching"?"路人观望":"路人未加入";notes.push(`${label}：${completed.bystanderOutcome.text}`);}
       if(completed.heatIntervention?.consumed)notes.push(`路人介入：消耗1枚；${ROLES[completed.controller].short}保留标记，但下一话轮改由${ROLES[completed.heatIntervention.to].short}领出。`);
-      const finalOwner=completed.issueWinner||completed.owner,progress=completed.issueWon?`问题完成定调：“${state.issues[completed.issueIndex].claims[finalOwner]}”。`:`当前标记：${markerSnapshotText(completed.markerSnapshot)}。`;
+      const finalOwner=completed.issueWinner||completed.owner,progress=completed.issueWon?`问题完成定调：“${completed.speech?speechMarkup(completed.speech):state.issues[completed.issueIndex].claims[finalOwner]}”。`:`当前标记：${markerSnapshotText(completed.markerSnapshot)}。`;
       const nextText=completed.issueWon?`进入问题${state.issueIndex+1}：${currentIssue().title}`:`进入问题${state.issueIndex+1}第 ${state.roundInIssue} 个话轮`;
       const leadReason=completed.heatIntervention?.consumed?"（路人介入选出的较弱非赢家）":completed.issueWon?"（上一题最终置顶帖的发帖者）":"（本轮最终置顶帖的发帖者）";
-      el("roundBody").innerHTML=`<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${notes.join("<br>")}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>${leadReason}领出。</p><div class="dialog-actions"><button class="primary-button" id="continueRound">${nextText}</button></div>`;
+      el("roundBody").innerHTML=`<h2>${completed.issueTitle} · 第${completed.roundInIssue}话轮结束</h2><p>${completed.reason}。</p><div class="outcome"><strong>本轮置顶：</strong>“${completed.speech?speechMarkup(completed.speech):state.issues[completed.issueIndex].claims[completed.owner]}”<br><strong>牌型：</strong>${completed.pattern}<br><strong>结算：</strong>${notes.join("<br>")}</div><p>${progress}</p><p>下一话轮由<strong>${ROLES[state.currentRole].name}</strong>${leadReason}领出。</p><div class="dialog-actions"><button class="primary-button" id="continueRound">${nextText}</button></div>`;
       const dialog=el("roundDialog");dialog.showModal();
       el("continueRound").onclick=()=>{dialog.close();if(!state||state.phase!=="round_break")return;state.phase="action";if(completed.heatIntervention?.consumed)publishBystanderComment(undefined,"settlement",{reset:true});addLog(`${currentIssue().title} · 第${state.roundInIssue}话轮开始，${ROLES[state.currentRole].short}领出。`,state.currentRole);render();queueAutomaticTurn();};
     }
@@ -1646,7 +1668,7 @@
       const checks=objectiveChecks(),victoryResults=binaryVictoryResults(checks);state.victoryResults=victoryResults;
       if(simulationMode)return;
       render();
-      const narratives=state.issues.map((issue,index)=>{const seat=state.seats.find(item=>item.issueIndex===index);return`<li><strong>${issue.title}</strong> ${seat?issue.claims[seat.owner]:"尚未完成定调"}</li>`;}).join("");
+      const narratives=state.issues.map((issue,index)=>{const seat=state.seats.find(item=>item.issueIndex===index);return`<li><strong>${issue.title}</strong> ${seat?(seat.speech?speechMarkup(seat.speech):issue.claims[seat.owner]):"尚未完成定调"}</li>`;}).join("");
       const resultCards=ROLE_ORDER.map(role=>{
         const result=victoryResults[role],status=result.won?"胜利":"失败",detail=result.checks.map(item=>`${item.ok?"✓":"✕"} ${item.label}`).join("<br>");
         return`<div class="result-card" style="--role-color:${ROLES[role].color}"><span>${ROLES[role].name}</span><strong>${status}</strong><p>${detail}</p></div>`;
@@ -1706,7 +1728,7 @@
         const seat=state.seats.find(item=>item.issueIndex===index);
         const markers=seat?.markers||seat?{...emptyMarkers(),[seat.owner]:ISSUE_MARKER_TARGET}:index===state.issueIndex?state.issueMarkers:emptyMarkers(),markerRow=`<div class="seat-marker-row">${ROLE_ORDER.map(role=>`<span style="--marker-color:${ROLES[role].color}"><i>${ROLES[role].short}</i><b>${markers[role]||0}/${ISSUE_MARKER_TARGET}</b></span>`).join("")}</div>`;
         if(!seat)return`<div class="seat ${state.phase!=="ended"&&index===state.issueIndex?"active":""}"><div class="seat-copy"><small>问题${index+1} · ${state.phase!=="ended"&&index===state.issueIndex?"当前回应中":"未开始"}</small><strong>${issue.title}</strong></div>${markerRow}</div>`;
-        return`<div class="seat filled" style="--seat-color:${ROLES[seat.owner].color}"><div class="seat-copy"><small>问题${index+1} · ${ROLES[seat.owner].short}定义</small><strong>${issue.claims[seat.owner]}</strong></div>${markerRow}</div>`;
+        return`<div class="seat filled" style="--seat-color:${ROLES[seat.owner].color}"><div class="seat-copy"><small>问题${index+1} · ${ROLES[seat.owner].short}定义</small><strong>${seat.speech?speechMarkup(seat.speech):issue.claims[seat.owner]}</strong></div>${markerRow}</div>`;
       }).join("");
     }
     function renderIssue(){
@@ -1742,7 +1764,7 @@
       const pattern=state.topPlay.pattern;
       const pointText=state.topPlay.cards.map(card=>resolvedCardLevel(card,pattern)).join(" + ");
       const playedCards=state.topPlay.cards.map(card=>{const level=resolvedCardLevel(card,pattern),cardColor=card.id==="star-work"?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelLabel=card.id==="star-work"?"技能":card.isWild?"万能":CHANNELS[card.channel].name;return`<span class="thread-played-card" style="--played-card-color:${cardColor}"><em>${channelLabel}</em><i>${level}</i><strong>${card.displayName||card.name}</strong></span>`;}).join("");
-      const account=ROLES[state.topPlay.role];renderThreadAccount(state.topPlay.role,state.topPlay.publishedAt||state.storyTime);strip.style.setProperty("--thread-color",account.color);strip.style.setProperty("--thread-role-color",account.color);el("threadTop").textContent=`“${currentClaim(state.claimOwner)}”`;meta.innerHTML=`<span class="thread-time">${voice?voice.slice(3):"当前热评第1"}</span>`;el("threadPlayed").innerHTML=`<div class="thread-played-head"><span>${patternLabel(pattern)}</span><strong>${pointText} 点</strong></div><div class="thread-played-row">${playedCards}</div>`;el("passStatus").textContent=`等待结算 ${state.passes} / 2`;
+      const account=ROLES[state.topPlay.role];renderThreadAccount(state.topPlay.role,state.topPlay.publishedAt||state.storyTime);strip.style.setProperty("--thread-color",account.color);strip.style.setProperty("--thread-role-color",account.color);el("threadTop").innerHTML=speechMarkup(state.topPlay.speech||SuperidolSpeech.compose(state.topPlay.cards,state,state.topPlay.pattern));meta.innerHTML=`<span class="thread-time">${voice?voice.slice(3):"当前热评第1"}</span>`;el("threadPlayed").innerHTML=`<div class="thread-played-head"><span>${patternLabel(pattern)}</span><strong>${pointText} 点</strong></div><div class="thread-played-row">${playedCards}</div>`;el("passStatus").textContent=`等待结算 ${state.passes} / 2`;
     }
     function renderActionNotice(){
       const latest=state.logs[0],notice=el("actionNotice");
@@ -1782,7 +1804,7 @@
         el("passButton").onclick=()=>passTurn(state.userRole,false,"明星处于失声状态，等待真爱粉救援");return;
       }
       if(!state.topPlay){prompt.textContent="你拥有领出权：选择1至3张牌发布第一条回应。";sub.textContent="成功公开后，累计浏览量会按照牌的等级增长；组合会累加所有等级。";}
-      else{const top=state.topPlay.pattern;prompt.textContent=`回应“${currentClaim(state.claimOwner)}”`;sub.textContent=top.isWorkRelease?"完整作品已经占据当前时间线，无法被反压。":`当前置顶：${top.type==="loop"?"三频道":CHANNELS[top.channel].name+"频道"} · ${PATTERN_NAMES[top.type]} · ${top.level}级`;}
+      else{const top=state.topPlay.pattern;prompt.textContent="选择手牌，组织你的回应";sub.textContent=top.isWorkRelease?"完整作品已经占据当前时间线，无法被反压。":`当前置顶：${top.type==="loop"?"三频道":CHANNELS[top.channel].name+"频道"} · ${PATTERN_NAMES[top.type]} · ${top.level}级`;}
       if(state.oldStoryCall?.active){const call=state.oldStoryCall,position=call.order.indexOf(state.userRole),sequence=call.order.map((role,index)=>`${index===call.index?"▶":""}${ROLES[role].short}`).join(" → ");prompt.textContent=`旧事点名 · ${position===0?"你被要求先回应":"轮到你回应"}：“${currentClaim(state.claimOwner)}”`;sub.textContent=`临时顺序 ${sequence}。你必须现在按正常规则反压或过牌；两名回应者行动后回到${ROLES[call.leader].short}，随后恢复正常顺序。`;}
       if(state.coolingMode){
         const coolCard=state.roles[state.userRole].hand.find(card=>card.id===state.coolingCardId),cooled=Math.max(0,state.heat-5);
@@ -1806,8 +1828,8 @@
       const fanSkillReady=state.userRole==="fan"&&!state.skills.fan.used&&state.roles.fan.hand.length<=5,fanGiftCard=fanSkillReady&&cards.length===1&&!cards[0].isWild&&cards[0].level<5?cards[0]:null;
       if(fanGiftCard)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${fanGiftCard.level}级牌变成1—4级万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton" class="fan-confirm-button">确认应援</button></div></div>`;
       else if(fanSkillReady)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援已就绪</span><div class="action-hint">选择恰好一张1—4级普通牌，再决定把万能牌交给谁。</div></div>`;
-      if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（原牌直接收入手牌）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备收回原牌":"收回被压牌"}：${bundle}</button></div></div>`;}
-      if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>${response.legal?` · Heat +${playHeat(cards,pattern)}<br>${previewSettlement(pattern,owner,cards)}`:" · 当前选择不能发布"}`;}
+      if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（保留原话和出处，收入手牌）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备截取回应":"截取这组回应"}：${bundle}</button></div></div>`;}
+      if(cards.length){summary.hidden=false;summary.innerHTML=`<div class="speech-preview">${speechMarkup(SuperidolSpeech.compose(cards,state,pattern))}</div>${cards.some(card=>card.capturedFrom)?`<details class="quote-context"><summary>${speechMarkup({zh:"查看被截取的完整原话",en:"Read the original in full"})}</summary>${cards.filter(card=>card.capturedFrom).map(card=>sourceMarkup(card)+speechMarkup(card.capturedFrom.text)).join("<br>")}</details>`:""}<strong>${patternLabel(pattern)}</strong>${response.legal?` · Heat +${playHeat(cards,pattern)}<br>${previewSettlement(pattern,owner,cards)}`:" · 当前选择不能发布"}`;}
       const canPublish=response.legal;
       const publishHeat=canPublish?playHeat(cards,pattern):0;
       let actionHtml=`<button class="primary-button" id="publishButton" ${canPublish?"":"disabled"}>${workRelease?"完整发布作品":state.topPlay?"发布回应":"领出主张"} · Heat +${publishHeat}</button>`;
@@ -1863,7 +1885,7 @@
       if(changed&&work.status==="forging"){animatedWorkSequence=work.feedbackSequence;clearTimeout(workMotionTimer);void panel.offsetWidth;panel.classList.add("forging");workMotionTimer=setTimeout(()=>panel.classList.remove("forging"),900);}
       const available=work.status==="forging";panel.innerHTML=`<div class="work-head"><div><small>沉淀成章</small><strong>${available?"当前技能牌点数":"技能牌已离手"}</strong></div><div class="work-level">${available?work.level:"—"}</div></div>`;
     }
-    function renderLogs(){el("logList").innerHTML=state.logs.length?state.logs.slice(0,6).map((log,index)=>{const message=log.message.replace(/ 判断：.*?。(?=影响：)/," ");return`<div class="log-item" style="--log-color:${ROLES[log.role].color}"><span class="log-index">${ROLES[log.role].handle} · ${formatTimelineTime(log.createdAt)} · 记录 ${state.logs.length-index}</span>${message}</div>`;}).join(""):`<div class="empty">回应记录会显示在这里。</div>`;}
+    function renderLogs(){el("logList").innerHTML=state.logs.length?state.logs.slice(0,6).map((log,index)=>{const message=log.message.replace(/ 判断：.*?。(?=影响：)/," ");return`<div class="log-item" style="--log-color:${ROLES[log.role].color}"><span class="log-index">${ROLES[log.role].handle} · ${formatTimelineTime(log.createdAt)} · 记录 ${state.logs.length-index}</span>${message}${log.speech?`<div class="log-speech">${speechMarkup(log.speech)}</div>`:""}</div>`;}).join(""):`<div class="empty">回应记录会显示在这里。</div>`;}
     function renderHand(){
       const role=state.userRole,ordinaryHand=state.roles[role].hand,workAvailable=role==="star"&&state.skills.star.status==="forging",hand=workAvailable?[currentWorkCard(),...ordinaryHand]:ordinaryHand,isTurn=state.phase==="action"&&state.currentRole===role&&roleCanPlay(role),order={fact:0,stance:1,spread:2},sorted=[...hand].sort((a,b)=>Number(Boolean(b.isWork))-Number(Boolean(a.isWork))||order[a.channel]-order[b.channel]||a.level-b.level);
       el("handZone").style.setProperty("--hand-role-color",ROLES[role].color);
@@ -1872,9 +1894,9 @@
       el("handTitle").textContent=`${ROLES[role].name}的回应手牌${role==="star"&&state.silenced?" · 失声锁定":isTurn?" · 选择回应":""}`;el("handCount").textContent=`${hand.length}张${workAvailable?"（含技能牌）":""} · 未发 ${state.deckRemaining}张`;
       el("hand").innerHTML=sorted.length?sorted.map(card=>{
         const selected=state.coolingMode?state.coolingCardId===card.id:card.isWork?state.skills.star.selected:state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),incompatible=state.coolingMode?card.isWork:card.isWork?state.selectedIds.length>0:role==="star"&&state.skills.star.selected,disabled=!isTurn||incompatible||(!state.coolingMode&&!selected&&selectedCount>=3),channelColor=card.isWork?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isWork?"明星技能牌":card.isFanWild?"自动频道":card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`,levelText=card.isFanWild?"1—4":card.level;
-        const author=card.originalAuthor||card.role||role,cardCopy=card.isWork?(card.level===STAR_WORK_RELEASE_LEVEL?"Only as a single. A full release cannot be countered.":"Only as a single. Invest ordinary cards to raise it."):card.isFanWild?"Maya wrote this explanation. It can complete a 1–4 pattern but never becomes Haru's voice.":card.isWild?"使用时由牌型自动决定频道。":author==="star"?"Haru · first-person account.":author==="fan"?"Maya · supporter interpretation.":"Ben · skeptical challenge.";
+        const cardCopy=SuperidolSpeech.cardSpeech(card,state);
         const footLabel=card.isWork?`技能点数 ${card.level}`:card.isFanWild?"等级 1—4":"等级 "+card.level,selectionLabel=state.coolingMode?(selected?"待确认弃牌":"点击选择弃牌"):selected?(card.isWork?"技能牌已选中":`主牌 ${state.selectedIds.indexOf(card.id)+1}`):"点击选择";
-        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3 title="${card.name}">${card.displayName||card.name}</h3><p>${cardCopy}</p><div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
+        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3 class="card-speech">${speechMarkup(cardCopy)}</h3>${sourceMarkup(card)}<div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
       }).join(""):`<div class="empty">手牌已经用尽。轮到你领出时，领出权会顺延给下一方。</div>`;
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }
@@ -1984,6 +2006,6 @@
     }
     setup();
   </script>
-  <script src="online-client.js?v=english-20260827"></script>
+  <script src="online-client.js?v=speech-20260912"></script>
 </body>
 </html>
