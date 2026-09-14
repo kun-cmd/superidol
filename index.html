@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
-  <script src="speech.js?v=speech-20260912"></script>
-  <script src="i18n.js?v=english-20260827"></script>
+  <script src="speech.js?v=pressure-20260914"></script>
+  <script src="i18n.js?v=pressure-20260914"></script>
   <style>
     :root {
       --paper:#fff; --page:#eef0f3; --ink:#1d232c; --muted:#68717e; --line:#cfd4db;
@@ -293,6 +293,9 @@
     .thread-main{overflow:visible}
     @media(max-width:940px){.thread-strip{grid-template-rows:auto auto auto;align-content:start}.thread-footer{position:static}.thread-main{padding-bottom:0}}
     @media(max-width:940px){.hand{grid-template-columns:repeat(var(--hand-count,1),150px)!important;overflow-x:auto}.card h3.card-speech{font-size:11px}.thread-main>strong#threadTop{font-size:14px;max-height:130px}}
+    .fan-mode{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;align-items:center}
+    .fan-mode small{grid-column:1/-1;font-size:10px;line-height:1.3;white-space:normal}
+    .console-tools:has(.fan-mode) .control-row{overflow-y:auto}
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
 </head>
@@ -342,7 +345,7 @@
     </div>
     <div class="render-support" hidden><span id="seatStatus"></span><div id="turnBlock"></div><span id="pressureStat"></span><span id="roundStat"></span><span id="beliefStat"></span><span id="memoryStat"></span><strong id="pressureForecast"></strong><div id="permanentMemoryPanel"></div><div id="workPanel"></div></div>
   </div>
-  <dialog id="startDialog"><div class="dialog-body"><h2 id="startTitle">开始游戏</h2><a href="perspective.html" style="display:block;margin:0 0 20px;padding:18px;background:#f1eee5;color:#272b26;border-left:4px solid #b25232;text-decoration:none"><strong style="display:block;font-size:18px">新原型 · 最后留下的那句话 →</strong><span style="display:block;margin-top:8px;font-size:12px;line-height:1.7">同一件事，三种想保住的东西。选择说法、争取定调，也可以让对手的话留下。AI陪玩 / 同设备三人。</span></a><div class="start-mode-tabs" id="startModeTabs"><button class="selected" type="button" data-start-mode="online">在线三人房</button><button type="button" data-start-mode="solo">单人试玩</button></div><section class="online-start-panel" id="onlineStartPanel"><div class="prototype-banner online-banner"><strong>真人或 AI · 三事件连续房</strong>创建房间后，房主可把空阵营设为 AI。Haru在前两局各发布一次5—6点“沉淀成章”，第三局才会解锁专辑分支 ROOM TONE。</div><label class="online-field"><span>你的昵称</span><input id="onlinePlayerName" maxlength="20" autocomplete="nickname" placeholder="匿名玩家"></label><div class="online-field"><span>选择阵营</span><div class="online-role-picks" id="onlineRolePicks"></div></div><div class="online-room-actions"><button class="primary-button" id="createOnlineRoom" type="button">创建房间</button><span>或</span><label><input id="onlineRoomCode" maxlength="6" autocomplete="off" inputmode="text" placeholder="房间码"></label><button class="plain-button" id="joinOnlineRoom" type="button">加入房间</button></div><button class="resume-room-button" id="resumeOnlineRoom" type="button" hidden></button><p class="online-feedback" id="onlineFeedback" aria-live="polite"></p></section><section id="onlineLobby" class="online-lobby" hidden><div class="online-room-code"><span>房间码</span><strong id="onlineLobbyCode">------</strong><button id="copyOnlineRoomCode" type="button">复制</button></div><div class="online-player-list" id="onlinePlayerList"></div><p class="online-feedback" id="onlineLobbyFeedback" aria-live="polite">等待真人加入或由房主添加 AI。</p><div class="dialog-actions"><button class="plain-button" id="leaveOnlineRoom" type="button">返回</button><button class="primary-button" id="readyOnlineRoom" type="button">准备</button></div></section><section id="soloStartPanel" hidden><div class="prototype-banner"><strong>HARU VENN · 三事件舆论风暴</strong>Maya只能说出自己的支持理由，不能替Haru回答；Jamie会在Heat 35 / 75介入，把下一次开口交给较弱的非赢家。Haru在前两局发布的作品决定第三局分支。</div><p id="startCopy">每局重新发牌：每方12张普通牌，Haru另有1张公开技能牌。用更高的同牌型回应抢下置顶，连续两人过牌后获得定调标记；先拿2标的一方定义当前问题。</p><div class="role-picks" id="rolePicks"></div></section></div></dialog>
+  <dialog id="startDialog"><div class="dialog-body"><h2 id="startTitle">开始游戏</h2><a href="perspective.html" style="display:block;margin:0 0 20px;padding:18px;background:#f1eee5;color:#272b26;border-left:4px solid #b25232;text-decoration:none"><strong style="display:block;font-size:18px">新原型 · 最后留下的那句话 →</strong><span style="display:block;margin-top:8px;font-size:12px;line-height:1.7">同一件事，三种想保住的东西。选择说法、争取定调，也可以让对手的话留下。AI陪玩 / 同设备三人。</span></a><div class="start-mode-tabs" id="startModeTabs"><button class="selected" type="button" data-start-mode="online">在线三人房</button><button type="button" data-start-mode="solo">单人试玩</button></div><section class="online-start-panel" id="onlineStartPanel"><div class="prototype-banner online-banner"><strong>真人或 AI · 三事件连续房</strong>创建房间后，房主可把空阵营设为 AI。Haru在前两局各发布一次5—6点“沉淀成章”，第三局才会解锁专辑分支 ROOM TONE。</div><label class="online-field"><span>你的昵称</span><input id="onlinePlayerName" maxlength="20" autocomplete="nickname" placeholder="匿名玩家"></label><div class="online-field"><span>选择阵营</span><div class="online-role-picks" id="onlineRolePicks"></div></div><div class="online-room-actions"><button class="primary-button" id="createOnlineRoom" type="button">创建房间</button><span>或</span><label><input id="onlineRoomCode" maxlength="6" autocomplete="off" inputmode="text" placeholder="房间码"></label><button class="plain-button" id="joinOnlineRoom" type="button">加入房间</button></div><button class="resume-room-button" id="resumeOnlineRoom" type="button" hidden></button><p class="online-feedback" id="onlineFeedback" aria-live="polite"></p></section><section id="onlineLobby" class="online-lobby" hidden><div class="online-room-code"><span>房间码</span><strong id="onlineLobbyCode">------</strong><button id="copyOnlineRoomCode" type="button">复制</button></div><div class="online-player-list" id="onlinePlayerList"></div><p class="online-feedback" id="onlineLobbyFeedback" aria-live="polite">等待真人加入或由房主添加 AI。</p><div class="dialog-actions"><button class="plain-button" id="leaveOnlineRoom" type="button">返回</button><button class="primary-button" id="readyOnlineRoom" type="button">准备</button></div></section><section id="soloStartPanel" hidden><div class="prototype-banner"><strong>HARU VENN · 三事件舆论风暴</strong>Maya可以争取自己的定义，也可以消耗手牌援护Haru。Jamie在Heat 35 / 75介入；前两局作品决定第三局分支。</div><p id="startCopy">每局重新发牌：每方12张普通牌，Haru另有1张公开技能牌。用更高的同牌型回应抢下置顶，连续两人过牌后获得定调标记；先拿2标的一方定义当前问题。</p><div class="role-picks" id="rolePicks"></div></section></div></dialog>
   <dialog id="rulesDialog" class="rules-dialog"><div class="dialog-body">
     <div class="rules-kicker">HOW TO PLAY</div><h2 id="rulesTitle" tabindex="-1">游戏规则 · 2分钟读懂</h2>
     <p class="rules-intro">三方围绕HARU VENN的三起递进事件争夺“谁有权定义这件事”。你不需要计算浏览、点赞或时间；界面会自动处理。</p>
@@ -385,9 +388,9 @@
     <section class="rules-section" id="rule-pressure" style="--rule-color:var(--danger)"><h3>4. Heat、路人介入与明星压力</h3><ul>
       <li><strong>Heat（全网热度）</strong>：每局从3开始。成功打出的牌会按等级增加Heat，组合把各牌等级相加；Heat没有上限。浏览、点赞与转发只是Heat的视觉表现。</li>
       <li><strong>Jamie介入</strong>：Heat首次到达35和75时，各产生1次路人介入。当前话轮赢家仍拿1标，但不能继承领出权；下一话轮由另外两方中本题标记更少的一方领出。</li>
-      <li><strong>Maya不是Haru的代言人</strong>：Maya打出的回应只算Maya的解释，不能替Haru取得“本人定调”；Haru也可以反压Maya。</li>
-      <li><strong>压力0—4</strong>：Maya每个话轮首次成功入场，Haru压力+1；Ben赢得话轮，压力+1；只有Haru本人用立场频道赢得话轮，压力−1。</li>
-      <li>压力达到4时Haru失声，无法继续出牌，尚未发布的“沉淀成章”和全部投入牌立即消失。</li>
+      <li><strong>粉丝的两种回应</strong>：Maya每个话轮首次出牌时选择“自己的解释”或“援护Haru”，本话轮内不能切换。自己的解释获得Maya标记；援护花费Maya的手牌，但标记归Haru。</li>
+      <li><strong>压力0—4</strong>：Maya以自己的解释首次入场时压力+1，即使被反压也不撤销；援护入场不加压。Ben赢下话轮时压力+1。</li><li><strong>援护减压</strong>：本话轮有Maya援护，且最终由Haru叙事赢下话轮，压力−1；没有援护时，仅Haru的立场频道定调压力−1。两种减压不叠加，未赢下话轮不减压。</li>
+      <li>压力达到4时Haru失声，无法继续出牌，尚未发布的“沉淀成章”和全部投入牌立即消失。压力降到2或以下时恢复发声；从4降到3仍然失声，已失去的作品不会恢复。</li>
     </ul></section>
 
     <section class="rules-section" style="--rule-color:var(--stance)"><h3>5. 每个人的技能</h3><div class="rules-skills">
@@ -398,10 +401,10 @@
     </div></section>
 
     <section class="rules-section" style="--rule-color:var(--fan)"><h3>6. 每局谁算胜利</h3><ul>
-      <li><strong>Haru胜利</strong>：Haru本人定义至少2个问题，并且结局时没有失声。</li>
+      <li><strong>Haru胜利</strong>：Haru取得至少2个定义（含Maya援护取得的定义），并且结束压力不超过2。</li>
       <li><strong>Maya胜利</strong>：Haru与Maya合计定义至少2个问题，其中Maya本人至少定义1个，并且Haru没有失声。</li>
-      <li><strong>Ben胜利</strong>：Ben定义至少1个问题。</li>
-      <li>三方条件分别判断，因此一局可能不止一方胜利。Heat不会额外增加或扣除胜分。</li>
+      <li><strong>Ben胜利</strong>：Ben至少取得1个定义，并且满足以下任一条件：Haru最多取得1个定义，或结束压力达到3及以上。</li>
+      <li>三方在每局结束时分别判定。可能单方胜利、Haru与Maya共赢、Maya与Ben共赢或无人获胜，绝不会三方同时获胜。Heat不直接决定胜负。</li>
     </ul></section>
     <p>所有账号、日期和事件均为虚构；时间推进只服务剧情表现，不改变上述出牌与胜负规则。</p>
     <div class="dialog-actions"><button class="primary-button" id="closeRules">看懂了，继续游戏</button></div>
@@ -411,9 +414,9 @@
   <script>
     const ROLE_ORDER=["anti","star","fan"];
     const ROLES={
-      star:{name:"明星本人 · Haru",short:"Haru",factionLabel:"Star",accountName:"HARU VENN",handle:"@haruvenn",avatar:"H",avatarSrc:"assets/haru-venn-avatar-20260812.webp",verified:true,color:"var(--star)",goal:"本人主张定义2个问题，且事件结束时没有失声。",skill:"The Record Takes Shape：2点作品卡开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
+      star:{name:"明星本人 · Haru",short:"Haru",factionLabel:"Star",accountName:"HARU VENN",handle:"@haruvenn",avatar:"H",avatarSrc:"assets/haru-venn-avatar-20260812.webp",verified:true,color:"var(--star)",goal:"Haru取得至少2个定义，且结束压力不超过2。",skill:"The Record Takes Shape：2点作品卡开局就在手牌中，只能单独打出；可投入普通牌升至6点，6点发布无法被反压。"},
       fan:{name:"真爱粉 · Maya",short:"Maya",factionLabel:"Supporter",accountName:"Maya Reed",handle:"@mayareed",avatar:"M",avatarSrc:"assets/maya-reed-avatar-20260812.webp",verified:false,color:"var(--fan)",goal:"支持阵营合计定义2个问题且Maya自己定义1个；明星未失声。",skill:"Last Push（1次）：手牌≤5时，把一张非5级牌变成可自动补齐点数与频道的1—4级万能牌，并交给任意一方；它仍是Maya写的说法。"},
-      anti:{name:"黑粉 · Ben",short:"Ben",factionLabel:"Skeptic",accountName:"Ben Carter",handle:"@bencarter",avatar:"B",avatarSrc:"assets/ben-carter-avatar-20260812.webp",verified:false,color:"var(--anti)",goal:"Ben的质疑叙事定义至少1个问题。",skill:"Out of Context（1次）：用组合成功压牌后，获得整组被压牌；牌名、原作者、频道和等级保持原样。"}
+      anti:{name:"黑粉 · Ben",short:"Ben",factionLabel:"Skeptic",accountName:"Ben Carter",handle:"@bencarter",avatar:"B",avatarSrc:"assets/ben-carter-avatar-20260812.webp",verified:false,color:"var(--anti)",goal:"Ben至少取得1个定义，且Haru最多1个定义或结束压力至少3。",skill:"Out of Context（1次）：用组合成功压牌后，获得整组被压牌；牌名、原作者、频道和等级保持原样。"}
     };
     function accountAvatarMarkup(role){const account=ROLES[role],avatar=account.avatarSrc?`<img src="${account.avatarSrc}" alt="" draggable="false">`:account.avatar;return`${avatar}${account.verified?'<span class="verified-v" aria-hidden="true">V</span>':""}`;}
     const BYSTANDER_ACCOUNT={name:"Jamie Cole",handle:"@jamiecole",avatar:"J",avatarSrc:"assets/jamie-cole-avatar-20260812.webp"};
@@ -683,7 +686,7 @@
         themeKey:campaign.activeTheme,theme,issues:theme.issues,claims,seats:[],issueIndex:0,issueMarkers:emptyMarkers(),roundInIssue:1,roundsCompleted:0,
         heat:initialHeat,initialHeat,memoryTarget:CORE_BASELINE.positiveFeedback?campaign.permanentMemory?.strength||0:0,inheritedMemory:CORE_BASELINE.positiveFeedback&&campaign.permanentMemory?{...campaign.permanentMemory}:null,heatFeedback:{amount:0,sequence:0,interventionsAdded:0},heatInterventionTokens:0,heatInterventionTriggered:[],bystanderInterventionsUsed:0,bystanderLeadRecipientsThisIssue:[],permanentMemory:null,permanentMemoryOutcome:null,lastRoundOwner:null,bystanderJoinedThisIssue:false,bystanderOwner:null,roundStartConsensusOwner:null,bystanderFeedback:{owner:null,sequence:0},
         aiModes:Object.fromEntries(ROLE_ORDER.map(role=>[role,"aggressive"])),simulationMetrics:null,experiment:createPrototypeExperiment(deal.hands,theme.issues.length),oldStoryCall:null,
-        currentRole:"anti",topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],coolingMode:false,coolingCardId:null,fanVoiceChoice:"fan",fanVoiceThisRound:null,fanOverreachThisRound:false,wildChannelChoice:null,
+        currentRole:"anti",topPlay:null,claimOwner:null,passes:0,leadSkips:0,selectedIds:[],coolingMode:false,coolingCardId:null,fanVoiceChoice:"fan",fanVoiceThisRound:null,supportedThisRound:false,fanOverreachThisRound:false,wildChannelChoice:null,
         skills:{star:{level:STAR_WORK_START_LEVEL,invested:[],selected:false,status:"forging",feedbackSequence:0},fan:{used:false,target:"fan"},anti:{used:0,captureArmed:false,baitPlan:null}},
         pressure:0,silenced:false,lastCompletedRound:null,victoryResults:null,logs:[]
       };
@@ -734,7 +737,7 @@
       render();queueAutomaticTurn();
     }
     function recordOldStoryResponse(role,action){const call=state.oldStoryCall;if(simulationMode&&state.simulationMetrics&&call?.active&&role!==call.leader)state.simulationMetrics.oldStory[action]+=1;}
-    function fanVoiceLabel(){return"Maya's explanation";}
+    function fanVoiceLabel(voice=state?.fanVoiceThisRound||state?.fanVoiceChoice){return voice==="star"?"援护Haru":"Maya自己的解释";}
     function startGame(role){
       clearAITimer();clearPlayAnimation();state=initialState(role);el("startDialog").close();
       state.roundStartConsensusOwner=consensusLeader();
@@ -797,7 +800,7 @@
       const work=state.skills.star;if(work.status!=="forging")return;
       if(!work.selected&&state.selectedIds.length)return;work.selected=!work.selected;render();
     }
-    function setFanVoice(){if(state.userRole!=="fan")return;state.fanVoiceChoice="fan";render();}
+    function setFanVoice(voice){if(state.userRole!=="fan"||state.currentRole!=="fan"||state.phase!=="action"||state.fanVoiceThisRound||!["fan","star"].includes(voice))return;state.fanVoiceChoice=voice;render();}
     function patternLabel(pattern){
       if(!pattern)return"无效组合";
       if(pattern.type==="loop")return`${pattern.level}级${PATTERN_NAMES.loop}`;
@@ -935,7 +938,7 @@
       }
       return state.pressure-before;
     }
-    function narrativeOwner(role){return role;}
+    function narrativeOwner(role,voice){return role==="fan"&&voice==="star"?"star":role;}
     function consumeStarWork(status){
       const work=state.skills.star;if(work.status!=="forging")return;
       if(work.invested.length)state.roles.star.hiddenDiscard.push(...work.invested);
@@ -1008,10 +1011,11 @@
         consumeStarWork(workLevel===STAR_WORK_RELEASE_LEVEL?"released":"releasedEarly");
         if(workLevel>=5&&campaign.eventNumber<=2&&!campaign.albumFragments.some(fragment=>fragment.eventNumber===campaign.eventNumber))campaign.albumFragments.push({eventNumber:campaign.eventNumber,title:state.theme.fragmentTitle||`Work ${campaign.eventNumber}`,level:workLevel});
       }
-      if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound="fan";
+      if(role==="fan"&&!state.fanVoiceThisRound)state.fanVoiceThisRound=fanVoice==="star"?"star":"fan";
       const activeVoice=role==="fan"?state.fanVoiceThisRound:null,owner=narrativeOwner(role,activeVoice);
+      if(role==="fan"&&activeVoice==="star"){state.supportedThisRound=true;state.supportSpent=(state.supportSpent||0)+ordinaryCards.length;state.supportPlays=(state.supportPlays||0)+1;}
       let pressureText="";
-      if(role==="fan"&&!state.fanOverreachThisRound){
+      if(role==="fan"&&activeVoice==="fan"&&!state.fanOverreachThisRound){
         state.fanOverreachThisRound=true;
         const pressureChange=changePressure(1);pressureText=`，粉圈越界使压力+${pressureChange}`;
       }
@@ -1082,7 +1086,8 @@
       }else outcomes.push(`${completed.patternType==="loop"?"闭环":CHANNELS[completed.channel]?.name||"当前频道"}定调：核心基线暂无频道额外效果。`);
       const intelLeader=revealUndealtToCredibilityLeader();
       if(intelLeader===completed.owner)outcomes.push(`${ROLES[intelLeader].short}首次成为可信度唯一第一，已私下查明全部3张未发暗牌。`);
-      if(completed.owner==="star"&&completed.patternType!=="loop"&&completed.channel==="stance"){
+      if(completed.owner==="star"&&state.supportedThisRound){const actual=changePressure(-1);state.supportWins=(state.supportWins||0)+1;state.supportReduction=(state.supportReduction||0)-actual;outcomes.push("粉丝援护守住话轮，压力-1");}
+      else if(completed.owner==="star"&&completed.patternType!=="loop"&&completed.channel==="stance"){
         const actual=changePressure(-1);outcomes.push(`本人立场守住话轮：明星压力${actual}，当前为${state.pressure}/${PRESSURE_MAX}。`);
       }else if(completed.owner==="anti"){
         const actual=changePressure(1);outcomes.push(`黑粉叙事赢得话轮：明星压力+${actual}，当前为${state.pressure}/${PRESSURE_MAX}。`);
@@ -1154,7 +1159,7 @@
         if(!simulationMode)publishBystanderComment(undefined,"intervention_used",{from:controller,to:nextLead,useNumber:state.bystanderInterventionsUsed});
         if(simulationMode&&state.simulationMetrics){const metric=state.simulationMetrics.heatIntervention;metric.consumed+=1;metric.disruptedByWinner[controller]+=1;}
       }else completed.heatIntervention={consumed:false,from:controller,to:controller,remaining:0};
-      if(completed.issueWon)state.bystanderLeadRecipientsThisIssue=[];state.topPlay=null;state.claimOwner=null;state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.fanVoiceChoice="fan";state.fanVoiceThisRound=null;state.fanOverreachThisRound=false;state.wildChannelChoice=null;state.skills.star.selected=false;state.skills.anti.captureArmed=false;state.oldStoryCall=null;
+      if(completed.issueWon)state.bystanderLeadRecipientsThisIssue=[];state.topPlay=null;state.claimOwner=null;state.passes=0;state.leadSkips=0;state.selectedIds=[];state.coolingMode=false;state.coolingCardId=null;state.fanVoiceChoice="fan";state.fanVoiceThisRound=null;state.supportedThisRound=false;state.fanOverreachThisRound=false;state.wildChannelChoice=null;state.skills.star.selected=false;state.skills.anti.captureArmed=false;state.oldStoryCall=null;
       state.skills.anti.baitPlan=null;state.currentRole=nextLead;state.roundStartConsensusOwner=consensusLeader();beginPrototypeRound(nextLead);state.phase="round_break";if(!simulationMode&&!completed.heatIntervention?.consumed)publishBystanderComment(completed.bystanderOutcome?.status==="joined"?completed.bystanderOutcome.owner:undefined,"settlement");render();if(!simulationMode)showRoundSummary(completed);
     }
     function markerSnapshotText(markers){
@@ -1241,7 +1246,7 @@
     function roleNeedsLastIssue(role){
       if(state.issues.length-state.seats.length!==1)return false;
       const counts=seatCounts();
-      return role==="star"?counts.star<2:role==="fan"?counts.fan<1||counts.star+counts.fan<2:counts.anti<1;
+      return role==="star"?counts.star<2:role==="fan"?counts.fan<1||counts.star+counts.fan<2:counts.anti<1||counts.star===1;
     }
     function resetAIStrategies(){ROLE_ORDER.forEach(role=>{state.aiModes[role]="aggressive";});}
     function updateAIStrategiesAfterMarker(owner,wasFirstMarker=false){
@@ -1305,6 +1310,7 @@
     }
     function claimHelpful(role,owner){
       const counts=seatCounts(),openIssues=state.issues.length-state.seats.length;
+      if(role==="anti"&&owner==="fan")return counts.anti>=1;
       if(role==="fan"){
         if(owner==="fan")return true;
         if(owner!=="star")return false;
@@ -1317,7 +1323,7 @@
     function aiGoalScore(role,option,fanVoice){
       const owner=narrativeOwner(role,fanVoice),counts=seatCounts(),markers=state.issueMarkers,openIssues=state.issues.length-state.seats.length;
       const credGain=patternMetricGain(option.pattern,"credibility"),memoryGain=patternMetricGain(option.pattern,"memory");
-      const completesIssue=playWouldFinishIssue(owner,option.pattern);let score=0;
+      const completesIssue=playWouldFinishIssue(owner,option.pattern);let score=pressureGoalScore(role,option.pattern,fanVoice);
       if(state.topPlay&&topWouldFinishIssue()&&!claimHelpful(role,state.claimOwner))score+=4.6;
       if(role==="star"&&owner==="star"){
         score+=counts.star<2?1.4:.2;
@@ -1330,8 +1336,8 @@
         if(owner==="star"){
           if(completesIssue&&counts.star+counts.fan<2)score+=5;
           score+=credGain*(metricGap("star","credibility")<=0?1.7:.55)+memoryGain*.4;
-          if(state.silenced)score+=option.pattern.channel==="stance"?14:-8;
-          else if(option.pattern.channel==="stance")score+=state.pressure>=PRESSURE_CRITICAL?6:state.pressure>=PRESSURE_HIGH?4:state.pressure>=PRESSURE_WATCH?1.5:.3;
+          if(state.silenced)score+=14;
+          else score+=state.pressure>=PRESSURE_CRITICAL?6:state.pressure>=PRESSURE_HIGH?4:state.pressure>=PRESSURE_WATCH?1.5:.3;
         }else{
           if(state.silenced)score-=12;
           if(counts.fan===0)score+=2;
@@ -1366,6 +1372,13 @@
         if(markers.star>0&&supportSeats<2)score-=1.5;
         if(!state.fanOverreachThisRound)score+=state.pressure>=PRESSURE_CRITICAL?(needsOwn&&openIssues===1?-4.5:-8):state.pressure>=PRESSURE_HIGH?-1.5:state.pressure>=PRESSURE_WATCH?-.4:0;
       }
+      if(voice==="star"){
+        const relief=Math.min(1,state.pressure);
+        score+=relief*2+(state.silenced?10:state.pressure>=PRESSURE_CRITICAL?5:0);
+        if(starFinishes&&supportSeats<2)score+=5;
+        if(needsOwn)score-=openIssues===1?10:2;
+        if(supportSeats>=2&&!state.silenced&&state.pressure<2)score-=3;
+      }
       if(antiThreat&&markers.fan>0)score+=2;
       if(state.topPlay&&state.claimOwner==="star"&&voice==="fan"&&needsOwn)score+=state.issueIndex===2?3.5:1;
       if(state.topPlay&&state.claimOwner==="fan"&&voice==="fan")score+=1.5;
@@ -1380,10 +1393,10 @@
         return"争取粉圈自己的定义，并承担越界解释带来的压力";
       }
       if(state.topPlay&&state.claimOwner==="anti"&&topWouldFinishIssue())return"黑粉叙事已有1个定调标记，先替本人阻断";
-      return"Maya只能用自己的解释争取支持阵营优势，不能替Haru完成本人定调";
+      return"消耗自己的手牌援护Haru，争取明星定调和压力−1";
     }
     function chooseFanPlan(){
-      const voices=["fan"];
+      const voices=state.fanVoiceThisRound?[state.fanVoiceThisRound]:["fan","star"];
       return voices.map(voice=>{
         const choice=aiChoosePlay("fan",voice);if(!choice)return null;
         return{voice,choice,score:choice.score+fanVoiceStrategyScore(voice,choice),reason:fanPlanReason(voice,choice)};
@@ -1422,7 +1435,7 @@
         const baitReserve=role==="anti"?antiBaitReserve(options,option):null,usesBaitPlan=role==="anti"&&followsAntiBaitPlan(option);
         const intel=aiIntelAssessment(role,option.pattern,fanVoice);
         let score=handShapeScore(remaining)*.42-cardHeat*.11+Math.random()*.18+aiGoalScore(role,option,fanVoice)+antiBaitScore(option,baitReserve)+(usesBaitPlan?12:0)+intel.total+heatInterventionPlayScore(role,cardHeat);
-        if(role==="fan"&&!state.silenced&&state.pressure>=PRESSURE_HIGH&&!state.fanOverreachThisRound)score-=state.pressure>=PRESSURE_CRITICAL?4:1.5;
+        if(role==="fan"&&fanVoice!=="star"&&!state.silenced&&state.pressure>=PRESSURE_HIGH&&!state.fanOverreachThisRound)score-=state.pressure>=PRESSURE_CRITICAL?4:1.5;
         if(strategy.mode==="aggressive")score+=cardHeat*.2+option.pattern.level*.28+(option.pattern.size-1)*.62;
         else score-=cardHeat*.24+(option.pattern.size-1)*.75-(option.pattern.type==="single"?.55:0);
         if(!state.topPlay)score+=(6-option.pattern.level)*.42-(option.pattern.size-1)*.18;else score+=.8;
@@ -1490,10 +1503,15 @@
     function aiYieldDecision(role,choice,fanVoice=null){
       if(!state.topPlay)return{action:"play",reason:"拥有领出权，需要建立自己的叙事"};
       const owner=state.claimOwner,futureOwner=narrativeOwner(role,fanVoice),counts=seatCounts(),threat=topWouldFinishIssue(),ownFinish=playWouldFinishIssue(futureOwner,choice.pattern),lastChance=roleNeedsLastIssue(role)&&!claimHelpful(role,owner),strategy=aiStrategy(role);
+      const ending=projectedRoundState(owner,state.topPlay.pattern,state.supportedThisRound);
+      if(ending.terminal&&publicVictory(role,ending.counts,ending.pressure,ending.silenced))return{action:"pass",reason:"当前回应结算后的定义和压力满足自己的胜利条件"};
+      if(ending.terminal&&!publicVictory(role,ending.counts,ending.pressure,ending.silenced))return{action:"play",reason:"当前回应结算后自己失败，必须拦截"};
+      if(role==="star"&&owner==="star"&&state.pressure>=3){const next=candidateOutcome(role,choice.pattern,fanVoice);if(next.pressure<ending.pressure)return{action:"play",reason:"用定性回应降低最终压力，争取压力不超过2"};}
       const fanMustTakeDefinition=role==="fan"&&owner==="star"&&futureOwner==="fan"&&counts.fan<1&&(roleNeedsLastIssue("fan")||playWouldFinishIssue("fan",choice.pattern));
       if(shouldCoolAgainstPermanentMemory(role))return{action:"cool",reason:`无法接受${ROLES[state.claimOwner].short}以当前热度覆盖旧永久记忆，先暗置弃牌削弱纪录`};
-      if(claimHelpful(role,owner)&&!fanMustTakeDefinition){if(shouldCoolForHeatIntervention(role))return{action:"cool",reason:`当前叙事已经对自己有利，顺势弃一张差牌降温，拉开与Heat ${nextHeatInterventionThreshold()}介入线的距离`};return{action:"pass",reason:`当前“${currentClaim(owner)}”本来就在推进自己的目标，没必要浪费好牌`};}
+      if(claimHelpful(role,owner)&&!fanMustTakeDefinition&&!(role==="fan"&&fanVoice==="star"&&state.pressure>=PRESSURE_CRITICAL&&!(owner==="star"&&state.supportedThisRound))){if(shouldCoolForHeatIntervention(role))return{action:"cool",reason:`当前叙事已经对自己有利，顺势弃一张差牌降温，拉开与Heat ${nextHeatInterventionThreshold()}介入线的距离`};return{action:"pass",reason:`当前“${currentClaim(owner)}”本来就在推进自己的目标，没必要浪费好牌`};}
       if(threat&&!claimHelpful(role,owner))return{action:"play",reason:"对方本轮可能靠标记或路人共识直接定义问题，必须反压"};
+      if(role==="fan"&&fanVoice==="star"&&state.pressure>=PRESSURE_CRITICAL)return{action:"play",reason:"争取援护定调减1压力，失声时优先救援"};
       if(ownFinish)return{action:"play",reason:"这次出牌可能靠现有标记或路人共识直接完成问题"};
       if(lastChance)return{action:"play",reason:"只剩最后一个问题，尚未完成的必要定义不能再让步"};
       if(role==="anti"&&counts.anti>=1&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&state.passes===0&&state.issueIndex<state.issues.length-1&&!threat&&!ownFinish&&["pair","run"].includes(state.topPlay.pattern.type)){
@@ -1606,7 +1624,7 @@
       }
       if(role==="star"&&state.silenced){
         recordSimulationStrategy(strategy.mode,"pass");if(simulationMode&&state.simulationMetrics)state.simulationMetrics.silence.starForcedPasses+=1;
-        passTurn(role,true,`压力达到${PRESSURE_MAX}，明星无法出牌；Maya的解释不能替Haru恢复本人发声权`);return;
+        passTurn(role,true,`压力达到${PRESSURE_MAX}，明星无法出牌；Maya可通过援护定调降低压力，降到2时恢复发声`);return;
       }
       if(!state.roles[role].hand.length){recordSimulationStrategy(strategy.mode,"pass");passTurn(role,true);return;}
       if(role==="fan")maybeUseAIFanSkill();
@@ -1643,9 +1661,9 @@
     function objectiveChecks(){
       const counts=seatCounts();
       return{
-        star:[{ok:counts.star>=2,label:"本人主张定义2个问题"},{ok:!state.silenced,label:"事件结束时明星没有失声"}],
+        star:[{ok:counts.star>=2,label:"本人主张定义2个问题"},{ok:state.pressure<=2,label:"结束压力不超过2"}],
         fan:[{ok:counts.star+counts.fan>=2&&counts.fan>=1,label:"支持阵营合计定义2个问题且粉圈自己定义1个"},{ok:!state.silenced,label:"明星未失声"}],
-        anti:[{ok:counts.anti>=1,label:"黑粉叙事定义至少1个问题"}]
+        anti:[{ok:counts.anti>=1&&(counts.star<=1||state.pressure>=3),label:"Ben至少1个定义，且Haru最多1个定义或结束压力至少3"}]
       };
     }
     function binaryVictoryResults(checks=objectiveChecks()){return Object.fromEntries(ROLE_ORDER.map(role=>[role,{won:checks[role].every(item=>item.ok),checks:checks[role].map(item=>({...item}))}]));}
@@ -1774,7 +1792,7 @@
     function previewSettlement(pattern,owner,cards){
       if(!pattern)return"";
       const heat=playHeat(cards,pattern),nextHeat=state.heat+heat,crossed=crossedHeatInterventionThresholds(state.heat,nextHeat),markerText=" 若守到结算，获得1个定调标记。",heatText=` 公开后累计浏览预计从${formatHeatReach(state.heat)}升至${formatHeatReach(nextHeat)}。${crossed.length?` 将越过Heat ${crossed.join("、")}，中央增加${crossed.length}枚路人介入；本轮赢家仍拿标，但会失去下一话轮领出权。`:""}`,overreachText=state.userRole==="fan"&&owner==="fan"&&!state.fanOverreachThisRound?" 作为本话轮首次粉圈解释，公开后压力立即+1；即使被反压也不撤销。":"";
-      const pressureText=owner==="anti"?" 若黑粉叙事守到话轮结算，压力+1。":owner==="fan"?" 真爱粉叙事守到话轮结算不再自动增加压力。":pattern.type!=="loop"&&pattern.channel==="stance"?" 若本人立场守到话轮结算，压力-1。":" 本人叙事守住时压力不变。";
+      const pressureText=owner==="anti"?" 若黑粉叙事守到话轮结算，压力+1。":owner==="fan"?" 真爱粉叙事守到话轮结算不再自动增加压力。":(state.supportedThisRound||state.userRole==="fan"||pattern.type!=="loop"&&pattern.channel==="stance")?" 若明星叙事守到话轮结算，压力−1（不叠加）。":" 本人叙事守住时压力不变。";
       const projectedConsensus=CORE_BASELINE.positiveFeedback?projectedConsensusOwner(owner,pattern):null,eligibleOwner=CORE_BASELINE.positiveFeedback?state.roundStartConsensusOwner:null;
       let bystanderText="";
       if(eligibleOwner===owner&&projectedConsensus===owner&&state.issueMarkers[owner]===0)bystanderText=` 本话轮开始前已经双领先；若守到结算，将先拿第一标，再由路人补上第二标。`;
@@ -1799,7 +1817,7 @@
       if(state.phase==="round_break"){prompt.textContent="本话轮已经完成定调。";sub.textContent="阅读结算，再进入下一话轮。";return;}
       if(state.currentRole!==state.userRole){prompt.textContent=`${ROLES[state.currentRole].short}${window.__onlineActive?"正在选择回应":"正在判断压牌、观望，还是替另一个阵营交出高牌"}。`;sub.textContent=window.__onlineActive?"等待对方玩家提交行动。":`AI行动将在约${AI_ACTION_DELAY/1000}秒后显示。`;return;}
       if(state.userRole==="star"&&state.silenced){
-        prompt.textContent=`你已失声：压力达到${PRESSURE_MAX}，无法出牌。`;sub.textContent="本次只能过牌。Maya可以为你辩护，但她的解释不能替代你的第一人称回应。";
+        prompt.textContent=`你已失声：压力达到${PRESSURE_MAX}，无法出牌。`;sub.textContent="本次只能过牌。Maya可以援护你；压力降到2或以下时恢复发声。";
         actions.innerHTML='<button class="plain-button" id="passButton">失声 · 只能过牌</button><span class="action-hint">手牌不会消耗，但你无法领出、回应、冷处理或继续提升技能牌；未打出的技能牌已经永久消失。</span>';
         el("passButton").onclick=()=>passTurn(state.userRole,false,"明星处于失声状态，等待真爱粉救援");return;
       }
@@ -1813,7 +1831,10 @@
         actions.innerHTML=`<button class="primary-button" id="coolConfirmButton" ${coolCard?"":"disabled"}>确认弃牌 · Heat -5</button><button class="plain-button" id="coolCancelButton">取消</button>`;
         el("coolConfirmButton").onclick=coolSelection;el("coolCancelButton").onclick=cancelCoolingSelection;return;
       }
-      if(state.userRole==="fan")controls.innerHTML+=`<div class="voice-lock">Maya's explanation · 支持Haru，但永远不算Haru本人回答；Haru也可以反压。</div>`;
+      if(state.userRole==="fan"){
+        const voice=state.fanVoiceThisRound||state.fanVoiceChoice;
+        controls.innerHTML+=`<div class="skill-control fan-mode"><span>${state.fanVoiceThisRound?"本话轮模式已锁定":"首次出牌时选择本话轮模式"}</span><div class="skill-options"><button data-voice="fan" class="${voice==="fan"?"selected":""}" ${state.fanVoiceThisRound?"disabled":""}>自己的解释</button><button data-voice="star" class="${voice==="star"?"selected":""}" ${state.fanVoiceThisRound?"disabled":""}>援护Haru</button></div><small>${voice==="star"?"花自己的牌，标记归Haru；本轮Haru定调则压力−1。":"标记归Maya；本话轮首次入场压力+1。"}</small></div>`;
+      }
       if(state.userRole==="star"&&state.skills.star.status==="forging"){
         const work=state.skills.star,canInvest=work.level<STAR_WORK_RELEASE_LEVEL&&state.selectedIds.length===1&&!work.selected;
         if(canInvest)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--star)"><span>沉淀成章 · 当前${work.level}点 · 技能牌只能单独打出</span><div class="skill-options"><button id="workInvestButton">暗置所选普通牌 · 升到${work.level+1}点</button></div></div>`;
@@ -1842,10 +1863,11 @@
       if(el("workInvestButton"))el("workInvestButton").onclick=investSelectedWork;if(el("fanSkillButton"))el("fanSkillButton").onclick=useFanSkill;if(el("antiCaptureButton"))el("antiCaptureButton").onclick=toggleAntiCapture;if(el("publishButton"))el("publishButton").onclick=publishSelection;if(el("coolButton"))el("coolButton").onclick=startCoolingSelection;if(el("passButton"))el("passButton").onclick=()=>passTurn(state.userRole);
     }
     function pressureForecastText(){
-      if(state.silenced)return"账号失声 · Maya仍可支持Haru，但不能替他取得本人解释权";
+      if(state.silenced)return"账号失声 · 援护定调压力−1，降到2恢复发声";
       if(!state.topPlay)return"当前没有压力变化预测";
       if(state.claimOwner==="anti")return"黑粉占据热评 · 若守到结算，压力+1";
       if(state.claimOwner==="fan")return"真爱粉占据热评 · 结算不再自动增加压力";
+      if(state.supportedThisRound)return"援护中的明星叙事 · 若守到结算，压力−1";
       if(state.topPlay.pattern.type!=="loop"&&state.topPlay.pattern.channel==="stance")return"本人立场占据热评 · 若守到结算，压力-1";
       return"明星本人叙事占据热评 · 若守到结算，压力不变";
     }
@@ -1854,7 +1876,7 @@
         const work=state.skills.star,isCurrent=state.currentRole===role&&state.phase==="action",visibleHandCount=state.roles[role].hand.length+(role==="star"&&work.status==="forging"?1:0);
         const skill=roleSkillDetails(role);
         const pressure=role==="star"?`<span class="pressure-stat">压力 <b>${state.pressure}/${PRESSURE_MAX}</b></span><span class="pressure-dots" aria-label="明星压力${state.pressure}/${PRESSURE_MAX}">${Array.from({length:PRESSURE_MAX},(_,index)=>`<i class="${index<state.pressure?"filled":""}"></i>`).join("")}</span><span class="pressure-forecast">${pressureForecastText()}</span>`:"";
-        const help=role==="star"?`<details class="mechanism-help pressure-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力 · 0—${PRESSURE_MAX}</strong>Maya每个话轮首次用自己的解释成功入场：+1，即使后来被反压也不撤销；Ben赢得话轮：+1；Haru自己的Position定调：−1。Maya永远不能把自己的话改算成Haru本人叙事。达到${PRESSURE_MAX}时Haru失声。</div></details>`:"";
+        const help=role==="star"?`<details class="mechanism-help pressure-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力 · 0—${PRESSURE_MAX}</strong>Maya每话轮首次用自己的解释入场：+1；援护入场不加压。本话轮有援护且Haru定调：−1；无援护时Haru的Position定调：−1；两者不叠加。Ben定调：+1。压力4失声，降到2恢复。Haru获胜需结束压力≤2。</div></details>`:"";
         const skillStatus=skill.status.replace(/(\d+)/,`<b>$1</b>`);
         return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" data-role="${role}" style="--role-color:${ROLES[role].color}"><div class="role-title"><span class="role-title-avatar">${accountAvatarMarkup(role)}</span><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${isCurrent?"正在回应":""}</span></div><div class="role-account-line"><b>${ROLES[role].accountName}</b><span>${ROLES[role].handle}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span>${pressure}</div><div class="role-skill"><strong>${skill.name}</strong><span class="role-skill-status">${skillStatus}</span></div>${help}</article>`;
       }).join("");
@@ -2004,8 +2026,35 @@
       el("rolePicks").querySelectorAll("[data-role]").forEach(button=>button.onclick=()=>startGame(button.dataset.role));
       el("rulesButton").onclick=()=>{const dialog=el("rulesDialog");dialog.showModal();dialog.scrollTop=0;el("rulesTitle").focus({preventScroll:true});};el("closeRules").onclick=()=>el("rulesDialog").close();el("restartButton").onclick=restart;el("roundDialog").oncancel=event=>event.preventDefault();el("startDialog").showModal();
     }
+
+  // Goal-aware evaluation uses only public seats, pressure, markers and the proposed play.
+function publicVictory(role,counts,pressure,silenced){
+ if(role==="star")return counts.star>=2&&pressure<=2;
+ if(role==="fan")return counts.fan>=1&&counts.star+counts.fan>=2&&!silenced;
+ return counts.anti>=1&&(counts.star<=1||pressure>=3);
+}
+function projectedRoundState(owner,pattern,support,extraPressure=0){
+ let pressure=clamp(state.pressure+extraPressure,0,PRESSURE_MAX);
+ let silenced=pressureSilenceState(pressure,state.silenced);
+ const reduction=owner==="star"&&(support||(pattern.type!=="loop"&&pattern.channel==="stance"));
+ pressure=clamp(pressure+(owner==="anti"?1:reduction?-1:0),0,PRESSURE_MAX);
+ silenced=pressureSilenceState(pressure,silenced);
+ const counts={...seatCounts()};if(playWouldFinishIssue(owner,pattern))counts[owner]++;
+ return{counts,pressure,silenced,terminal:Object.values(counts).reduce((a,b)=>a+b,0)>=state.issues.length};
+}
+function candidateOutcome(role,pattern,voice){
+ return projectedRoundState(narrativeOwner(role,voice),pattern,state.supportedThisRound||(role==="fan"&&voice==="star"),role==="fan"&&voice!=="star"&&!state.fanOverreachThisRound?1:0);
+}
+function pressureGoalScore(role,pattern,voice){
+ const after=candidateOutcome(role,pattern,voice);
+ if(after.terminal)return publicVictory(role,after.counts,after.pressure,after.silenced)?30:-30;
+ if(role==="star"&&state.pressure>=3&&after.pressure<=2)return 6;
+ if(role==="anti"&&after.counts.anti>=1&&after.counts.star>=1&&state.pressure<3&&after.pressure>=3)return 6;
+ return 0;
+}
+
     setup();
-  </script>
-  <script src="online-client.js?v=speech-20260912"></script>
+</script>
+  <script src="online-client.js?v=pressure-20260914"></script>
 </body>
 </html>

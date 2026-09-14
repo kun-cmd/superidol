@@ -399,7 +399,7 @@
     state.coolingMode = Boolean(localSelection.coolingMode);
     state.coolingCardId = state.roles[session.role].hand.some((card) => card.id === localSelection.coolingCardId) ? localSelection.coolingCardId : null;
     state.skills.star.selected = Boolean(localSelection.workSelected && session.role === "star" && state.skills.star.status === "forging");
-    state.fanVoiceChoice = localSelection.fanVoice;
+    state.fanVoiceChoice = state.fanVoiceThisRound || localSelection.fanVoice;
     state.wildChannelChoice = localSelection.wildChoice;
     state.skills.anti.captureArmed = localSelection.captureAll;
     state.skills.fan.target = localSelection.fanTarget;

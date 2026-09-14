@@ -337,6 +337,7 @@ export function createInitialState(options = {}) {
     passes: 0,
     leadSkips: 0,
     fanVoiceThisRound: null,
+    supportedThisRound: false,
     fanOverreachThisRound: false,
     skills: {
       star: { level: STAR_WORK_START_LEVEL, invested: [], selected: false, status: "forging", feedbackSequence: 0 },
@@ -597,7 +598,7 @@ function changePressure(state, amount) {
   return state.pressure - before;
 }
 
-function narrativeOwner(role) { return role; }
+function narrativeOwner(role, voice) { return role === "fan" && voice === "star" ? "star" : role; }
 
 function chooseWeakSideLead(state, controller, markers = state.issueMarkers) {
   const candidates = ROLE_ORDER.filter((role) => role !== controller);
@@ -639,9 +640,9 @@ function captureOvertakenCards(state, armed) {
 
 function resolveChannelOutcome(state, completed) {
   const outcomes = [`${completed.patternType === "loop" ? "闭环" : CHANNELS[completed.channel]?.name || "当前频道"}定调：核心基线暂无频道额外效果。`];
-  if (completed.owner === "star" && completed.patternType !== "loop" && completed.channel === "stance") {
+  if (completed.owner === "star" && (state.supportedThisRound || completed.patternType !== "loop" && completed.channel === "stance")) {
     const actual = changePressure(state, -1);
-    outcomes.push(`本人立场守住话轮：明星压力${actual}，当前为${state.pressure}/${PRESSURE_MAX}。`);
+    outcomes.push(`明星叙事守住话轮：压力${actual}，当前为${state.pressure}/${PRESSURE_MAX}。`);
   } else if (completed.owner === "anti") {
     const actual = changePressure(state, 1);
     outcomes.push(`黑粉叙事赢得话轮：明星压力+${actual}，当前为${state.pressure}/${PRESSURE_MAX}。`);
@@ -650,20 +651,20 @@ function resolveChannelOutcome(state, completed) {
   return outcomes.join(" ");
 }
 
-function binaryVictoryResults(state) {
+export function binaryVictoryResults(state) {
   const counts = Object.fromEntries(
     ROLE_ORDER.map((role) => [role, state.seats.filter((seat) => seat.owner === role).length]),
   );
   const checks = {
     star: [
       { ok: counts.star >= 2, label: "本人主张定义2个问题" },
-      { ok: !state.silenced, label: "事件结束时明星没有失声" },
+      { ok: state.pressure <= 2, label: "结束压力不超过2" },
     ],
     fan: [
       { ok: counts.star + counts.fan >= 2 && counts.fan >= 1, label: "支持阵营合计定义2个问题且粉圈自己定义1个" },
       { ok: !state.silenced, label: "明星未失声" },
     ],
-    anti: [{ ok: counts.anti >= 1, label: "黑粉叙事定义至少1个问题" }],
+    anti: [{ ok: counts.anti >= 1 && (counts.star <= 1 || state.pressure >= 3), label: "Ben至少1个定义，且Haru最多1个定义或结束压力至少3" }],
   };
   return Object.fromEntries(
     ROLE_ORDER.map((role) => [role, { won: checks[role].every((item) => item.ok), checks: checks[role] }]),
@@ -774,6 +775,7 @@ function resolveRound(state, reason) {
   state.passes = 0;
   state.leadSkips = 0;
   state.fanVoiceThisRound = null;
+  state.supportedThisRound = false;
   state.fanOverreachThisRound = false;
   state.skills.anti.baitPlan = null;
   state.currentRole = nextLead;
@@ -822,6 +824,11 @@ function applyPlay(state, role, command) {
   const response = responseMode(state, pattern, role, { workRelease });
   assertRule(response.legal, "illegal_play", response.reason);
 
+  if(role === "fan") {
+    const requestedVoice = command.fanVoice || state.fanVoiceThisRound || "fan";
+    assertRule(["fan", "star"].includes(requestedVoice), "invalid_fan_voice", "粉丝回应模式无效。");
+    assertRule(!state.fanVoiceThisRound || requestedVoice === state.fanVoiceThisRound, "fan_voice_locked", "本话轮模式已锁定。");
+  }
   const beforeHeat = state.heat;
   const wasResponse = Boolean(state.topPlay);
   const captured = role === "anti" && wasResponse ? captureOvertakenCards(state, Boolean(command.captureAll)) : [];
@@ -847,8 +854,9 @@ function applyPlay(state, role, command) {
 
   let fanVoice = null;
   if (role === "fan") {
-    if (!state.fanVoiceThisRound) state.fanVoiceThisRound = "fan";
+    if (!state.fanVoiceThisRound) state.fanVoiceThisRound = command.fanVoice || "fan";
     fanVoice = state.fanVoiceThisRound;
+    if(fanVoice === "star") state.supportedThisRound = true;
   }
   const owner = narrativeOwner(role, fanVoice);
   let pressureText = "";
@@ -874,7 +882,7 @@ function applyPlay(state, role, command) {
   state.passes = 0;
   state.leadSkips = 0;
   state.skills.anti.captureArmed = false;
-  const voiceText = role === "fan" ? "，以“Maya自己的解释”发声" : "";
+  const voiceText = role === "fan" ? (fanVoice === "star" ? "，援护Haru" : "，以“Maya自己的解释”发声") : "";
   const skillText = usesWork
     ? (pattern.isWorkRelease ? "，完整发布6点“沉淀成章”，本轮无法被反压" : `，将${pattern.level}点“沉淀成章”作为单牌打出`)
     : captured.length ? `，并用“断章取义”拿走整组${captured.length}张原牌` : "";
@@ -1035,7 +1043,8 @@ export function normalizeGameState(state) {
   if (!Number.isFinite(state.heatInterventionTokens)) state.heatInterventionTokens = 0;
   if (!Number.isFinite(state.bystanderInterventionsUsed)) state.bystanderInterventionsUsed = 0;
   if (!Array.isArray(state.bystanderLeadRecipientsThisIssue)) state.bystanderLeadRecipientsThisIssue = [];
-  if (state.fanVoiceThisRound && state.fanVoiceThisRound !== "fan") state.fanVoiceThisRound = "fan";
+  if (state.fanVoiceThisRound && !["fan", "star"].includes(state.fanVoiceThisRound)) state.fanVoiceThisRound = "fan";
+  if(typeof state.supportedThisRound !== "boolean") state.supportedThisRound = state.fanVoiceThisRound === "star";
   if (!state.campaign || typeof state.campaign !== "object") state.campaign = {};
   if (!Number.isFinite(state.campaign.eventNumber)) state.campaign.eventNumber = 1;
   if (!Array.isArray(state.campaign.albumFragments)) state.campaign.albumFragments = [];
@@ -1087,49 +1096,59 @@ export function getLegalPlayOptions(state, role) {
   return options;
 }
 
+// Online bots evaluate the same public victory and pressure conditions as solo play.
+function botProjection(state, role, owner, pattern, supported, extraPressure = 0) {
+  const counts = Object.fromEntries(ROLE_ORDER.map(r => [r, state.seats.filter(s => s.owner === r).length]));
+  let pressure = Math.max(0, Math.min(4, state.pressure + extraPressure));
+  let silenced = pressureSilenceState(pressure, state.silenced);
+  if(owner === "anti") pressure = Math.min(4, pressure + 1);
+  if(owner === "star" && (supported || pattern.type !== "loop" && pattern.channel === "stance")) pressure = Math.max(0, pressure - 1);
+  silenced = pressureSilenceState(pressure, silenced);
+  if(state.issueMarkers[owner] + 1 >= ISSUE_MARKER_TARGET) counts[owner]++;
+  const won = role === "star" ? counts.star >= 2 && pressure <= 2 : role === "fan" ? counts.star + counts.fan >= 2 && counts.fan >= 1 && !silenced : counts.anti >= 1 && (counts.star <= 1 || pressure >= 3);
+  return { counts, pressure, silenced, won, terminal: Object.values(counts).reduce((a,b)=>a+b,0) >= state.issues.length };
+}
 export function chooseBotCommand(state, role) {
   normalizeGameState(state);
   if (!ROLE_ORDER.includes(role) || state.currentRole !== role || state.phase === "ended") return null;
   if (state.phase === "round_break") return { type: "continue" };
   if (state.phase !== "action") return null;
-
-  const options = getLegalPlayOptions(state, role).sort((left, right) => {
-    if (!state.topPlay) {
-      return right.cardIds.length - left.cardIds.length
-        || right.pattern.level - left.pattern.level
-        || left.pattern.optionKey.localeCompare(right.pattern.optionKey);
+  const counts = Object.fromEntries(ROLE_ORDER.map(r => [r, state.seats.filter(s => s.owner === r).length]));
+  const top = state.topPlay && botProjection(state, role, state.claimOwner, state.topPlay.pattern, state.supportedThisRound);
+  if(top?.terminal && top.won) return {type:"pass"};
+  const voices = role === "fan" ? (state.fanVoiceThisRound ? [state.fanVoiceThisRound] : ["fan","star"]) : [null];
+  const options = getLegalPlayOptions(state, role).flatMap(option => voices.map(voice => {
+    const owner = narrativeOwner(role, voice), ownVoice = role === "fan" && voice === "fan";
+    const next = botProjection(state,role,owner,option.pattern,state.supportedThisRound || role === "fan" && voice === "star",ownVoice && !state.fanOverreachThisRound ? 1 : 0);
+    let score = option.cardIds.length * 1.2 - option.pattern.level * .15;
+    if(state.issueMarkers[owner] >= 1) score += 3;
+    if(next.terminal) score += next.won ? 30 : -30;
+    if(role === "star" && state.pressure >= 3 && next.pressure <= 2) score += 6;
+    if(role === "anti" && counts.anti >= 1 && counts.star >= 1 && state.pressure < 3 && next.pressure >= 3) score += 6;
+    if(role === "fan") {
+      if(ownVoice) score += (counts.fan === 0 ? 5 : -2) - (!state.fanOverreachThisRound && state.pressure >= 3 ? 8 : 0) - (state.silenced ? 12 : 0);
+      else score += Math.min(1,state.pressure)*2 + (state.silenced ? 14 : state.pressure >= 3 ? 6 : state.pressure >= 2 ? 4 : 0) - (counts.fan === 0 ? (state.seats.length === 2 ? 10 : 2) : 0);
     }
-    return left.pattern.level - right.pattern.level
-      || right.cardIds.length - left.cardIds.length
-      || left.pattern.optionKey.localeCompare(right.pattern.optionKey);
-  });
-  if (role === "star" && state.skills.star.status === "forging") {
-    const workOption = options.find((candidate) => candidate.cardIds.length === 1 && candidate.cardIds[0] === "star-work");
-    if (state.skills.star.level >= 5 && workOption) {
-      return {
-        type: "play",
-        cardIds: workOption.cardIds,
-        patternOptionKey: workOption.pattern.optionKey,
-        fanVoice: null,
-        captureAll: false,
-      };
-    }
-    if (state.skills.star.level < 5) {
-      const investment = state.roles.star.hand
-        .filter((card) => !card.isWild)
-        .sort((left, right) => left.level - right.level || left.id.localeCompare(right.id))[0];
-      if (investment) return { type: "invest", cardId: investment.id };
+    return {...option,voice,score,next};
+  })).sort((a,b)=>b.score-a.score || a.pattern.optionKey.localeCompare(b.pattern.optionKey));
+  const best = options[0];
+  if(!best) return {type:"pass"};
+  if(state.topPlay && !top.terminal) {
+    const helpful = state.claimOwner === role || role === "anti" && counts.anti >= 1 && state.claimOwner === "fan" || role === "fan" && state.claimOwner === "star" && (counts.fan >= 1 || state.seats.length < 2);
+    const needsRelief = (role === "star" || role === "fan") && state.pressure >= 3 && best.next.pressure < top.pressure;
+    const needsOwn = role === "fan" && best.voice === "fan" && counts.fan === 0;
+    if(helpful && !needsRelief && !needsOwn) return {type:"pass"};
+  }
+  // Preserve work investment, but do not invest through a decisive threat or dangerous pressure.
+  if(role === "star" && state.skills.star.status === "forging" && state.pressure < 3 && !top?.terminal && !best.next.terminal) {
+    const work = options.find(o=>o.cardIds[0] === "star-work");
+    if(state.skills.star.level >= 5 && work) return {type:"play",cardIds:work.cardIds,patternOptionKey:work.pattern.optionKey};
+    if(state.skills.star.level < 5) {
+      const card = state.roles.star.hand.filter(c=>!c.isWild).sort((a,b)=>a.level-b.level || a.id.localeCompare(b.id))[0];
+      if(card) return {type:"invest",cardId:card.id};
     }
   }
-  const option = options[0];
-  if (!option) return { type: "pass" };
-  return {
-    type: "play",
-    cardIds: option.cardIds,
-    patternOptionKey: option.pattern.optionKey,
-    fanVoice: role === "fan" ? "fan" : null,
-    captureAll: false,
-  };
+  return {type:"play",cardIds:best.cardIds,patternOptionKey:best.pattern.optionKey,fanVoice:best.voice,captureAll:role === "anti" && Boolean(state.topPlay) && state.skills.anti.used < ANTI_CAPTURE_LIMIT};
 }
 
 function hiddenCards(count) {
@@ -1142,7 +1161,7 @@ export function createPlayerView(state, role) {
   const view = clone(state);
   view.userRole = role;
   view.selectedIds = [];
-  view.fanVoiceChoice = "fan";
+  view.fanVoiceChoice = state.fanVoiceThisRound || "fan";
   view.wildChannelChoice = null;
   view.undealtCards = [];
   view.knownUndealt = { star: false, fan: false, anti: false };

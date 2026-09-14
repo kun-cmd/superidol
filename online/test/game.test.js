@@ -152,7 +152,7 @@ test("crossing a Heat line creates one intervention that breaks winner lead", ()
   });
 });
 
-test("Maya's response always remains Maya's explanation", () => {
+test("Maya can explicitly spend her cards supporting Haru", () => {
   const state = createInitialState({ random: seededRandom(20260812) });
   state.currentRole = "fan";
   const lead = getLegalPlayOptions(state, "fan").find((option) => option.pattern.type === "single");
@@ -160,10 +160,11 @@ test("Maya's response always remains Maya's explanation", () => {
 
   applyCommand(state, "fan", { ...commandFor(lead, "fan"), fanVoice: "star" });
 
-  assert.equal(state.claimOwner, "fan");
-  assert.equal(state.topPlay.owner, "fan");
-  assert.equal(state.topPlay.fanVoice, "fan", "legacy clients cannot turn Maya into Haru's first-person voice");
-  assert.equal(state.pressure, 1, "Maya's first explanation in a round still adds pressure to Haru");
+  assert.equal(state.claimOwner, "star");
+  assert.equal(state.topPlay.role, "fan");
+  assert.equal(state.topPlay.owner, "star");
+  assert.equal(state.topPlay.fanVoice, "star");
+  assert.equal(state.pressure, 0, "Support does not add pressure on entry");
 });
 
 test("a Heat intervention gives the weaker non-winner the next opening", () => {

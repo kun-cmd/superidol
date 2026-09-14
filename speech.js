@@ -125,7 +125,13 @@
     return result;
   }
   function cardSpeech(card, context, pattern) {
-    if (!card.capturedFrom) return ordinary(card, context, pattern);
+    if (!card.capturedFrom) {
+      if(card.role === "fan" && (context.fanVoiceThisRound || context.fanVoiceChoice) === "star") {
+        const text = ordinary({...card, originalAuthor:"star"}, context, pattern);
+        return pair(`请把Haru的回应也看完：“${text.zh}”`, `Read Haru's response too: “${text.en}”`);
+      }
+      return ordinary(card, context, pattern);
+    }
     const quote = card.capturedFrom.excerpt || card.capturedFrom.text;
     const topic = (topics[context.themeKey] || topics.sevenSecondServe)[Math.min(context.issueIndex || 0, 2)];
     const source = names[card.capturedFrom.role] || "Haru";
