@@ -1,6 +1,7 @@
 /* Shared authored responses. Levels change rhetorical force, never establish truth. */
 (() => {
   const pair = (zh, en) => ({ zh, en });
+  const narrative = context => globalThis.SuperidolNarrative?.isActive?.(context) ? globalThis.SuperidolNarrative : null;
   const topics = {
     sevenSecondServe: [
       {
@@ -125,6 +126,8 @@
     return result;
   }
   function cardSpeech(card, context, pattern) {
+    const authored = narrative(context);
+    if (authored) return authored.ordinary(card, context, pattern).speech;
     if (!card.capturedFrom) {
       if(card.role === "fan" && (context.fanVoiceThisRound || context.fanVoiceChoice) === "star") {
         const text = ordinary({...card, originalAuthor:"star"}, context, pattern);
@@ -139,6 +142,8 @@
       `${source} said: “${quote.en}” To me, that is exactly the point: ${topic.anti.en}.`);
   }
   function compose(cards, context, pattern) {
+    const authored = narrative(context);
+    if (authored) return authored.resolve(cards, context, pattern).speech;
     // Repeated copies amplify one sentence; distinct components each keep their voice.
     const parts = [], seen = new Set();
     for (const card of cards) {
@@ -152,11 +157,29 @@
     }
     return pair(parts.map(p => p.zh).join("\n"), parts.map(p => p.en).join("\n"));
   }
-  function freezeCards(cards, context, pattern) {
+  function freezeCards(cards, context, pattern, resolved) {
+    const authored = narrative(context);
+    if (authored) {
+      const post = resolved || authored.resolve(cards, context, pattern);
+      return cards.map(card => ({ ...card, speech: { ...post.body } }));
+    }
     const shared = pattern?.type === "pair" ? compose(cards, context, pattern) : null;
     return cards.map(card => ({ ...card, speech: shared || cardSpeech(card, context, pattern) }));
   }
   function capture(cards, top, context) {
+    const authored = narrative(context);
+    if (authored) {
+      const text = top.body || top.speech || pair("", "");
+      for (const card of cards) {
+        card.capturedFrom = { role: top.role, owner: top.owner, postId: top.postId,
+          themeKey: context.themeKey, issueIndex: context.issueIndex, publishedAt: top.publishedAt,
+          text: { ...text }, excerpt: {
+            zh: text.zh.split(/[。？]/).find(part => part.trim()) || text.zh,
+            en: text.en.split(/[.?]/).find(part => part.trim()) || text.en,
+          } };
+      }
+      return;
+    }
     for (const card of cards) {
       const published = top.cards.find(item => item.id === card.id);
       const text = published?.speech || cardSpeech(published || card, context, top.pattern);
@@ -167,5 +190,23 @@
         } };
     }
   }
-  globalThis.SuperidolSpeech = { topics, cardSpeech, compose, freezeCards, capture };
+  function cardFace(card, context, pattern) {
+    const authored = narrative(context);
+    if (authored) return authored.cardFace(card, context, pattern);
+    if (card.isWork || card.id === "star-work") return cardSpeech(card, context, pattern);
+    const topic = (topics[context.themeKey] || topics.sevenSecondServe)[Math.min(context.issueIndex || 0, 2)];
+    const voice = card.capturedFrom ? "anti" : card.role === "fan" && (context.fanVoiceThisRound || context.fanVoiceChoice) === "star" ? "star" : card.originalAuthor || card.role || context.currentRole;
+    return topic[voice] || cardSpeech(card, context, pattern);
+  }
+  function resolve(cards, context, pattern) {
+    const authored = narrative(context);
+    if (authored) return authored.resolve(cards, context, pattern);
+    const speech = compose(cards, context, pattern);
+    return { speech, body: speech, faces: Object.fromEntries(cards.map(card => [card.id, cardFace(card, context, pattern)])),
+      variantId: null, postId: null, quoteSources: [], facts: {}, author: context.currentRole || cards[0]?.role, owner: context.currentRole || cards[0]?.role };
+  }
+  function recordPlay(context, cards, pattern, resolved, previousTop) {
+    return narrative(context)?.recordPlay(context, cards, pattern, resolved, previousTop) || null;
+  }
+  globalThis.SuperidolSpeech = { topics, cardSpeech, cardFace, compose, freezeCards, capture, resolve, recordPlay };
 })();

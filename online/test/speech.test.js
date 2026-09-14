@@ -1,33 +1,107 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createInitialState, applyCommand, getLegalPlayOptions, createPlayerView} from '../src/game.js';
+import {createInitialState, applyCommand, createPlayerView} from '../src/game.js';
+
 const Speech=globalThis.SuperidolSpeech;
-test('all authored contexts have distinct bilingual ranks; pairs publish one sentence',()=>{
- for(const themeKey of Object.keys(Speech.topics))for(let issueIndex=0;issueIndex<3;issueIndex++)for(const role of ['star','fan','anti'])for(const channel of ['fact','stance','spread']){
-  const context={themeKey,issueIndex};const texts=[];
-  for(let level=1;level<=5;level++){
-   const card={id:'a',role,originalAuthor:role,channel,level};const pattern={type:'pair',channel,level};
-   const text=Speech.cardSpeech(card,context);assert.ok(text.zh&&text.en);texts.push(text);
-   assert.deepEqual(Speech.compose([card,{...card,id:'b'}],context,pattern),text);
+const Narrative=globalThis.SuperidolNarrative;
+const card=(role,id,level=1,channel='fact')=>({id,role,originalAuthor:role,name:id,displayName:id,channel,level});
+const pattern=(type,channel='fact',level=1)=>({type,channel,level});
+
+test('the seven second argument changes subject and tone across all three stages',()=>{
+  for(const role of ['star','fan','anti'])for(const channel of ['fact','stance','spread']){
+    const bodies=[];
+    for(let issueIndex=0;issueIndex<3;issueIndex++){
+      const state={themeKey:'sevenSecondServe',issueIndex,currentRole:role,narrative:{version:1,nextId:0,consumed:{},facts:{},posts:[]}};
+      const selected=card(role,`${role}-${channel}-${issueIndex}`,1,channel);
+      const resolved=Speech.resolve([selected],state,pattern('single',channel));
+      assert.ok(Speech.cardFace(selected,state).zh);
+      assert.ok(resolved.body.zh&&resolved.body.en);
+      bodies.push(resolved.body.zh);
+    }
+    assert.equal(new Set(bodies).size,3);
   }
-  assert.equal(new Set(texts.map(t=>t.zh)).size,5);assert.equal(new Set(texts.map(t=>t.en)).size,5);
- }
+  assert.match(Narrative.posts[2].anti.stance.speech.zh,/本事|面子/);
+  assert.match(Narrative.posts[2].star.stance.speech.zh,/我认/);
 });
-test('captured public speech survives serialization, private view and a new topic; replay settles with the exact new speech',()=>{
- const state=createInitialState();state.currentRole='star';state.heat=0;
- const card=(role,id,level)=>({id,role,originalAuthor:role,name:id,displayName:id,channel:'fact',level});
- state.roles.star.hand=[card('star','source',1)];state.roles.anti.hand=[card('anti','counter',2)];
- applyCommand(state,'star',{type:'play',cardIds:['source']});
- const original=structuredClone(state.topPlay.speech);
- applyCommand(state,'fan',{type:'pass'});
- applyCommand(state,'anti',{type:'play',cardIds:['counter'],captureAll:true});
- const captured=state.roles.anti.hand.find(c=>c.id==='source');assert.deepEqual(captured.capturedFrom.text,original);
- assert.ok(original.zh.includes(captured.capturedFrom.excerpt.zh));assert.ok(original.en.includes(captured.capturedFrom.excerpt.en));
- const restored=JSON.parse(JSON.stringify(state));restored.issueIndex=1;restored.topPlay=null;restored.claimOwner=null;restored.currentRole='anti';restored.heat=0;restored.passes=0;
- assert.ok(JSON.stringify(createPlayerView(restored,'anti')).includes('capturedFrom'));
- applyCommand(restored,'anti',{type:'play',cardIds:['source']});
- assert.ok(restored.topPlay.speech.zh.includes(captured.capturedFrom.excerpt.zh));assert.ok(restored.topPlay.speech.zh.includes('Haru自己说过'));
- const replay=structuredClone(restored.topPlay.speech);
- applyCommand(restored,'star',{type:'pass'});applyCommand(restored,'fan',{type:'pass'});
- assert.deepEqual(restored.lastCompletedRound.speech,replay);
+
+test('pair, run and loop each publish one authored response instead of concatenating cards',()=>{
+  for(const type of ['pair','run','loop'])for(const role of ['star','fan','anti']){
+    const state={themeKey:'sevenSecondServe',issueIndex:1,currentRole:role,narrative:{version:1,nextId:0,consumed:{},facts:{},posts:[]}};
+    const cards=type==='loop'
+      ? [card(role,'a',2,'fact'),card(role,'b',2,'stance'),card(role,'c',2,'spread')]
+      : type==='run'
+        ? [card(role,'a',1),card(role,'b',2),card(role,'c',3)]
+        : [card(role,'a',2),card(role,'b',2)];
+    const resolved=Speech.resolve(cards,state,pattern(type,type==='loop'?null:'fact',2));
+    assert.ok(resolved.variantId?.startsWith(`combo:${type}`));
+    assert.equal(new Set(Object.values(resolved.faces).map(face=>face.zh)).size,1);
+    assert.ok(!resolved.body.zh.includes('\n'));
+  }
+});
+
+test('selection is pure and a stage special is consumed only after a successful publish',()=>{
+  const state={themeKey:'sevenSecondServe',issueIndex:0,currentRole:'fan',storyTime:'2026-01-01T00:00:00.000Z',narrative:{version:1,nextId:0,consumed:{},facts:{fullClipByFan:true},posts:[]}};
+  const cards=[card('fan','f1',2),card('fan','f2',2)];
+  const before=structuredClone(state.narrative);
+  const first=Speech.resolve(cards,state,pattern('pair'));
+  const second=Speech.resolve(cards,state,pattern('pair'));
+  assert.equal(first.variantId,'fullclip-repeat');
+  assert.equal(second.variantId,'fullclip-repeat');
+  assert.deepEqual(state.narrative,before);
+  Speech.recordPlay(state,cards,pattern('pair'),first,null);
+  assert.equal(state.narrative.posts.length,1);
+  assert.equal(state.narrative.consumed[0]['fullclip-repeat'],true);
+  const after=Speech.resolve(cards,state,pattern('pair'));
+  assert.notEqual(after.variantId,'fullclip-repeat');
+  state.issueIndex=1;
+  const nextStage=Speech.resolve(cards,state,pattern('pair'));
+  assert.equal(nextStage.variantId,'fullclip-repeat');
+});
+
+test('the three channel response is also available only once in its stage',()=>{
+  const state={themeKey:'sevenSecondServe',issueIndex:2,currentRole:'anti',storyTime:'2026-01-01T00:00:00.000Z',narrative:{version:1,nextId:0,consumed:{},facts:{},posts:[]}};
+  const cards=[card('anti','e',3,'fact'),card('anti','p',3,'stance'),card('anti','r',3,'spread')];
+  const loop=pattern('loop',null,3);
+  const first=Speech.resolve(cards,state,loop);
+  assert.equal(first.variantId,'combo:loop:anti:anti');
+  Speech.recordPlay(state,cards,loop,first,null);
+  const repeated=Speech.resolve(cards,state,loop);
+  assert.equal(repeated.variantId,null);
+  assert.equal(new Set(Object.values(repeated.faces).map(face=>face.zh)).size,3);
+});
+
+test('captured posts preserve the exact source and publish a new quoted response',()=>{
+  const state=createInitialState();state.currentRole='star';state.heat=0;
+  state.roles.star.hand=[card('star','source',1)];state.roles.anti.hand=[card('anti','counter',2)];
+  applyCommand(state,'star',{type:'play',cardIds:['source']});
+  const original=structuredClone(state.topPlay.body);
+  applyCommand(state,'fan',{type:'pass'});
+  applyCommand(state,'anti',{type:'play',cardIds:['counter'],captureAll:true});
+  const captured=state.roles.anti.hand.find(c=>c.id==='source');
+  assert.deepEqual(captured.capturedFrom.text,original);
+  const restored=JSON.parse(JSON.stringify(state));Object.assign(restored,{issueIndex:1,topPlay:null,claimOwner:null,currentRole:'anti',heat:0,passes:0});
+  assert.ok(JSON.stringify(createPlayerView(restored,'anti')).includes('capturedFrom'));
+  applyCommand(restored,'anti',{type:'play',cardIds:['source']});
+  assert.deepEqual(restored.topPlay.quoteSources[0].text,original);
+  assert.ok(restored.topPlay.speech.zh.includes(restored.topPlay.quoteSources[0].excerpt.zh));
+  assert.notDeepEqual(restored.topPlay.body,original);
+  const replay=structuredClone(restored.topPlay.speech);
+  applyCommand(restored,'star',{type:'pass'});applyCommand(restored,'fan',{type:'pass'});
+  assert.deepEqual(restored.lastCompletedRound.speech,replay);
+});
+
+test('authored card faces and posts avoid disallowed post punctuation',()=>{
+  const values=[];
+  const walk=value=>{if(typeof value==='string')values.push(value);else if(value&&typeof value==='object')Object.values(value).forEach(walk);};
+  [Narrative.posts,Narrative.combos,Narrative.variants,Narrative.support].forEach(walk);
+  assert.deepEqual(values.filter(value=>/[:!()…]|\.\.\./.test(value)),[]);
+});
+
+test('selecting cards in the other events keeps their compact card faces',()=>{
+  const state={themeKey:'voiceNote',issueIndex:0,currentRole:'anti'};
+  const selected=card('anti','other',3,'stance');
+  const compact=Speech.cardFace(selected,state);
+  const resolved=Speech.resolve([selected],state,pattern('single','stance',3));
+  assert.deepEqual(resolved.faces.other,compact);
+  assert.notDeepEqual(resolved.body,compact);
 });

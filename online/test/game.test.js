@@ -268,8 +268,8 @@ test("legacy persisted rooms receive current Heat intervention fields", () => {
   assert.deepEqual(view.heatInterventionTriggered, []);
   assert.equal(view.heatInterventionTokens, 0);
   assert.equal(view.heatFeedback.interventionsAdded, 0);
-  assert.equal(view.issues[2].claims.fan, "The real Haru is the hardworking person we have always known.");
-  assert.equal(view.theme.issues[2].claims.fan, "The real Haru is the hardworking person we have always known.");
+  assert.equal(view.issues[2].claims.fan, "I know what I like. I do not need your permission.");
+  assert.equal(view.theme.issues[2].claims.fan, "I know what I like. I do not need your permission.");
   const lead = getLegalPlayOptions(state, "anti").find((option) => option.pattern.type === "single");
   assert.ok(lead);
   assert.doesNotThrow(() => applyCommand(state, "anti", commandFor(lead, "anti")));

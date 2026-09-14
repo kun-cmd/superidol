@@ -253,6 +253,7 @@
     "阅读结算，再进入下一话轮。": "Read the outcome, then continue to the next Round.",
     "等待对方玩家提交行动。": "Waiting for the other player to submit an action.",
     "你拥有领出权：选择1至3张牌发布第一条回应。": "You have the lead: choose 1–3 cards to post the first response.",
+    "选择手牌，组织你的回应": "Choose cards to shape your response",
     "成功公开后，累计浏览量会按照牌的等级增长；组合会累加所有等级。": "Once posted, total views rise with card levels; a pattern adds all its levels.",
     "选择一张手牌弃掉，Heat -5": "Choose a card to discard · Heat −5",
     "降温不会过牌，也不会结束本次行动；确认后仍可出牌或继续降温。": "Cooling neither passes nor ends your turn. After confirming, you may still play or cool again.",

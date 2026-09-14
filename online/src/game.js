@@ -1,3 +1,4 @@
+import "../../narrative-seven.js";
 import "../../speech.js";
 const Speech = globalThis.SuperidolSpeech;
 export const ROLE_ORDER = ["anti", "star", "fan"];
@@ -70,10 +71,10 @@ const CARD_DISPLAY_NAMES = {
 };
 
 const EVENT_THEMES = {
-  sevenSecondServe: { eyebrow: "OLD CLIP / NEW MEME", title: "The Seven-Second Serve", copy: "A seven-year-old audition clip becomes a fight over who owns the joke.", fragmentTitle: "Afterimage", issues: [
-    { title: "What are people actually watching?", claims: { star: "It's a cropped mistake from when I was seventeen.", fan: "He was already experimenting. The crop hides how much talent was there.", anti: "The crop works because the full performance is still awkward." }, bystander: "Show the uncut clip before telling us what it proves." },
-    { title: "Who owns the joke?", claims: { star: "I don't need protection from a joke. I need my team to stop threatening people.", fan: "This stopped being a joke when millions used it to humiliate him.", anti: "A megastar does not get to decide when remix culture stops." }, bystander: "The takedown made this feel bigger than the clip." },
-    { title: "What survives after the trend dies?", claims: { star: "Let my next work speak in a voice I chose.", fan: "The real Haru is the hardworking person we have always known.", anti: "The meme is more honest than the brand." }, bystander: "How he responds now may matter more than seven old seconds." },
+  sevenSecondServe: { eyebrow: "OLD CLIP / NEW MEME", title: "The Seven-Second Serve", copy: "Seven seconds from an old audition are spreading. Haru, Maya and Ben each have something they refuse to let go.", fragmentTitle: "Afterimage", issues: [
+    { title: "The clip resurfaces", claims: { star: "I danced badly at seventeen. That was seven years ago.", fan: "Seven seconds do not tell you how he always dances.", anti: "The date does not make those moves any better." }, bystander: "Show the uncut clip before telling us what it proves." },
+    { title: "The replies become the story", claims: { star: "Laughing at my old attempt does not mean accepting your verdict.", fan: "You have the context. You just prefer the joke.", anti: "A good reply still does not make him a good dancer." }, bystander: "Now the replies are getting as much attention as the clip." },
+    { title: "A label sticks", claims: { star: "Judge my dancing now. I am still here.", fan: "I know what I like. I do not need your permission.", anti: "Without the packaging, I still see the same bad dancer." }, bystander: "Will anyone remember more than the punchline?" },
   ], bystander: { watching: "I want the full clip before I join either side.", warning: { 35: "This stopped being a joke and became a fight over who controls the feed.", 75: "The joke is everywhere, but the same side still controls what it means." }, intervention: ["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.", "The other side gets the opening this time. No one account owns the meme."], reset: ["New thread. Show context, not another victory lap.", "I have seen the clip. Now I am watching what each side does with it."] } },
   voiceNote: { eyebrow: "PRIVATE CLAIM / PUBLIC TRIAL", title: "The 2:17 Voice Note", copy: "A relationship, payments, an unsigned NDA and an eighteen-second voice note arrive together.", fragmentTitle: "Low Signal", issues: [
     { title: "What has actually been established?", claims: { star: "We had a relationship. I paid medical costs. I will not publish her private details.", fan: "He paid because he took responsibility, not because he was guilty.", anti: "The admission confirms the core timeline, not the coercion claim." }, bystander: "Separate what he admitted from what the thread alleged." },
@@ -349,6 +350,7 @@ export function createInitialState(options = {}) {
     lastCompletedRound: null,
     victoryResults: null,
     logs: [],
+    narrative: { version: 1, nextId: 0, consumed: {}, facts: {}, posts: [] },
     endReason: null,
     campaign: {
       eventNumber,
@@ -696,6 +698,10 @@ function resolveRound(state, reason) {
   const markerGain = roundMarkerGain();
   const completed = {
     speech: state.topPlay.speech,
+    body: state.topPlay.body,
+    quoteSources: state.topPlay.quoteSources,
+    postId: state.topPlay.postId,
+    variantId: state.topPlay.variantId,
     issueIndex: state.issueIndex,
     issueTitle: issue.title,
     roundInIssue: state.roundInIssue,
@@ -728,6 +734,7 @@ function resolveRound(state, reason) {
       controller: issueWinner === owner ? controller : issueWinner,
       claim: issue.claims[issueWinner],
       speech: issueWinner === owner ? completed.speech : null,
+      post: issueWinner === owner ? { role: controller, owner, speech: state.topPlay.speech, body: state.topPlay.body, quoteSources: state.topPlay.quoteSources, publishedAt: state.topPlay.publishedAt, issueIndex: state.issueIndex } : null,
       rounds: state.roundInIssue,
       markers: { ...state.issueMarkers },
     });
@@ -831,6 +838,7 @@ function applyPlay(state, role, command) {
   }
   const beforeHeat = state.heat;
   const wasResponse = Boolean(state.topPlay);
+  const previousTop = state.topPlay;
   const captured = role === "anti" && wasResponse ? captureOvertakenCards(state, Boolean(command.captureAll)) : [];
   applyWildAssignments(cards, pattern);
   const spent = ordinaryCards.map((card) => card.id);
@@ -867,6 +875,7 @@ function applyPlay(state, role, command) {
   const addedHeat = playHeat(cards, pattern);
   const heatChange = changeHeat(state, addedHeat, role);
   advanceStoryTime(state, "response", addedHeat);
+  const resolved = Speech.resolve(cards, state, pattern);
   state.claimOwner = owner;
   state.topPlay = {
     role,
@@ -874,11 +883,19 @@ function applyPlay(state, role, command) {
     pattern: { ...pattern },
     cardNames: cards.map((card) => card.name),
     cardIds: cards.map((card) => card.id),
-    cards: Speech.freezeCards(cards, state, pattern),
-    speech: Speech.compose(cards, state, pattern),
+    cards: Speech.freezeCards(cards, state, pattern, resolved),
+    speech: resolved.speech,
+    body: resolved.body,
+    quoteSources: resolved.quoteSources,
+    postId: resolved.postId,
+    variantId: resolved.variantId,
+    facts: resolved.facts,
+    author: resolved.author,
+    replyTo: previousTop ? { role: previousTop.role, postId: previousTop.postId, speech: previousTop.speech, body: previousTop.body, issueIndex: state.issueIndex, publishedAt: previousTop.publishedAt } : null,
     fanVoice,
     publishedAt: state.storyTime,
   };
+  Speech.recordPlay(state, cards, pattern, resolved, previousTop);
   state.passes = 0;
   state.leadSkips = 0;
   state.skills.anti.captureArmed = false;
@@ -1039,6 +1056,11 @@ function restoreCapturedCards(state) {
 
 export function normalizeGameState(state) {
   restoreCapturedCards(state);
+  if (!state.narrative || typeof state.narrative !== "object") state.narrative = { version: 1, nextId: 0, consumed: {}, facts: {}, posts: [] };
+  if (!Number.isFinite(state.narrative.nextId)) state.narrative.nextId = 0;
+  if (!state.narrative.consumed || typeof state.narrative.consumed !== "object") state.narrative.consumed = {};
+  if (!state.narrative.facts || typeof state.narrative.facts !== "object") state.narrative.facts = {};
+  if (!Array.isArray(state.narrative.posts)) state.narrative.posts = [];
   if (!Array.isArray(state.heatInterventionTriggered)) state.heatInterventionTriggered = [];
   if (!Number.isFinite(state.heatInterventionTokens)) state.heatInterventionTokens = 0;
   if (!Number.isFinite(state.bystanderInterventionsUsed)) state.bystanderInterventionsUsed = 0;
