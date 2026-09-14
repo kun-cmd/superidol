@@ -298,6 +298,7 @@
     .console-tools:has(.fan-mode) .control-row{overflow-y:auto}
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
+  <link rel="stylesheet" href="card-presentation.css?v=20260914">
 </head>
 <body>
   <div class="app">
@@ -318,10 +319,6 @@
           <div class="event-badge" id="eventBadge">事件1 · 从3万浏览开始</div>
         </div>
         <section class="post-stage" aria-label="争议帖热评区">
-          <section class="issue-focus">
-            <div class="issue-copy"><div class="issue-topic-line"><b class="issue-event-title" id="issueEventTitle">The Seven-Second Serve</b><span class="issue-topic-metrics"><i>阅读量 <strong id="eventReadCount">3万</strong></i><i>讨论量 <strong id="eventDiscussCount">692</strong></i></span></div><small id="issueCounter">问题 1 / 3</small><strong id="issueTitle">What are people actually watching?</strong><span id="issuePrompt"></span><em id="issueRule">连续两方过牌，热评获得1标 · 同一叙事2标定调</em></div>
-            <div class="marker-summary" id="markerSummary"></div>
-          </section>
           <section class="claim-grid" id="claimGrid" hidden></section>
           <section class="narrative-stage" id="narrativeStage">
             <div class="thread-column" id="threadColumn">
@@ -699,6 +696,23 @@
       return `<span data-i18n-skip><span class="speech-zh">${escape(text.zh)}</span><span class="speech-en">${escape(text.en)}</span></span>`;
     }
     function sourceMarkup(card){const source=card.capturedFrom;return source?`<span class="speech-source" data-i18n-skip>${speechMarkup({zh:`引用自 ${ROLES[source.role].short} · 问题${source.issueIndex+1}`,en:`Quoted from ${ROLES[source.role].short} · Topic ${source.issueIndex+1}`})}</span>`:"";}
+    // Faces reuse an authored core claim; selection always previews the complete published speech.
+    function cardFaceSpeech(card){
+      if(card.isWork||card.id==="star-work")return SuperidolSpeech.cardSpeech(card,state);
+      const topic=(SuperidolSpeech.topics[state.themeKey]||SuperidolSpeech.topics.sevenSecondServe)[Math.min(state.issueIndex||0,2)];
+      const voice=card.capturedFrom?"anti":card.role==="fan"&&(state.fanVoiceThisRound||state.fanVoiceChoice)==="star"?"star":card.originalAuthor||card.role||state.currentRole;
+      return topic[voice]||SuperidolSpeech.cardSpeech(card,state);
+    }
+    function cardMaterialIcon(card){
+      const path=card.capturedFrom?'<path d="M8 6H4v7h5V9H6V8h2m11-2h-4v7h5V9h-3V8h2"/>':card.isWork?'<path d="M9 17V5l10-2v12M9 7l10-2"/><ellipse cx="6" cy="17" rx="3" ry="2"/><ellipse cx="16" cy="15" rx="3" ry="2"/>':card.channel==="fact"?'<rect x="3" y="4" width="18" height="15" rx="2"/><path d="m10 8 5 3.5-5 3.5Z"/>':card.channel==="spread"?'<path d="m16 3 4 4-4 4M4 7h16M8 21l-4-4 4-4M20 17H4"/>':'<path d="M4 4h16v12H9l-5 4Z"/><path d="M8 8h8M8 12h5"/>';
+      return `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+    }
+    function cardFaceMarkup(card){
+      const voice=card.capturedFrom?"anti":card.role==="fan"&&(state.fanVoiceThisRound||state.fanVoiceChoice)==="star"?"star":card.originalAuthor||card.role||state.userRole;
+      const supporting=card.role==="fan"&&voice==="star"&&!card.capturedFrom,account=ROLES[supporting?"fan":voice],identity=`<span class="card-author" data-i18n-skip><img src="${account.avatarSrc}" alt="" draggable="false"><span>${account.short}</span>${supporting?'<span class="card-voice-arrow">→ Haru</span>':""}</span>`;
+      if(card.capturedFrom)return `${identity}<span class="card-quote-box">${sourceMarkup(card)}<span class="card-quote-excerpt">${speechMarkup(card.capturedFrom.excerpt||card.capturedFrom.text)}</span></span><h3 class="card-speech">${speechMarkup(cardFaceSpeech(card))}</h3>`;
+      return `${identity}<h3 class="card-speech">${speechMarkup(cardFaceSpeech(card))}</h3>`;
+    }
     function currentClaim(role){return currentIssue().claims[role];}
     function seatCounts(){return Object.fromEntries(ROLE_ORDER.map(role=>[role,state.seats.filter(seat=>seat.owner===role).length]));}
     function nextRole(role){return ROLE_ORDER[(ROLE_ORDER.indexOf(role)+1)%ROLE_ORDER.length];}
@@ -894,7 +908,6 @@
     function toggleTopLike(){if(!state?.topPlay)return;currentTopLiked=!currentTopLiked;syncLikeButton(engagementStats(state.heat));}
     function renderEngagement(forceLikeReset=false){
       const current=engagementStats(state.heat),isNewState=animatedEngagementState!==state,previous=isNewState?current:animatedEngagement,likeOffset=currentTopLiked?1:0;
-      el("eventReadCount").textContent=formatReachValue(current.views);el("eventDiscussCount").textContent=formatSocialValue(current.likes+current.reposts);
       if(isNewState){animatedEngagementState=state;el("threadViews").textContent=formatReachValue(current.views);el("likeStatus").textContent=formatSocialValue(current.likes+likeOffset);el("repostStatus").textContent=formatSocialValue(current.reposts);}
       else if(current.views!==previous.views){animateEngagementValue("threadViews",previous.views,current.views,formatReachValue);if(forceLikeReset)el("likeStatus").textContent=formatSocialValue(current.likes+likeOffset);else animateEngagementValue("likeStatus",previous.likes+likeOffset,current.likes+likeOffset,formatSocialValue);animateEngagementValue("repostStatus",previous.reposts,current.reposts,formatSocialValue);const crossed=[1000000,10000000].filter(threshold=>previous.views<threshold&&current.views>=threshold).pop();if(crossed)showReachMilestone(crossed);}
       else if(forceLikeReset)el("likeStatus").textContent=formatSocialValue(current.likes+likeOffset);
@@ -1735,11 +1748,11 @@
       window.__coreBaselineReport=prototypeReport();window.__coreRuleChecks=runCoreRuleChecks();
       el("seatStatus").textContent=`${state.seats.length} / 3`;renderHeatStatus();
       const dateRange=state.eventStartedAt===state.storyTime?formatTimelineDay(state.eventStartedAt):`${formatTimelineDay(state.eventStartedAt)}—${formatTimelineDay(state.storyTime)}`;
-      el("eventEyebrow").textContent=`虚构事件 ${campaign.eventNumber} / 3 · ${state.theme.eyebrow}`;el("eventTitle").textContent=state.theme.title;el("issueEventTitle").textContent=state.theme.title;el("issueEventTitle").style.setProperty("--event-color",state.themeKey==="roomTone"?"#6dd8ff":"#ffad55");el("eventCopy").textContent=state.theme.copy;el("eventBadge").textContent=`${dateRange} · 从${formatHeatReach(state.initialHeat)}浏览开始${state.memoryTarget?` · 挑战纪录${formatHeatReach(state.memoryTarget)}`:""}`;
+      el("eventEyebrow").textContent=`虚构事件 ${campaign.eventNumber} / 3 · ${state.theme.eyebrow}`;el("eventTitle").textContent=state.theme.title;el("eventCopy").textContent=state.theme.copy;el("eventBadge").textContent=`${dateRange} · 从${formatHeatReach(state.initialHeat)}浏览开始${state.memoryTarget?` · 挑战纪录${formatHeatReach(state.memoryTarget)}`:""}`;
       el("roundStatus").textContent=state.phase==="ended"?"事件结束":`问题${state.issueIndex+1} · 话轮${state.roundInIssue}`;
       el("turnStatus").textContent=state.phase==="ended"?"事件结束":state.phase==="round_break"?"话轮结算":state.phase==="old_story_choice"?`旧事点名 · ${ROLES[state.oldStoryCall.chooser].short}`:`${ROLES[state.currentRole].short}${state.currentRole===state.userRole?"（你）":""}`;
       el("turnBlock").style.setProperty("--status-color",["action","old_story_choice"].includes(state.phase)?ROLES[state.currentRole].color:"var(--info)");el("actionConsole").style.setProperty("--actor-color",ROLES[state.userRole].color);
-      renderPlayedCards();renderSeats();renderIssue();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();
+      renderPlayedCards();renderSeats();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();
     }
     function renderSeats(){
       el("seatRow").innerHTML=state.issues.map((issue,index)=>{
@@ -1748,11 +1761,6 @@
         if(!seat)return`<div class="seat ${state.phase!=="ended"&&index===state.issueIndex?"active":""}"><div class="seat-copy"><small>问题${index+1} · ${state.phase!=="ended"&&index===state.issueIndex?"当前回应中":"未开始"}</small><strong>${issue.title}</strong></div>${markerRow}</div>`;
         return`<div class="seat filled" style="--seat-color:${ROLES[seat.owner].color}"><div class="seat-copy"><small>问题${index+1} · ${ROLES[seat.owner].short}定义</small><strong>${seat.speech?speechMarkup(seat.speech):issue.claims[seat.owner]}</strong></div>${markerRow}</div>`;
       }).join("");
-    }
-    function renderIssue(){
-      if(state.phase==="ended"){el("issueCounter").textContent="三个问题已经完成";el("issueTitle").textContent="公众故事已经形成";el("issuePrompt").textContent="";el("issueRule").textContent="每个问题都由先获得2个标记的叙事定义";}
-      else{const issue=currentIssue();el("issueCounter").textContent=`问题 ${state.issueIndex+1} / 3 · 第${state.roundInIssue}话轮`;el("issueTitle").textContent=issue.title;el("issuePrompt").textContent="";el("issueRule").textContent="连续两方过牌，当前热评获得1个定调标记 · 2标定义问题";}
-      el("markerSummary").innerHTML=ROLE_ORDER.map(role=>`<div class="marker-item"><span>${ROLES[role].short}</span><strong>${state.phase==="ended"?"完成":`${state.issueMarkers[role]} / ${ISSUE_MARKER_TARGET}`}</strong></div>`).join("");
     }
     function renderClaims(){
       el("claimGrid").innerHTML=ROLE_ORDER.map(role=>{
@@ -1783,6 +1791,11 @@
       const pointText=state.topPlay.cards.map(card=>resolvedCardLevel(card,pattern)).join(" + ");
       const playedCards=state.topPlay.cards.map(card=>{const level=resolvedCardLevel(card,pattern),cardColor=card.id==="star-work"?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelLabel=card.id==="star-work"?"技能":card.isWild?"万能":CHANNELS[card.channel].name;return`<span class="thread-played-card" style="--played-card-color:${cardColor}"><em>${channelLabel}</em><i>${level}</i><strong>${card.displayName||card.name}</strong></span>`;}).join("");
       const account=ROLES[state.topPlay.role];renderThreadAccount(state.topPlay.role,state.topPlay.publishedAt||state.storyTime);strip.style.setProperty("--thread-color",account.color);strip.style.setProperty("--thread-role-color",account.color);el("threadTop").innerHTML=speechMarkup(state.topPlay.speech||SuperidolSpeech.compose(state.topPlay.cards,state,state.topPlay.pattern));meta.innerHTML=`<span class="thread-time">${voice?voice.slice(3):"当前热评第1"}</span>`;el("threadPlayed").innerHTML=`<div class="thread-played-head"><span>${patternLabel(pattern)}</span><strong>${pointText} 点</strong></div><div class="thread-played-row">${playedCards}</div>`;el("passStatus").textContent=`等待结算 ${state.passes} / 2`;
+      const quotedSources=new Set();
+      state.topPlay.cards.filter(card=>card.capturedFrom).forEach(card=>{
+        const key=JSON.stringify(card.capturedFrom);if(quotedSources.has(key))return;quotedSources.add(key);
+        meta.insertAdjacentHTML("beforeend",`<details class="published-quote"><summary>${sourceMarkup(card)} · ${speechMarkup({zh:"查看原话",en:"Read original"})}</summary><blockquote>${speechMarkup(card.capturedFrom.text)}</blockquote></details>`);
+      });
     }
     function renderActionNotice(){
       const latest=state.logs[0],notice=el("actionNotice");
@@ -1916,9 +1929,8 @@
       el("handTitle").textContent=`${ROLES[role].name}的回应手牌${role==="star"&&state.silenced?" · 失声锁定":isTurn?" · 选择回应":""}`;el("handCount").textContent=`${hand.length}张${workAvailable?"（含技能牌）":""} · 未发 ${state.deckRemaining}张`;
       el("hand").innerHTML=sorted.length?sorted.map(card=>{
         const selected=state.coolingMode?state.coolingCardId===card.id:card.isWork?state.skills.star.selected:state.selectedIds.includes(card.id),selectedCount=state.selectedIds.length+(role==="star"&&state.skills.star.selected?1:0),incompatible=state.coolingMode?card.isWork:card.isWork?state.selectedIds.length>0:role==="star"&&state.skills.star.selected,disabled=!isTurn||incompatible||(!state.coolingMode&&!selected&&selectedCount>=3),channelColor=card.isWork?"var(--star)":card.isWild?"var(--heat)":CHANNELS[card.channel].color,channelName=card.isWork?"明星技能牌":card.isFanWild?"自动频道":card.isWild?"万能频道":`${CHANNELS[card.channel].name}频道`,levelText=card.isFanWild?"1—4":card.level;
-        const cardCopy=SuperidolSpeech.cardSpeech(card,state);
         const footLabel=card.isWork?`技能点数 ${card.level}`:card.isFanWild?"等级 1—4":"等级 "+card.level,selectionLabel=state.coolingMode?(selected?"待确认弃牌":"点击选择弃牌"):selected?(card.isWork?"技能牌已选中":`主牌 ${state.selectedIds.indexOf(card.id)+1}`):"点击选择";
-        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" ${disabled?"disabled":""}><div class="card-top"><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><h3 class="card-speech">${speechMarkup(cardCopy)}</h3>${sourceMarkup(card)}<div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
+        return`<button class="card ${card.isWork||card.isWild?"wild":""} ${card.capturedFrom?"quoted-card":""} ${selected?"selected":""}" style="--channel-color:${channelColor}" data-card="${card.id}" data-material="${card.isWork?"work":card.channel}" aria-pressed="${selected}" ${disabled?"disabled":""}><div class="card-top"><span class="card-material-icon">${cardMaterialIcon(card)}</span><span class="card-channel">${channelName}</span><span class="card-level">${levelText}</span></div><div class="card-face">${cardFaceMarkup(card)}</div><div class="card-foot"><span>${footLabel}</span><span>${selectionLabel}</span></div></button>`;
       }).join(""):`<div class="empty">手牌已经用尽。轮到你领出时，领出权会顺延给下一方。</div>`;
       el("hand").querySelectorAll("[data-card]").forEach(button=>button.onclick=()=>toggleCard(button.dataset.card));
     }
