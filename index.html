@@ -299,7 +299,7 @@
     .console-tools:has(.fan-mode) .control-row{overflow-y:auto}
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
-  <link rel="stylesheet" href="card-presentation.css?v=stage3-20260914">
+  <link rel="stylesheet" href="card-presentation.css?v=reply-layout-20260915">
 </head>
 <body>
   <div class="app">
@@ -823,6 +823,16 @@
       if(pattern.type==="loop")return`${pattern.level}级${PATTERN_NAMES.loop}`;
       if(pattern.type==="run")return`${CHANNELS[pattern.channel].name}${pattern.low}-${pattern.level}${PATTERN_NAMES.run}`;
       return`${CHANNELS[pattern.channel].name}${pattern.level}级${PATTERN_NAMES[pattern.type]}`;
+    }
+    function patternLabelCopy(pattern){
+      if(!pattern)return{zh:"无效组合",en:"Invalid combination"};
+      const channelZh={fact:"事实",stance:"立场",spread:"传播"}[pattern.channel];
+      const typeZh={single:"单张",pair:"同调对子",run:"连续论证",loop:"闭环叙事"}[pattern.type];
+      const channel={fact:"Evidence",stance:"Position",spread:"Reach"}[pattern.channel];
+      const type={single:"Single",pair:"Matched Pair",run:"Run",loop:"Narrative Loop"}[pattern.type];
+      if(pattern.type==="loop")return{zh:`${pattern.level}级${typeZh}`,en:`Level ${pattern.level} ${type}`};
+      if(pattern.type==="run")return{zh:`${channelZh}${pattern.low}-${pattern.level}${typeZh}`,en:`${channel} ${pattern.low}-${pattern.level} ${type}`};
+      return{zh:`${channelZh}${pattern.level}级${typeZh}`,en:`${channel} Level ${pattern.level} ${type}`};
     }
     function patternBadgeHtml(pattern){
       const loop=pattern.type==="loop",channel=loop?"三频道":CHANNELS[pattern.channel].name,color=loop?"var(--heat)":CHANNELS[pattern.channel].color;
@@ -1876,7 +1886,7 @@
       if(fanGiftCard)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援 · 把所选${fanGiftCard.level}级牌变成1—4级万能牌并交给</span><div class="skill-options">${ROLE_ORDER.map(role=>`<button data-gift-target="${role}" class="${state.skills.fan.target===role?"selected":""}">${ROLES[role].short}</button>`).join("")}<button id="fanSkillButton" class="fan-confirm-button">确认应援</button></div></div>`;
       else if(fanSkillReady)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--fan)"><span>最后应援已就绪</span><div class="action-hint">选择恰好一张1—4级普通牌，再决定把万能牌交给谁。</div></div>`;
       if(state.userRole==="anti"&&state.topPlay&&state.skills.anti.used<ANTI_CAPTURE_LIMIT&&response.legal){const capturable=state.topPlay.cards.filter(card=>card.id!=="star-work"),bundle=capturable.map(card=>`${card.level}级 · ${CHANNELS[card.channel].name}频道`).join("、");if(bundle)controls.innerHTML+=`<div class="skill-control" style="--skill-color:var(--anti)"><span>断章取义 · 剩余${ANTI_CAPTURE_LIMIT-state.skills.anti.used}次（保留原话和出处，收入手牌）</span><div class="skill-options"><button id="antiCaptureButton" class="${state.skills.anti.captureArmed?"selected":""}">${state.skills.anti.captureArmed?"已准备截取回应":"截取这组回应"}：${bundle}</button></div></div>`;}
-      if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${patternLabel(pattern)}</strong>${response.legal?` · ${speechMarkup({zh:`消耗 ${cards.length} 张 · 标记归 ${ROLES[owner].short}`,en:`Spend ${cards.length} card(s) · Marker for ${ROLES[owner].short}`})}`:" · 当前选择不能发布"}`;}
+      if(cards.length){summary.hidden=false;summary.innerHTML=`<strong>${speechMarkup(patternLabelCopy(pattern))}</strong> · ${response.legal?speechMarkup({zh:`消耗 ${cards.length} 张 · 标记归 ${ROLES[owner].short}`,en:`Spend ${cards.length} card(s) · Marker for ${ROLES[owner].short}`}):speechMarkup({zh:"当前选择不能发布",en:"Current selection cannot be posted"})}`;}
       const canPublish=response.legal;
       const publishHeat=canPublish?playHeat(cards,pattern):0;
       let actionHtml=`<button class="primary-button" id="publishButton" ${canPublish?"":"disabled"}>${workRelease?"完整发布作品":state.topPlay?"发布回应":"领出主张"} · Heat +${publishHeat}</button>`;
@@ -1904,7 +1914,7 @@
         const pressure=role==="star"?`<span class="pressure-stat">压力 <b>${state.pressure}/${PRESSURE_MAX}</b></span><span class="pressure-dots" aria-label="明星压力${state.pressure}/${PRESSURE_MAX}">${Array.from({length:PRESSURE_MAX},(_,index)=>`<i class="${index<state.pressure?"filled":""}"></i>`).join("")}</span><span class="pressure-forecast">${pressureForecastText()}</span>`:"";
         const help=role==="star"?`<details class="mechanism-help pressure-help" style="--help-color:var(--star)"><summary aria-label="查看明星压力规则">i</summary><div class="mechanism-copy"><strong>明星压力 · 0—${PRESSURE_MAX}</strong>Maya每话轮首次用自己的解释入场：+1；援护入场不加压。本话轮有援护且Haru定调：−1；无援护时Haru的Position定调：−1；两者不叠加。Ben定调：+1。压力4失声，降到2恢复。Haru获胜需结束压力≤2。</div></details>`:"";
         const skillStatus=skill.status.replace(/(\d+)/,`<b>$1</b>`);
-        return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" data-role="${role}" style="--role-color:${ROLES[role].color}"><div class="role-title"><span class="role-title-avatar">${accountAvatarMarkup(role)}</span><strong>${ROLES[role].name}${state.userRole===role?"（你）":""}</strong><span>${isCurrent?"正在回应":""}</span></div><div class="role-account-line"><b>${ROLES[role].accountName}</b><span>${ROLES[role].handle}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span>${pressure}</div><div class="role-skill"><strong>${skill.name}</strong><span class="role-skill-status">${skillStatus}</span></div>${help}</article>`;
+        return`<article class="role-summary ${isCurrent?"current":""} ${state.userRole===role?"player":""}" data-role="${role}" style="--role-color:${ROLES[role].color}"><div class="role-title"><span class="role-title-avatar">${accountAvatarMarkup(role)}</span><strong>${ROLES[role].name}</strong></div><div class="role-account-line"><b>${ROLES[role].accountName}</b><span>${ROLES[role].handle}</span></div><div class="role-meta"><span class="hand-count">手牌 <b>${visibleHandCount}</b></span>${pressure}</div><div class="role-skill"><strong>${skill.name}</strong><span class="role-skill-status">${skillStatus}</span></div>${help}</article>`;
       }).join("");
     }
     function renderState(){

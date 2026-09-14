@@ -30,6 +30,7 @@
 .card-quote-excerpt::after{content:'”';color:#8fa9c9}
 .card.quoted-card .card-speech{-webkit-line-clamp:2;font-size:11px}
 .seat-copy [data-i18n-skip],.seat-copy .speech-zh,.seat-copy .speech-en{display:inline;margin:0;color:inherit;font:inherit;line-height:inherit}
+.workspace{grid-template-rows:52px minmax(0,1fr) 52px 156px}
 .playfield{grid-template-rows:minmax(0,1fr) 180px}
 .action-console{height:180px;max-height:none;padding:12px 14px}
 .console-main{grid-template-rows:auto auto minmax(0,1fr) auto;gap:5px}
@@ -56,14 +57,22 @@
 .quote-context{padding:7px 9px;background:#15243a;border:1px solid #6a7e9866;border-radius:5px;color:#c5d6eb;font-size:11px;line-height:1.5}
 .quote-context summary{cursor:pointer;color:#e1ebf8}
 .quote-context .speech-source{margin:5px 0;color:#a7bfdc}
-.thread-meta:has(.published-quote){display:flex}
+.thread-strip:has(.published-quote){overflow:hidden}
+.thread-strip:has(.published-quote) .thread-main{align-self:stretch;min-height:0;height:100%;padding-right:4px;padding-bottom:7px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.thread-strip:has(.published-quote) .thread-main>strong#threadTop{max-height:none;overflow:visible}
+.thread-meta:has(.published-quote){display:flex;align-content:flex-start;padding-bottom:4px}
 .thread-meta:has(.published-quote)>.thread-time{display:none}
-.published-quote{display:block;flex-basis:100%;max-width:100%;margin-top:5px;padding:6px 8px;border:1px solid #bccbd9;border-left:2px solid #809bb9;border-radius:4px;background:#e8eef5;color:#2c4057;font-size:11px;line-height:1.45}
+.published-quote{box-sizing:border-box;display:block;flex:0 0 100%;width:100%;min-width:0;max-width:100%;margin-top:5px;padding:6px 8px;border:1px solid #bccbd9;border-left:2px solid #809bb9;border-radius:4px;background:#e8eef5;color:#2c4057;font-size:11px;line-height:1.45}
 .published-quote summary{cursor:pointer;color:#3d5b7b}
 .published-quote summary .speech-source{display:inline;color:inherit;font-size:10px}
 .published-quote blockquote{margin:7px 0 2px;white-space:pre-line;font-size:12px;font-weight:500}
+.role-title{min-width:0}
+.role-title strong{min-width:0;white-space:nowrap}
+.role-summary[data-role="star"] .pressure-dots{display:none}
+.role-summary[data-role="star"] .role-skill>strong{display:none}
 .flying-response-card{box-shadow:0 8px 22px #09122266;border-radius:5px}
 @media(max-width:940px){
+  .workspace{grid-template-rows:58px minmax(0,1fr) 64px 150px}
   .playfield{grid-template-rows:minmax(0,1fr) 174px}
   .action-console{height:174px;padding:8px}
   .console-main .prompt{font-size:11px}
@@ -87,6 +96,10 @@
   .issue-strip::-webkit-scrollbar{display:none}
   .issue-strip .seat{min-width:210px;grid-template-columns:1fr;grid-template-rows:auto auto;align-content:center;gap:3px;scroll-snap-align:start}
   .issue-strip .seat-marker-row{grid-column:1;justify-content:flex-start}
+}
+@media(max-height:859px) and (min-width:941px){
+  html,body{height:auto;min-height:860px;overflow-y:auto}
+  .app{height:860px;min-height:860px;overflow:visible}
 }
 @media(prefers-reduced-motion:reduce){
   .card,.card:hover:not(:disabled),.card.selected{transition:none;transform:none}
