@@ -105,3 +105,34 @@ test('selecting cards in the other events keeps their compact card faces',()=>{
   assert.deepEqual(resolved.faces.other,compact);
   assert.notDeepEqual(resolved.body,compact);
 });
+
+test('every later event keeps channels distinct and publishes each combination as one response',()=>{
+  for(const themeKey of ['voiceNote','comeback','roomTone'])for(const issueIndex of [0,1,2])for(const role of ['star','fan','anti']){
+    const state={themeKey,issueIndex,currentRole:role};
+    const channels=['fact','stance','spread'].map((channel,i)=>card(role,channel,i+1,channel));
+    for(const lang of ['zh','en'])assert.equal(new Set(channels.map(c=>Speech.cardFace(c,state)[lang])).size,3);
+    for(const type of ['pair','run','loop']){
+      const cards=type==='loop'?channels:[1,2,3].slice(0,type==='pair'?2:3).map((level,i)=>card(role,`c${i}`,type==='pair'?2:level));
+      const p=pattern(type,'fact',3), before=structuredClone(cards), resolved=Speech.resolve(cards,state,p);
+      for(const lang of ['zh','en'])assert.equal(resolved.body[lang].includes('\n'),false);
+      for(const c of cards)assert.deepEqual(resolved.faces[c.id],Speech.cardFace(c,state,p));
+      assert.deepEqual(cards,before);
+      assert.ok(Speech.freezeCards(cards,state,p).every(c=>JSON.stringify(c.speech)===JSON.stringify(resolved.body)));
+    }
+  }
+});
+
+test('advancing events discards the previous responses, captures and consumed specials',()=>{
+  const state=createInitialState();
+  state.narrative={version:1,nextId:9,consumed:{0:{'combo:run:anti:anti':true}},facts:{selfLaughReplayed:true},posts:[{postId:'old'}]};
+  state.selectedIds=[state.roles.anti.hand[0].id];
+  state.roles.anti.hand[0].capturedFrom={text:{zh:'旧帖',en:'Old post'}};
+  state.topPlay={speech:{zh:'旧回应',en:'Old response'}};
+  state.phase='ended';
+  applyCommand(state,'anti',{type:'next_event'});
+  assert.equal(state.themeKey,'voiceNote');
+  assert.equal(state.topPlay,null);
+  assert.equal(state.selectedIds,undefined); // Selection is client-only and must not survive on the server.
+  assert.deepEqual(state.narrative,{version:1,nextId:0,consumed:{},facts:{},posts:[]});
+  assert.ok(Object.values(state.roles).every(r=>r.hand.every(c=>!c.capturedFrom&&!c.speech)));
+});

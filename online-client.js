@@ -394,6 +394,10 @@
     if (el("startDialog").open) el("startDialog").close();
     const previousState = state;
     state = normalizeServerState(serverState);
+    const newEvent = !wasOnline || previousState?.eventStartedAt !== state.eventStartedAt
+      || previousState?.themeKey !== state.themeKey || previousState?.campaign?.eventNumber !== state.campaign?.eventNumber;
+    if (newEvent || (previousState?.phase === "round_break" && state.phase === "action")) localSelection = freshLocalSelection();
+    if (newEvent) window.SuperidolCardMotion?.reset();
     state.userRole = session.role;
     state.selectedIds = localSelection.ids.filter((id) => state.roles[session.role].hand.some((card) => card.id === id));
     state.coolingMode = Boolean(localSelection.coolingMode);
@@ -416,7 +420,6 @@
       campaign.storyTime = state.campaign.storyTime;
       campaign.lastGapMonths = state.campaign.lastGapMonths;
     }
-    if (previousState?.phase === "round_break" && state.phase === "action") localSelection = freshLocalSelection();
     const playSignature = (value) => value?.topPlay
       ? `${value.issueIndex}:${value.roundInIssue}:${value.topPlay.publishedAt || 0}:${value.topPlay.role}:${value.topPlay.cardIds.join("-")}`
       : "";

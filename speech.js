@@ -144,16 +144,16 @@
   function compose(cards, context, pattern) {
     const authored = narrative(context);
     if (authored) return authored.resolve(cards, context, pattern).speech;
-    // Repeated copies amplify one sentence; distinct components each keep their voice.
+    // Every legal group is one post, including events without a bespoke narrative pack.
+    if (['pair', 'run', 'loop'].includes(pattern?.type) && cards.length) {
+      const representative = cards.find(card => card.capturedFrom)
+        || [...cards].sort((a, b) => (b.level || 0) - (a.level || 0))[0];
+      return cardSpeech(representative, context, pattern);
+    }
     const parts = [], seen = new Set();
     for (const card of cards) {
       const text = cardSpeech(card, context, pattern), key = JSON.stringify(text);
       if (!seen.has(key)) { seen.add(key); parts.push(text); }
-    }
-    // A pair is a single statement, even when a gifted/captured copy has another origin.
-    if (pattern?.type === "pair" && parts.length > 1) {
-      const quoted = cards.find(card => card.capturedFrom);
-      return quoted ? cardSpeech(quoted, context, pattern) : parts[0];
     }
     return pair(parts.map(p => p.zh).join("\n"), parts.map(p => p.en).join("\n"));
   }
@@ -163,7 +163,7 @@
       const post = resolved || authored.resolve(cards, context, pattern);
       return cards.map(card => ({ ...card, speech: { ...post.body } }));
     }
-    const shared = pattern?.type === "pair" ? compose(cards, context, pattern) : null;
+    const shared = ['pair', 'run', 'loop'].includes(pattern?.type) ? compose(cards, context, pattern) : null;
     return cards.map(card => ({ ...card, speech: shared || cardSpeech(card, context, pattern) }));
   }
   function capture(cards, top, context) {
@@ -196,7 +196,13 @@
     if (card.isWork || card.id === "star-work") return cardSpeech(card, context, pattern);
     const topic = (topics[context.themeKey] || topics.sevenSecondServe)[Math.min(context.issueIndex || 0, 2)];
     const voice = card.capturedFrom ? "anti" : card.role === "fan" && (context.fanVoiceThisRound || context.fanVoiceChoice) === "star" ? "star" : card.originalAuthor || card.role || context.currentRole;
-    return topic[voice] || cardSpeech(card, context, pattern);
+    if (card.capturedFrom) return pair('这句话也在原帖里。', 'That was in the original post too.');
+    const channel = pattern?.wildAssignments?.find(item => item.id === card.id)?.channel || card.channel;
+    if (channel === 'fact') return pair(end(topic.fact.zh, 'zh'), end(topic.fact.en, 'en'));
+    const stance = topic[voice];
+    if (!stance) return cardSpeech(card, context, pattern);
+    if (channel === 'spread') return pair(`转发前也看看这句。${end(stance.zh, 'zh')}`, `Read this before reposting. ${end(stance.en, 'en')}`);
+    return pair(end(stance.zh, 'zh'), end(stance.en, 'en'));
   }
   function resolve(cards, context, pattern) {
     const authored = narrative(context);

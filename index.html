@@ -6,7 +6,7 @@
   <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
   <script src="narrative-seven.js?v=stage-20260914"></script>
-  <script src="speech.js?v=stage-20260914"></script>
+  <script src="speech.js?v=event-reset-20260915"></script>
   <script src="i18n.js?v=stage-20260914"></script>
   <style>
     :root {
@@ -756,7 +756,7 @@
     function recordOldStoryResponse(role,action){const call=state.oldStoryCall;if(simulationMode&&state.simulationMetrics&&call?.active&&role!==call.leader)state.simulationMetrics.oldStory[action]+=1;}
     function fanVoiceLabel(voice=state?.fanVoiceThisRound||state?.fanVoiceChoice){return voice==="star"?"援护Haru":"Maya自己的解释";}
     function startGame(role){
-      clearAITimer();clearPlayAnimation();state=initialState(role);el("startDialog").close();
+      clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();resetCampaignProgress();state=initialState(role);el("startDialog").close();
       state.roundStartConsensusOwner=consensusLeader();
       const opening=campaign.permanentMemory?`永久记忆“${campaign.permanentMemory.claim}”以${formatHeatReach(campaign.permanentMemory.strength)}浏览纪录继续存在，${ROLES[campaign.permanentMemory.owner].short}从互联网记忆1开始；黑粉固定领出新事件。`:`新事件从${formatHeatReach(state.initialHeat)}浏览开始，黑粉固定获得第一个话轮的领出权。`;
       addLog(opening,"anti");publishBystanderComment(null,"opening");render();showEventIntro();queueAutomaticTurn();
@@ -1961,10 +1961,11 @@
       window.SuperidolCardMotion?.update(el("hand"),{eventKey:[state.eventStartedAt,campaign.eventNumber,state.userRole,Boolean(window.__onlineActive)].join(":"),stageKey:`${state.themeKey}:${state.issueIndex}`,progress:state.roundsCompleted||0,active:state.phase==="action"});
     }
     function restart(){
-      clearAITimer();clearPlayAnimation();clearTimeout(eventIntroTimer);el("eventIntro").classList.remove("active");if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();state=null;el("startDialog").showModal();
+      clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();clearTimeout(eventIntroTimer);el("eventIntro").classList.remove("active");if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();resetCampaignProgress();state=null;el("startDialog").showModal();
     }
+    function resetCampaignProgress(){Object.assign(campaign,{eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"sevenSecondServe",nextTheme:null,albumFragments:[],storyTime:CAMPAIGN_START_TIME,lastGapMonths:0});}
     function nextCampaignTheme(){if(campaign.eventNumber===1)return"voiceNote";if(campaign.eventNumber===2)return campaign.albumFragments.length>=2?"roomTone":"comeback";return campaign.activeTheme;}
-    function restartCampaign(){const role=state?.userRole||"star";clearAITimer();clearPlayAnimation();if(el("resultDialog").open)el("resultDialog").close();campaign.eventNumber=1;campaign.influence={star:0,fan:0,anti:0};campaign.permanentMemory=null;campaign.activeTheme="sevenSecondServe";campaign.nextTheme=null;campaign.albumFragments=[];campaign.storyTime=CAMPAIGN_START_TIME;campaign.lastGapMonths=0;state=initialState(role);state.roundStartConsensusOwner=consensusLeader();addLog(`新的三事件从“The Seven-Second Serve”开始；Ben固定开场。`,"anti");publishBystanderComment(null,"opening");render();showEventIntro();queueAutomaticTurn();}
+    function restartCampaign(){const role=state?.userRole||"star";clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();if(el("resultDialog").open)el("resultDialog").close();resetCampaignProgress();state=initialState(role);state.roundStartConsensusOwner=consensusLeader();addLog(`新的三事件从“The Seven-Second Serve”开始；Ben固定开场。`,"anti");publishBystanderComment(null,"opening");render();showEventIntro();queueAutomaticTurn();}
     function advanceEvent(){
       if(campaign.eventNumber>=3)return;
       const role=state?.userRole||"star",gapMonths=state?.heat>=90?1:2;clearAITimer();clearPlayAnimation();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.storyTime=addTimelineMonths(state?.storyTime||campaign.storyTime,gapMonths);campaign.lastGapMonths=gapMonths;campaign.activeTheme=nextCampaignTheme();campaign.eventNumber+=1;campaign.nextTheme=null;state=initialState(role);state.roundStartConsensusOwner=consensusLeader();
@@ -2094,6 +2095,6 @@ function pressureGoalScore(role,pattern,voice){
     setup();
 </script>
   <script src="card-stage-motion.js?v=stage-20260914"></script>
-  <script src="online-client.js?v=pressure-20260914"></script>
+  <script src="online-client.js?v=event-reset-20260915"></script>
 </body>
 </html>
