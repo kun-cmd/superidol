@@ -3,6 +3,11 @@
 #fullClipDialog{width:min(900px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:0;overflow:auto;background:#172030;color:#edf0f7;border:1px solid #58647a;border-radius:16px}
 #fullClipDialog::backdrop{background:#060b16cc}
 #fullClipDialog video{max-height:65dvh}
+#memeDialog{width:min(1000px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:0;overflow:auto;background:#172030;color:#edf0f7;border:1px solid #58647a;border-radius:16px}
+#memeDialog::backdrop{background:#060b16cc}
+.expanded-meme{display:block;width:100%;max-height:75dvh;object-fit:contain}
+.media-back{justify-self:center;min-width:130px;padding:12px 26px;border:1px solid #9890ee;border-radius:8px;background:linear-gradient(120deg,#536cce,#7855c7);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.media-back:hover{filter:brightness(1.15)}
 #fullClipAttachment{align-self:start;justify-self:start;margin:6px 0}
 .opening-post{padding:24px;display:grid;gap:12px}
 .opening-kicker{font-size:12px;letter-spacing:.09em;color:#9bb4d6}
