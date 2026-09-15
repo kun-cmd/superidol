@@ -41,7 +41,7 @@
     document.getElementById('memeAttachment')?.remove();
     if(meme){
       const attachment=document.createElement('button');attachment.id='memeAttachment';attachment.type='button';attachment.className='event-original-button';
-      attachment.innerHTML=copy('▧ 梗图','▧ Meme');
+      attachment.innerHTML=copy('😂 梗图','😂 Meme');
       attachment.onclick=()=>{if(memeFor(state)!==meme)return;memePost=memeKey;memeModal.querySelector('img').src=`assets/audition/meme-${meme}.png`;memeModal.showModal();};
       document.getElementById('threadTop').after(attachment);
     }
