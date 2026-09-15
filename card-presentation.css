@@ -30,18 +30,24 @@
 .card-quote-excerpt::after{content:'”';color:#8fa9c9}
 .card.quoted-card .card-speech{-webkit-line-clamp:2;font-size:11px}
 .seat-copy [data-i18n-skip],.seat-copy .speech-zh,.seat-copy .speech-en{display:inline;margin:0;color:inherit;font:inherit;line-height:inherit}
-.workspace{grid-template-rows:52px minmax(0,1fr) 52px 156px}
-.playfield{grid-template-rows:minmax(0,1fr) 180px}
-.action-console{height:180px;max-height:none;padding:12px 14px}
-.console-main{grid-template-rows:auto auto minmax(0,1fr) auto;gap:5px}
-.console-main .prompt{font-size:14px;line-height:1.4}
-.console-main .subprompt{font-size:11px;line-height:1.45}
+.workspace{grid-template-rows:52px minmax(0,1fr) 52px 222px}
+.hand-zone{display:flex;flex-direction:column}
+.hand-zone .hand{flex:1;height:auto;min-height:0}
+.playfield{grid-template-rows:minmax(0,1fr) 136px}
+.action-console{height:136px;max-height:none;padding:8px 10px;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);overflow:hidden}
+.console-main{grid-template-rows:auto auto minmax(0,1fr) auto;gap:2px}
+.console-main .prompt{grid-row:1;max-height:2.8em;overflow:auto;font-size:14px;line-height:1.4}
+.console-main .subprompt{grid-row:2;margin:0;max-height:1.45em;display:block;overflow:auto;font-size:11px;line-height:1.45}
 .console-main .subprompt:empty{display:none}
-.console-main .selection-summary{max-height:none;overflow:visible;font-size:12px;line-height:1.6}
-.console-main .action-buttons{gap:8px;flex-wrap:wrap;overflow:visible}
-.console-main .primary-button,.console-main .plain-button{min-height:36px;padding:8px 12px;font-size:11px}
-.console-tools{padding:7px 10px;overflow:auto}
-.console-tools .control-row{height:auto;max-height:100%;overflow:auto;gap:8px}
+.console-main .selection-summary{grid-row:3;margin:0;padding:3px 6px;max-height:100%;min-height:0;overflow:auto;font-size:11px;line-height:1.4}
+.console-main .action-buttons{grid-row:4;margin:0;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;flex-shrink:0}
+.console-main .primary-button,.console-main .plain-button{min-height:32px;padding:6px 8px;font-size:10px;flex-shrink:0;white-space:nowrap}
+.console-tools{padding:4px 7px;display:flex;flex-direction:column;overflow:hidden}
+.console-tools .control-row{flex:1;height:auto;max-height:none;min-height:0;grid-auto-rows:max-content;align-content:start;overflow:auto;gap:5px;scrollbar-width:thin}
+.console-tools .control-row::-webkit-scrollbar{display:block;width:5px;height:5px}
+.console-tools .control-row> *{min-width:0;overflow-wrap:anywhere}
+.console-tools .skill-control,.console-tools .voice-control{grid-template-columns:minmax(0,1fr)}
+.console-tools .skill-options button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .console-tools .control-row:empty::after{content:none}
 .console-tools .skill-overview{padding:3px 0;background:none;border:0}
 .console-tools .skill-overview-copy strong{font-size:11px}
@@ -72,9 +78,9 @@
 .role-summary[data-role="star"] .role-skill>strong{display:none}
 .flying-response-card{box-shadow:0 8px 22px #09122266;border-radius:5px}
 @media(max-width:940px){
-  .workspace{grid-template-rows:58px minmax(0,1fr) 64px 150px}
-  .playfield{grid-template-rows:minmax(0,1fr) 174px}
-  .action-console{height:174px;padding:8px}
+  .workspace{grid-template-rows:58px minmax(0,1fr) 64px 214px}
+  .playfield{grid-template-rows:minmax(0,1fr) 136px}
+  .action-console{height:136px;padding:7px}
   .console-main .prompt{font-size:11px}
   .console-main .subprompt{font-size:9px}
   .console-main .selection-summary{font-size:10px}
