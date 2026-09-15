@@ -7,7 +7,7 @@
   <title>定义权：互联网舆论战争</title>
   <script src="narrative-seven.js?v=three-second-20260915"></script>
   <script src="speech.js?v=three-second-20260915"></script>
-  <script src="i18n.js?v=three-second-20260915"></script>
+  <script src="i18n.js?v=manual-20260915"></script>
   <style>
     :root {
       --paper:#fff; --page:#eef0f3; --ink:#1d232c; --muted:#68717e; --line:#cfd4db;
@@ -300,7 +300,7 @@
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
   <link rel="stylesheet" href="card-presentation.css?v=compact-console-20260915">
-  <link rel="stylesheet" href="event-post.css?v=three-second-20260915">
+  <link rel="stylesheet" href="event-post.css?v=manual-20260915">
 </head>
 <body>
   <div class="app">
@@ -1682,12 +1682,8 @@
       submitSuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,reason,{workRelease:Boolean(choice.workRelease),captureAll});
     }
     function queueAutomaticTurn(){
-      clearAITimer();if(simulationMode||!state||window.SuperidolEventPost?.isOpen())return;
-      if(state.phase==="old_story_choice"){
-        const chooser=state.oldStoryCall?.chooser;if(chooser&&chooser!==state.userRole)aiTimer=setTimeout(()=>{aiTimer=null;const decision=chooseAIOldStoryTarget(chooser);chooseOldStoryTarget(decision.target,true,decision.reason);},AI_ACTION_DELAY);return;
-      }
-      if(state.phase!=="action")return;
-      if(state.currentRole!==state.userRole){const role=state.currentRole;aiTimer=setTimeout(()=>{aiTimer=null;aiTurn(role);},AI_ACTION_DELAY);}
+      clearAITimer();
+      if(!simulationMode)window.SuperidolReplyMedia?.sync();
     }
     function objectiveChecks(){
       const counts=seatCounts();
@@ -1770,7 +1766,7 @@
       el("roundStatus").innerHTML=speechMarkup(state.phase==="ended"?{zh:"事件结束",en:"Event ended"}:{zh:`${state.themeKey==="sevenSecondServe"?"阶段":"问题"}${state.issueIndex+1} · 话轮${state.roundInIssue}`,en:`${state.themeKey==="sevenSecondServe"?"Stage":"Topic"} ${state.issueIndex+1} · Round ${state.roundInIssue}`});
       el("turnStatus").textContent=state.phase==="ended"?"事件结束":state.phase==="round_break"?"话轮结算":state.phase==="old_story_choice"?`旧事点名 · ${ROLES[state.oldStoryCall.chooser].short}`:`${ROLES[state.currentRole].short}${state.currentRole===state.userRole?"（你）":""}`;
       el("turnBlock").style.setProperty("--status-color",["action","old_story_choice"].includes(state.phase)?ROLES[state.currentRole].color:"var(--info)");el("actionConsole").style.setProperty("--actor-color",ROLES[state.userRole].color);
-      renderPlayedCards();renderSeats();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();window.SuperidolEventPost?.sync();
+      renderPlayedCards();renderSeats();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();window.SuperidolEventPost?.sync();window.SuperidolReplyMedia?.sync();
     }
     function stageTitle(index){
       const issue=state.issues[Math.min(index,state.issues.length-1)];
@@ -1852,7 +1848,7 @@
       box.classList.toggle("active",state.phase==="action"&&state.currentRole===state.userRole);summary.hidden=true;summary.innerHTML="";controls.innerHTML=`<div class="skill-overview" style="--skill-color:${ROLES[state.userRole].color}"><div class="skill-overview-copy"><strong>${skill.name}</strong></div><em class="skill-overview-status">${skill.status}</em></div>`;actions.innerHTML="";
       if(state.phase==="ended"){prompt.textContent="事件已经结算。";sub.textContent="查看三个问题如何组成公众故事，以及可信度与互联网记忆是否分裂。";return;}
       if(state.phase==="round_break"){prompt.textContent="本话轮已经完成定调。";sub.textContent="阅读结算，再进入下一话轮。";return;}
-      if(state.currentRole!==state.userRole){prompt.textContent=`${ROLES[state.currentRole].short}${window.__onlineActive?"正在选择回应":"正在判断压牌、观望，还是替另一个阵营交出高牌"}。`;sub.textContent=window.__onlineActive?"等待对方玩家提交行动。":`AI行动将在约${AI_ACTION_DELAY/1000}秒后显示。`;return;}
+      if(state.currentRole!==state.userRole){prompt.textContent=`${ROLES[state.currentRole].short}${window.__onlineActive?"正在选择回应":"等待你允许下一步行动"}。`;sub.textContent=window.__onlineActive?"等待对方玩家提交行动。":"点击下方按钮，让下一位AI行动。";return;}
       if(state.userRole==="star"&&state.silenced){
         prompt.textContent=`你已失声：压力达到${PRESSURE_MAX}，无法出牌。`;sub.textContent="本次只能过牌。Maya可以援护你；压力降到2或以下时恢复发声。";
         actions.innerHTML='<button class="plain-button" id="passButton">失声 · 只能过牌</button><span class="action-hint">手牌不会消耗，但你无法领出、回应、冷处理或继续提升技能牌；未打出的技能牌已经永久消失。</span>';
@@ -2097,6 +2093,7 @@ function pressureGoalScore(role,pattern,voice){
 </script>
   <script src="card-stage-motion.js?v=stage-20260914"></script>
   <script src="event-post.js?v=three-second-20260915"></script>
+  <script src="reply-media.js?v=manual-20260915"></script>
   <script src="online-client.js?v=three-second-20260915"></script>
 </body>
 </html>

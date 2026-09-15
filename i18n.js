@@ -10,6 +10,7 @@
   let observer = null;
 
   const EXACT_ENGLISH = new Map(Object.entries({
+    "点击下方按钮，让下一位AI行动。": "Click below to allow the next AI action.",
     "粉丝的两种回应": "Two ways for Maya to respond",
     "：Maya每个话轮首次出牌时选择“自己的解释”或“援护Haru”，本话轮内不能切换。自己的解释获得Maya标记；援护花费Maya的手牌，但标记归Haru。": ": On her first play each Round, Maya chooses her own interpretation or support for Haru. The choice is locked for that Round. Her interpretation earns Maya Points; support spends her cards but earns Haru Points.",
     "：Maya以自己的解释首次入场时压力+1，即使被反压也不撤销；援护入场不加压。Ben赢下话轮时压力+1。": ": Maya’s first play of her own interpretation each Round adds 1 Pressure, even if countered. Supporting Haru adds no Pressure on play. Ben winning a Round adds 1 Pressure.",
@@ -419,6 +420,9 @@
       return `${match[1]} plays “${cards}”${voiceText}${skillText}, taking the top reply with ${toEnglish(match[5])}; the claim becomes “${match[6]}”. Impact: cards ${match[7]}${viewText}${pressureText}.`;
     }],
     [/^(.+?)(无法压牌并|选择)过牌，暂时观望；若后来有人出牌，仍可重新加入。(?: 判断：.*。)?$/, match => `${match[1]} ${match[2] === "选择" ? "passes" : "cannot counter and passes"}, staying on the sidelines. They may rejoin after a new play.`],
+    [/^路人介入：消耗1枚；(.+?)保留标记，但下一话轮改由(.+?)领出。$/, m => `Bystander Intervention: 1 token spent. ${m[1]} keeps the Point. ${m[2]} leads the next Round.`],
+    [/^消耗1枚；(.+?)保留标记，但下一话轮改由(.+?)领出。$/, m => `1 token spent. ${m[1]} keeps the Point. ${m[2]} leads the next Round.`],
+    [/^(.+?)等待你允许下一步行动。$/, m => `${m[1]} is waiting for your permission to act.`],
     [/^(.+)定调：核心基线暂无频道额外效果。$/, match => `Definition by ${toEnglish(match[1])}: no extra channel effect in the current core rules.`],
     [/^(.+)定调：核心基线暂无频道额外效果。 (.+)$/, match => `Definition by ${toEnglish(match[1])}: no extra channel effect in the current core rules. ${toEnglish(match[2])}`],
     [/^本人立场守住话轮：明星压力([+−-]?\d+)，当前为(\d+)\/(\d+)。$/, match => `Haru's Position holds the Round: Star Pressure ${match[1]}, now ${match[2]}/${match[3]}.`],
@@ -458,6 +462,7 @@
   ];
 
   const INLINE_ENGLISH = [
+    [/消耗1枚；(.+?)保留标记，但下一话轮改由(.+?)领出。/g, (_, winner, next) => `1 token spent. ${winner} keeps the Point. ${next} leads the next Round.`],
     [/若守到结算，获得1个定调标记。/g, "If it holds until resolution, gain 1 Framing Point."],
     [/公开后累计浏览预计从([^。]+)升至([^。]+)。/g, (_, before, after) => `Posting is projected to raise total views from ${before} to ${after}.`],
     [/将越过Heat ([\d、]+)，中央增加(\d+)枚路人介入；本轮赢家仍拿标，但会失去下一话轮领出权。/g, (_, thresholds, count) => `This crosses Heat ${thresholds.split("、").join(", ")}, adding ${count} Bystander Intervention token(s). The Round winner still gains a Point but loses the next lead.`],

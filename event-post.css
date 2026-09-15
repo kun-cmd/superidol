@@ -1,5 +1,9 @@
 #eventPostDialog{width:min(680px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:0;overflow:auto;background:#172030;color:#edf0f7;border:1px solid #58647a;border-radius:16px;box-shadow:0 24px 90px #0009}
 #eventPostDialog::backdrop{background:#060b16cc}
+#fullClipDialog{width:min(900px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:0;overflow:auto;background:#172030;color:#edf0f7;border:1px solid #58647a;border-radius:16px}
+#fullClipDialog::backdrop{background:#060b16cc}
+#fullClipDialog video{max-height:65dvh}
+#fullClipAttachment{align-self:start;justify-self:start;margin:6px 0}
 .opening-post{padding:24px;display:grid;gap:12px}
 .opening-kicker{font-size:12px;letter-spacing:.09em;color:#9bb4d6}
 .opening-post h2{font-size:clamp(21px,3vw,28px);line-height:1.3;margin:0}
