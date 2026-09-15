@@ -7,7 +7,7 @@ const Narrative=globalThis.SuperidolNarrative;
 const card=(role,id,level=1,channel='fact')=>({id,role,originalAuthor:role,name:id,displayName:id,channel,level});
 const pattern=(type,channel='fact',level=1)=>({type,channel,level});
 
-test('the seven second argument changes subject and tone across all three stages',()=>{
+test('the three second argument changes subject and tone across all three stages',()=>{
   for(const role of ['star','fan','anti'])for(const channel of ['fact','stance','spread']){
     const bodies=[];
     for(let issueIndex=0;issueIndex<3;issueIndex++){

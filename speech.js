@@ -5,7 +5,7 @@
   const topics = {
     sevenSecondServe: [
       {
-        fact: pair("流传的是七年前试镜里截出的七秒", "The viral clip is seven seconds cut from an audition seven years ago"),
+        fact: pair("流传的是七年前试镜里截出的三秒", "The viral clip is three seconds cut from an audition seven years ago"),
         star: pair("十七岁的失误不能替现在的我发言", "A mistake at seventeen cannot speak for who I am now"),
         fan: pair("那段笨拙的尝试里已经有他的才华", "His talent was already there in that awkward experiment"),
         anti: pair("大家笑的恰恰是包装之前的他", "People are laughing at who he was before the packaging"),
@@ -17,7 +17,7 @@
         anti: pair("大明星连别人怎么玩梗都要管", "A megastar even wants control over how people make memes"),
       },
       {
-        fact: pair("被反复转发的还是那段七秒旧视频", "The same seven seconds of old footage keep being reposted"),
+        fact: pair("被反复转发的还是那段三秒旧视频", "The same three seconds of old footage keep being reposted"),
         star: pair("接下来做什么，应该由我自己决定", "What I do next should be mine to decide"),
         fan: pair("热梗会过去，我们认识的那个他不会变", "The meme will pass; the person we know will not change"),
         anti: pair("这个梗比他的明星人设更像他", "This meme looks more like him than his star persona does"),

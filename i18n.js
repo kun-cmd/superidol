@@ -428,7 +428,7 @@
     [/^“(.+)”完成定调：(.+)。$/, match => `“${match[1]}” is defined: ${match[2]}.`],
     [/^(.+) · 第(\d+)话轮开始，(.+)领出。$/, match => `${match[1]} · Round ${match[2]} begins. ${match[3]} leads.`],
     [/^新事件从(.+)浏览开始，黑粉固定获得第一个话轮的领出权。$/, match => `The new Event starts at ${toEnglish(match[1])} views; Ben always leads the first Round.`],
-    [/^新的三事件从“The Seven-Second Serve”开始；Ben固定开场。$/, () => "A new three-Event Campaign begins with The Seven-Second Serve; Ben always opens."],
+    [/^新的三事件从“The Three-Second Serve”开始；Ben固定开场。$/, () => "A new three-Event Campaign begins with The Three-Second Serve; Ben always opens."],
     [/^(.+)的回应手牌 · 选择回应$/, match => `${toEnglish(match[1])}'s Response Hand · Choose a response`],
     [/^(.+)的回应手牌 · 失声锁定$/, match => `${toEnglish(match[1])}'s Response Hand · Locked while silenced`],
     [/^(.+)的回应手牌$/, match => `${toEnglish(match[1])}'s Response Hand`],

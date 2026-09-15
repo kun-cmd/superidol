@@ -397,7 +397,7 @@
     const newEvent = !wasOnline || previousState?.eventStartedAt !== state.eventStartedAt
       || previousState?.themeKey !== state.themeKey || previousState?.campaign?.eventNumber !== state.campaign?.eventNumber;
     if (newEvent || (previousState?.phase === "round_break" && state.phase === "action")) localSelection = freshLocalSelection();
-    if (newEvent) window.SuperidolCardMotion?.reset();
+    if (newEvent) { window.SuperidolCardMotion?.reset(); window.SuperidolEventPost?.reset(); }
     state.userRole = session.role;
     state.selectedIds = localSelection.ids.filter((id) => state.roles[session.role].hand.some((card) => card.id === id));
     state.coolingMode = Boolean(localSelection.coolingMode);

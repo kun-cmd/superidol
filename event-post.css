@@ -1,0 +1,14 @@
+#eventPostDialog{width:min(680px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:0;overflow:auto;background:#172030;color:#edf0f7;border:1px solid #58647a;border-radius:16px;box-shadow:0 24px 90px #0009}
+#eventPostDialog::backdrop{background:#060b16cc}
+.opening-post{padding:24px;display:grid;gap:12px}
+.opening-kicker{font-size:12px;letter-spacing:.09em;color:#9bb4d6}
+.opening-post h2{font-size:clamp(21px,3vw,28px);line-height:1.3;margin:0}
+.opening-post p{margin:0;line-height:1.6;font-size:16px}
+.opening-post video{display:block;width:100%;max-height:40dvh;aspect-ratio:16/9;background:#080b12;border-radius:8px;object-fit:contain}
+.opening-post small{color:#b6c1d3}
+.opening-motive{padding:12px 16px;border-left:3px solid #9bb4d6;background:#ffffff08}
+.opening-motive strong{display:block;margin-bottom:4px}
+#openingContinue{justify-self:end;padding:11px 22px;background:#6374c6;color:white;border:0;border-radius:7px;cursor:pointer}
+.event-original-button{font-size:12px;padding:4px 9px;margin-top:4px;border:1px solid #62728e;border-radius:5px;background:transparent;color:inherit;cursor:pointer}
+.event-original-button[hidden]{display:none}
+@media(max-height:650px){.opening-post{padding:16px;gap:8px}.opening-post video{max-height:32dvh}.opening-post p{font-size:14px}}

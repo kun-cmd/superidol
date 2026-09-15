@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>定义权：互联网舆论战争</title>
-  <script src="narrative-seven.js?v=stage-20260914"></script>
-  <script src="speech.js?v=event-reset-20260915"></script>
-  <script src="i18n.js?v=stage-20260914"></script>
+  <script src="narrative-seven.js?v=three-second-20260915"></script>
+  <script src="speech.js?v=three-second-20260915"></script>
+  <script src="i18n.js?v=three-second-20260915"></script>
   <style>
     :root {
       --paper:#fff; --page:#eef0f3; --ink:#1d232c; --muted:#68717e; --line:#cfd4db;
@@ -300,6 +300,7 @@
   </style>
   <link rel="stylesheet" href="online-client.css?v=avatars-20260812">
   <link rel="stylesheet" href="card-presentation.css?v=compact-console-20260915">
+  <link rel="stylesheet" href="event-post.css?v=three-second-20260915">
 </head>
 <body>
   <div class="app">
@@ -316,7 +317,7 @@
       <section class="issue-strip" id="seatRow" aria-label="三个公共问题"></section>
       <main class="playfield">
         <div class="event-head" id="eventIntro" aria-live="polite">
-          <div><div class="eyebrow" id="eventEyebrow">FICTIONAL EVENT / OLD CLIP</div><h1 id="eventTitle">The Seven-Second Serve</h1><p class="event-copy" id="eventCopy">A seven-year-old audition clip becomes a feed-wide fight over who owns the joke.</p></div>
+          <div><div class="eyebrow" id="eventEyebrow">FICTIONAL EVENT / OLD CLIP</div><h1 id="eventTitle">The Three-Second Serve</h1><p class="event-copy" id="eventCopy">A seven-year-old audition clip becomes a feed-wide fight over who owns the joke.</p></div>
           <div class="event-badge" id="eventBadge">事件1 · 从3万浏览开始</div>
         </div>
         <section class="post-stage" aria-label="争议帖热评区">
@@ -358,7 +359,7 @@
     <div class="rules-flow">一句话玩法：轮到你时，用更高的同牌型抢下置顶；连续两人过牌后，置顶方拿1标。先拿2标，就定义这个问题。</div>
 
     <section class="rules-section" style="--rule-color:var(--network)"><h3>1. 一场游戏怎么推进</h3><ul>
-      <li>一场游戏（Campaign）共有三局事件（Match）：<em>The Seven-Second Serve</em> → <em>The 2:17 Voice Note</em> → 第三局分支。</li>
+      <li>一场游戏（Campaign）共有三局事件（Match）：<em>The Three-Second Serve</em> → <em>The 2:17 Voice Note</em> → 第三局分支。</li>
       <li>如果Haru在前两局各打出一次<strong>5—6点“沉淀成章”</strong>，第三局进入专辑事件 <em>ROOM TONE</em>；否则进入 <em>The Comeback Rehearsal</em>。</li>
       <li>每局有三个递进问题（Objective）。每个问题都要单独争夺2个定调标记。</li>
       <li>每局重新发牌：39张普通牌分为事实、立场、传播三个频道。每方先从每频道拿2张，再拿6张混合牌，共12张；Haru另有1张技能牌。最后3张不会公开，也不会补牌。</li>
@@ -420,7 +421,7 @@
     const BYSTANDER_ACCOUNT={name:"Jamie Cole",handle:"@jamiecole",avatar:"J",avatarSrc:"assets/jamie-cole-avatar-20260812.webp"};
     function bystanderAvatarMarkup(){return BYSTANDER_ACCOUNT.avatarSrc?`<img src="${BYSTANDER_ACCOUNT.avatarSrc}" alt="" draggable="false">`:BYSTANDER_ACCOUNT.avatar;}
     const SERVE_ISSUES=[
-      {title:"The clip resurfaces",claims:{star:"I danced badly at seventeen. That was seven years ago.",fan:"Seven seconds do not tell you how he always dances.",anti:"The date does not make those moves any better."}},
+      {title:"The clip resurfaces",claims:{star:"I danced badly at seventeen. That was seven years ago.",fan:"Three seconds do not tell you how he always dances.",anti:"The date does not make those moves any better."}},
       {title:"The replies become the story",claims:{star:"Laughing at my old attempt does not mean accepting your verdict.",fan:"You have the context. You just prefer the joke.",anti:"A good reply still does not make him a good dancer."}},
       {title:"A label sticks",claims:{star:"Judge my dancing now. I am still here.",fan:"I know what I like. I do not need your permission.",anti:"Without the packaging, I still see the same bad dancer."}}
     ];
@@ -440,7 +441,7 @@
       {title:"What defines HARU VENN now?",claims:{star:"I want to be known by the work I freely chose, not by someone else's defense.",fan:"We knew this was the real Haru all along.",anti:"The album joins the record. It does not replace it."}}
     ];
     const EVENT_THEMES={
-      sevenSecondServe:{eyebrow:"OLD CLIP / NEW MEME",title:"The Seven-Second Serve",copy:"Seven seconds from an old audition are spreading. Haru, Maya and Ben each have something they refuse to let go.",issues:SERVE_ISSUES,fragmentTitle:"Afterimage",bystander:{watching:"I want the full clip before I join either side.",warning:{35:"This stopped being a joke and became a fight over who controls the feed.",75:"The joke is everywhere, but the same side still controls what it means."},intervention:["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.","The other side gets the opening this time. No one account owns the meme."],reset:["New thread. Show context, not another victory lap.","I have seen the clip. Now I am watching what each side does with it."]}},
+      sevenSecondServe:{eyebrow:"OLD CLIP / NEW MEME",title:"The Three-Second Serve",copy:"Three seconds from an old audition are spreading. Haru, Maya and Ben each have something they refuse to let go.",issues:SERVE_ISSUES,fragmentTitle:"Afterimage",bystander:{watching:"I want the full clip before I join either side.",warning:{35:"This stopped being a joke and became a fight over who controls the feed.",75:"The joke is everywhere, but the same side still controls what it means."},intervention:["[Winner] keeps the point. Let [Next speaker] post first before the same account sets the tone again.","The other side gets the opening this time. No one account owns the meme."],reset:["New thread. Show context, not another victory lap.","I have seen the clip. Now I am watching what each side does with it."]}},
       voiceNote:{eyebrow:"PRIVATE CLAIM / PUBLIC TRIAL",title:"The 2:17 Voice Note",copy:"A private relationship, medical payments, an unsigned NDA and an eighteen-second voice note arrive together. Haru admits the relationship and payment, denies coercion, and refuses to publish Riley's private details.",issues:VOICE_NOTE_ISSUES,fragmentTitle:"Low Signal",bystander:{watching:"What is admitted, what is alleged, and what is still private? Keep those separate.",warning:{35:"This is moving faster than the evidence, and one side is controlling every reply.",75:"The feed is rewarding certainty before anyone has the full record."},intervention:["[Winner] keeps the result. [Next speaker] gets the next opening so this does not become a one-sided trial.","The side that has not been heard gets the first post now. The winner does not get another automatic microphone."],reset:["I am listening again. Do not turn another person's privacy into filler.","No verdict from me yet. I am watching who distinguishes responsibility from rumor."]}},
       comeback:{eyebrow:"COMEBACK / AUTHENTICITY TEST",title:"The Comeback Rehearsal",copy:"A rehearsal leaks for twenty-six seconds and the vocal continues after Haru lowers the microphone. The full mix contains live lead vocals and prerecorded backing; the old demo writer is credited, while Haru rewrote and produced with a team.",issues:COMEBACK_ISSUES,bystander:{watching:"Let us hear the full mix before calling it live or fake.",warning:{35:"The clip is deciding the comeback before the performance is even public.",75:"The comeback has become another contest to own the headline."},intervention:["[Winner] keeps the round. [Next speaker] gets the first response to the full audio.","The side still buried under the winning narrative gets the next opening."],reset:["Now compare the recording, the credits, and what the campaign promised.","I am not choosing redemption or cancellation. I am watching the work."]}},
       roomTone:{eyebrow:"ALBUM BRANCH UNLOCKED",title:"ROOM TONE",copy:"A ten-track album arrives without warning. Haru produced eight tracks, keeps imperfect vocals and live instruments, credits collaborators prominently, and refuses to turn Riley into a character. The music advances; the archive remains.",issues:ROOM_TONE_ISSUES,bystander:{watching:"I can like the album without pretending it answers every old question.",warning:{35:"Reviews are turning into a morality vote, and one side is swallowing the music.",75:"The album is becoming proof of whatever people believed before pressing play."},intervention:["[Winner] keeps the round. [Next speaker] gets the first listen on the next question.","The side that has not controlled the album story gets the next opening."],reset:["New track, new thread. Talk about what is actually on the record.","The record stays. So does the archive. I am watching what he does after both."]}}
@@ -1681,7 +1682,7 @@
       submitSuccessfulPlay(role,choice.cards,choice.pattern,fanVoice,reason,{workRelease:Boolean(choice.workRelease),captureAll});
     }
     function queueAutomaticTurn(){
-      clearAITimer();if(simulationMode||!state)return;
+      clearAITimer();if(simulationMode||!state||window.SuperidolEventPost?.isOpen())return;
       if(state.phase==="old_story_choice"){
         const chooser=state.oldStoryCall?.chooser;if(chooser&&chooser!==state.userRole)aiTimer=setTimeout(()=>{aiTimer=null;const decision=chooseAIOldStoryTarget(chooser);chooseOldStoryTarget(decision.target,true,decision.reason);},AI_ACTION_DELAY);return;
       }
@@ -1769,7 +1770,7 @@
       el("roundStatus").innerHTML=speechMarkup(state.phase==="ended"?{zh:"事件结束",en:"Event ended"}:{zh:`${state.themeKey==="sevenSecondServe"?"阶段":"问题"}${state.issueIndex+1} · 话轮${state.roundInIssue}`,en:`${state.themeKey==="sevenSecondServe"?"Stage":"Topic"} ${state.issueIndex+1} · Round ${state.roundInIssue}`});
       el("turnStatus").textContent=state.phase==="ended"?"事件结束":state.phase==="round_break"?"话轮结算":state.phase==="old_story_choice"?`旧事点名 · ${ROLES[state.oldStoryCall.chooser].short}`:`${ROLES[state.currentRole].short}${state.currentRole===state.userRole?"（你）":""}`;
       el("turnBlock").style.setProperty("--status-color",["action","old_story_choice"].includes(state.phase)?ROLES[state.currentRole].color:"var(--info)");el("actionConsole").style.setProperty("--actor-color",ROLES[state.userRole].color);
-      renderPlayedCards();renderSeats();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();
+      renderPlayedCards();renderSeats();renderClaims();renderThread();renderActionNotice();renderConsole();renderRoles();renderState();renderPermanentMemory();renderWorkPanel();renderLogs();renderHand();window.SuperidolEventPost?.sync();
     }
     function stageTitle(index){
       const issue=state.issues[Math.min(index,state.issues.length-1)];
@@ -1963,9 +1964,9 @@
     function restart(){
       clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();clearTimeout(eventIntroTimer);el("eventIntro").classList.remove("active");if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();resetCampaignProgress();state=null;el("startDialog").showModal();
     }
-    function resetCampaignProgress(){Object.assign(campaign,{eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"sevenSecondServe",nextTheme:null,albumFragments:[],storyTime:CAMPAIGN_START_TIME,lastGapMonths:0});}
+    function resetCampaignProgress(){window.SuperidolEventPost?.reset();Object.assign(campaign,{eventNumber:1,influence:{star:0,fan:0,anti:0},permanentMemory:null,activeTheme:"sevenSecondServe",nextTheme:null,albumFragments:[],storyTime:CAMPAIGN_START_TIME,lastGapMonths:0});}
     function nextCampaignTheme(){if(campaign.eventNumber===1)return"voiceNote";if(campaign.eventNumber===2)return campaign.albumFragments.length>=2?"roomTone":"comeback";return campaign.activeTheme;}
-    function restartCampaign(){const role=state?.userRole||"star";clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();if(el("resultDialog").open)el("resultDialog").close();resetCampaignProgress();state=initialState(role);state.roundStartConsensusOwner=consensusLeader();addLog(`新的三事件从“The Seven-Second Serve”开始；Ben固定开场。`,"anti");publishBystanderComment(null,"opening");render();showEventIntro();queueAutomaticTurn();}
+    function restartCampaign(){const role=state?.userRole||"star";clearAITimer();clearPlayAnimation();window.SuperidolCardMotion?.reset();if(el("resultDialog").open)el("resultDialog").close();resetCampaignProgress();state=initialState(role);state.roundStartConsensusOwner=consensusLeader();addLog(`新的三事件从“The Three-Second Serve”开始；Ben固定开场。`,"anti");publishBystanderComment(null,"opening");render();showEventIntro();queueAutomaticTurn();}
     function advanceEvent(){
       if(campaign.eventNumber>=3)return;
       const role=state?.userRole||"star",gapMonths=state?.heat>=90?1:2;clearAITimer();clearPlayAnimation();if(el("resultDialog").open)el("resultDialog").close();if(el("roundDialog").open)el("roundDialog").close();campaign.storyTime=addTimelineMonths(state?.storyTime||campaign.storyTime,gapMonths);campaign.lastGapMonths=gapMonths;campaign.activeTheme=nextCampaignTheme();campaign.eventNumber+=1;campaign.nextTheme=null;state=initialState(role);state.roundStartConsensusOwner=consensusLeader();
@@ -2095,6 +2096,7 @@ function pressureGoalScore(role,pattern,voice){
     setup();
 </script>
   <script src="card-stage-motion.js?v=stage-20260914"></script>
-  <script src="online-client.js?v=event-reset-20260915"></script>
+  <script src="event-post.js?v=three-second-20260915"></script>
+  <script src="online-client.js?v=three-second-20260915"></script>
 </body>
 </html>
